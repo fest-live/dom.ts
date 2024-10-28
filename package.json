@@ -1,5 +1,5 @@
 {
-    "name": "dom-ts",
+    "name": "@unite-2/dom-ts",
     "description": "DOM Utility",
     "version": "1.0.0alpha",
     "private": false,
