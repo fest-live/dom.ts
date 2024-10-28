@@ -7,7 +7,76 @@
 </head>
 <body>
 
-    <script src="./test/Drag.ts" type="module"></script>
+    <div class="r0">
+        <div class="r1">
+            <span>Titles</span>
+        </div>
+    </div>
+    <div class="coordinate">
+        <span class="x"></span>
+        <span class="y"></span>
+    </div>
+
+    <!-- -->
+    <style>
+        body, html {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        /* */
+        .coordinate {
+            display: grid;
+            grid-template-columns: minmax(0px, 1fr) minmax(0px, 1fr);
+            grid-template-rows: minmax(max-content, 1fr);
+            block-size: max-height;
+            inline-size: 12rem;
+            gap: 1rem;
+        }
+
+        /* */
+        .coordinate > * {
+            margin-block-start: 2rem;
+            position: relative;
+
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            align-content: center;
+            align-items: center;
+
+            padding: 0.5rem;
+        }
+
+        /* */
+        .r0 {
+            background-color: orange;
+            inline-size: 100px;
+            block-size: 100px;
+            overflow: visible;
+            display: flex;
+            place-content: center;
+            place-items: center;
+            transform: rotate(60deg);
+            user-select: none;
+        }
+
+        /* */
+        .r1 {
+            color: white;
+            background-color: green;
+            inline-size: 80px;
+            block-size: 80px;
+            overflow: visible;
+            display: flex;
+            place-content: center;
+            place-items: center;
+            transform: rotate(-40deg);
+            user-select: none;
+        }
+    </style>
+
+    <script src="./test/Coordinate.ts" type="module"></script>
 
 </body>
 </html>
