@@ -1,7 +1,7 @@
 import { observeBySelector } from "./Observer";
 
 //
-const includeSelf = (target, selector)=>{
+export const includeSelf = (target, selector)=>{
     return (target.querySelector(selector) ?? (target.matches(selector) ? target : null));
 }
 
