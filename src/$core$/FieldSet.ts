@@ -12,7 +12,7 @@ export const updateInput = (state, target)=>{
     const name     = input?.name || target?.dataset?.name || "";
 
     //
-    if (state && input?.matches(selector)) {
+    if (state && input?.matches?.(selector)) {
         if (input.value != state[name]) {
             input.value = state[name];
             input.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }));
@@ -21,7 +21,7 @@ export const updateInput = (state, target)=>{
 
     // setup radio boxes (requires wrapper)
     if (state) {
-        const radio = includeSelf(target, "input:where([type=\"radio\"][name=\""+name+"\"][value=\""+state[name]+"\"])");
+        const radio = includeSelf(target, `input:where([type=\"radio\"][name=\"${name}\"][value=\"${state[name]}\"])`);
         if (state && radio && !radio?.checked) { radio?.click?.(); };
     }
 
