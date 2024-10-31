@@ -1,14 +1,5 @@
 import { observeAttributeBySelector, observeBySelector } from "./Observer";
-
-//
-export const MOC = (element: HTMLElement | null, selector: string): boolean => {
-    return (!!element?.matches?.(selector) || !!element?.closest?.(selector));
-};
-
-//
-export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => {
-    return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null;
-};
+import { MOCElement } from "./Utils";
 
 //
 export default class AxQuery2 {
