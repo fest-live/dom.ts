@@ -12,25 +12,27 @@ export const updateInput = (state, target)=>{
     const name     = input?.name || target?.dataset?.name || "";
 
     //
-    if (state && input?.matches?.(selector)) {
-        if (input.value != state[name]) {
-            input.value = state[name];
-            input.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }));
+    if (state?.[name] != null) { // not exists not preferred...
+        if (state && input?.matches?.(selector)) {
+            if (input.value != state[name]) {
+                input.value = state[name];
+                input.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }));
+            }
         }
-    }
 
-    // setup radio boxes (requires wrapper)
-    if (state) {
-        const radio = includeSelf(target, `input:where([type=\"radio\"][name=\"${name}\"][value=\"${state[name]}\"])`);
-        if (state && radio && !radio?.checked) { radio?.click?.(); };
-    }
+        // setup radio boxes (requires wrapper)
+        if (state) {
+            const radio = includeSelf(target, `input:where([type=\"radio\"][name=\"${name}\"][value=\"${state[name]}\"])`);
+            if (state && radio && !radio?.checked) { radio?.click?.(); };
+        }
 
-    // setup check boxes
-    const checkbox = includeSelf(target, "input:where([type=\"checkbox\"])");
-    if (state && checkbox) {
-        if (state[name] != checkbox.checked) {
-            checkbox.checked = !!state[name];
-            checkbox.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }))
+        // setup check boxes
+        const checkbox = includeSelf(target, "input:where([type=\"checkbox\"])");
+        if (state && checkbox) {
+            if (state[name] != checkbox.checked) {
+                checkbox.checked = !!state[name];
+                checkbox.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }))
+            }
         }
     }
 }
@@ -45,7 +47,7 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
         const name   = input.name || target?.dataset.name;
 
         //
-        if (state) {
+        if (state?.[name] != null) { // not exists not preferred...
             if (input.matches("input:where([type=\"text\"], [type=\"number\"], [type=\"range\"])")) {
                 const value = (input.valueAsNumber != null && !isNaN(input.valueAsNumber)) ? input.valueAsNumber : input.value;
                 if (state[name] != value) { state[name] = value; };
