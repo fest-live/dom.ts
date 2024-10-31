@@ -13,8 +13,10 @@ export const updateInput = (state, target)=>{
 
     //
     if (state && input?.matches(selector)) {
-        input.value = state[target?.dataset?.name];
-        input.dispatchEvent(new Event("change", { bubbles: false, cancelable: true, }))
+        if (input.value != state[name]) {
+            input.value = state[name];
+            input.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }));
+        }
     }
 
     // setup radio boxes (requires wrapper)
@@ -26,8 +28,10 @@ export const updateInput = (state, target)=>{
     // setup check boxes
     const checkbox = includeSelf(target, "input:where([type=\"checkbox\"])");
     if (state && checkbox) {
-        checkbox.checked = !!state[name];
-        checkbox.dispatchEvent(new Event("change", { bubbles: false, cancelable: true, }))
+        if (state[name] != checkbox.checked) {
+            checkbox.checked = !!state[name];
+            checkbox.dispatchEvent(new Event("change", { bubbles: true, cancelable: true, }))
+        }
     }
 }
 
@@ -43,17 +47,18 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
         //
         if (state) {
             if (input.matches("input:where([type=\"text\"], [type=\"number\"], [type=\"range\"])")) {
-                state[name] = (input.valueAsNumber != null && !isNaN(input.valueAsNumber)) ? input.valueAsNumber : input.value;
+                const value = (input.valueAsNumber != null && !isNaN(input.valueAsNumber)) ? input.valueAsNumber : input.value;
+                if (state[name] != value) { state[name] = value; };
             }
 
             // any radio-box
             if (input?.matches("input[type=\"radio\"]:checked")) {
-                state[name] = input.value;
+                if (state[name] != input.value) { state[name] = input.value; };
             }
 
             // any check-box
             if (input?.matches("input[type=\"checkbox\"]")) {
-                state[name] = input.checked;
+                if (state[name] != input.checked) { state[name] = input.checked; };
             }
         }
     };
