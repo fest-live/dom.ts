@@ -38,7 +38,7 @@ export const updateInput = (state, target)=>{
 }
 
 //
-export const synchronizeInputs = (state, wrapper = ".u2-input", fields = document.documentElement)=>{
+export const synchronizeInputs = (state, wrapper = ".u2-input", fields = document.documentElement, subscribe?: Function)=>{
 
     //
     const onChange = (ev)=>{
@@ -71,6 +71,11 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
 
     //
     requestAnimationFrame(()=>{
+        fields.querySelectorAll(wrapper).forEach((target)=>updateInput(state, target));
+    });
+
+    // cross-window or frame syncretism
+    subscribe?.(state, (value, property)=>{
         fields.querySelectorAll(wrapper).forEach((target)=>updateInput(state, target));
     });
 
