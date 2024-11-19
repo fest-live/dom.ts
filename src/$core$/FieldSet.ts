@@ -70,9 +70,9 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
     fields.addEventListener("change", onChange);
 
     //
-    requestAnimationFrame(()=>{
+    requestIdleCallback(()=>{
         fields.querySelectorAll(wrapper).forEach((target)=>updateInput(state, target));
-    });
+    }, {timeout: 100});
 
     // cross-window or frame syncretism
     subscribe?.(state, (value, property)=>{
@@ -81,17 +81,17 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
 
     //
     observeBySelector(fields, wrapper, (mutations)=>{
-        requestAnimationFrame(()=>{
+        requestIdleCallback(()=>{
             mutations.addedNodes.forEach((target)=>{
                 updateInput(state, target);
             });
-        });
+        }, {timeout: 100});
     });
 
     //
     fields.addEventListener("u2-appear", ()=>{
-        requestAnimationFrame(()=>{
+        requestIdleCallback(()=>{
             fields.querySelectorAll(wrapper).forEach((target)=>updateInput(state, target));
-        });
+        }, {timeout: 100});
     });
 }
