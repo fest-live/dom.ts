@@ -42,9 +42,9 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
 
     //
     const onChange = (ev)=>{
-        const input  = ev.target;
-        const target = input.closest(wrapper);
-        const name   = input.name || target?.dataset.name;
+        const input  = ev?.target?.matches("input") ? ev?.target : ev?.target?.querySelector?.("input");
+        const target = input?.closest(wrapper);
+        const name   = input?.name || target?.dataset?.name;
 
         //
         if (state?.[name] != null) { // not exists not preferred...
