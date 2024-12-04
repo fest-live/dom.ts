@@ -22,7 +22,7 @@ export const updateInput = (state, target)=>{
 
         // setup radio boxes (requires wrapper)
         if (state) {
-            const radio = includeSelf(target, `input:where([type=\"radio\"][name=\"${name}\"][value=\"${state[name]}\"])`);
+            const radio = includeSelf(target, `input:where([type=\"radio\"][name=\"${name}\"][value=\"${state?.[name]}\"])`);
             if (state && radio && !radio?.checked) { radio?.click?.(); };
         }
 
@@ -43,23 +43,23 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
     //
     const onChange = (ev)=>{
         const input  = ev?.target?.matches("input") ? ev?.target : ev?.target?.querySelector?.("input");
-        const target = input?.closest(wrapper);
+        const target = ev?.target?.matches(wrapper) ? ev?.target : input?.closest?.(wrapper);
         const name   = input?.name || target?.dataset?.name;
 
         //
         if (state?.[name] != null) { // not exists not preferred...
-            if (input.matches("input:where([type=\"text\"], [type=\"number\"], [type=\"range\"])")) {
+            if (input?.matches?.("input:where([type=\"text\"], [type=\"number\"], [type=\"range\"])")) {
                 const value = (input.valueAsNumber != null && !isNaN(input.valueAsNumber)) ? input.valueAsNumber : input.value;
                 if (state[name] != value) { state[name] = value; };
             }
 
             // any radio-box
-            if (input?.matches("input[type=\"radio\"]:checked")) {
+            if (input?.matches?.("input[type=\"radio\"]:checked")) {
                 if (state[name] != input.value) { state[name] = input.value; };
             }
 
             // any check-box
-            if (input?.matches("input[type=\"checkbox\"]")) {
+            if (input?.matches?.("input[type=\"checkbox\"]")) {
                 if (state[name] != input.checked) { state[name] = input.checked; };
             }
         }
@@ -81,11 +81,11 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
 
     //
     observeBySelector(fields, wrapper, (mutations)=>{
-        requestIdleCallback(()=>{
-            mutations.addedNodes.forEach((target)=>{
+        mutations.addedNodes.forEach((target)=>{
+            requestIdleCallback(()=>{
                 updateInput(state, target);
-            });
-        }, {timeout: 100});
+            }, {timeout: 100});
+        });
     });
 
     //
