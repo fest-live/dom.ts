@@ -4,7 +4,7 @@ const onBorderObserve = new WeakMap<HTMLElement, Function[]>();
 const onContentObserve = new WeakMap<HTMLElement, Function[]>();
 
 //
-const getPxValue = (element, name)=>{
+export const getPxValue = (element, name)=>{
     if ("computedStyleMap" in element) {
         const cm = element?.computedStyleMap();
         return cm.get(name)?.value || 0;
