@@ -140,10 +140,10 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
     //
     observer.observe(element, {
         attributeOldValue: true,
-        childList: true,
-        subtree: true,
         attributes: true,
         attributeFilter: [...attributeList],
+        childList: true,
+        subtree: true,
         characterData: true
     });
 
