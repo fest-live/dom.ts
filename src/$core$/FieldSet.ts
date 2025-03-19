@@ -8,7 +8,7 @@ export const includeSelf = (target, selector)=>{
 //
 export const updateInput = (state, target)=>{
     const selector = "input:where([type=\"text\"], [type=\"number\"], [type=\"range\"])";
-    const input    = includeSelf(target, selector);
+    const input    = includeSelf(target, "input");
     const name     = input?.name || target?.dataset?.name || "";
 
     //
