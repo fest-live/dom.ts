@@ -23,7 +23,7 @@ export const updateInput = (state, target)=>{
         // setup radio boxes (requires wrapper)
         if (state) {
             const radio = includeSelf(target, `input:where([type=\"radio\"][name=\"${name}\"][value=\"${state?.[name]}\"])`);
-            if (state && radio && !radio?.checked) { radio?.click?.(); };
+            if (state && radio && state[name] == radio.value && !radio?.checked) { radio?.click?.(); };
         }
 
         // setup check boxes
@@ -54,8 +54,8 @@ export const synchronizeInputs = (state, wrapper = ".u2-input", fields = documen
             }
 
             // any radio-box
-            if (input?.matches?.("input[type=\"radio\"]:checked")) {
-                if (state[name] != input.value) { state[name] = input.value; };
+            if (input?.matches?.("input[type=\"radio\"]")) {
+                if (input?.checked && state[name] != input.value) { state[name] = input.value; };
             }
 
             // any check-box
