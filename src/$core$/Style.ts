@@ -39,23 +39,24 @@ const setStyleURL = (base: [any, any], url: string)=>{
 };
 
 //
-export const hash = async (string: string) => {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(string));
+export const hash = async (string: string|ArrayBuffer|Blob|File) => {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', typeof string == "string" ? new TextEncoder().encode(string) : (string instanceof ArrayBuffer ? string : (await ((string as any)?.arrayBuffer?.()))));
     return "sha256-" + btoa(String.fromCharCode.apply(null, new Uint8Array(hashBuffer) as unknown as number[]));
 };
 
 //
-export const loadStyleSheet = async (inline: string, base?: [any, any], integrity?: string|Promise<string>)=>{
-    const url = URL.canParse(inline) ? inline : URL.createObjectURL(new Blob([inline], {type: "text/css"}));
-    if (base?.[0] && (!URL.canParse(inline) || integrity) && base?.[0] instanceof HTMLLinkElement) {
-        const I: any = (integrity ?? hash(inline));
+export const loadStyleSheet = async (inline: string|File|Blob, base?: [any, any], integrity?: string|Promise<string>)=>{
+    const url: string|null = URL.canParse(inline as string) ? (inline as string) : URL.createObjectURL((inline instanceof Blob || inline instanceof File) ? inline : new Blob([inline], {type: "text/css"}));
+    if (base?.[0] && (!URL.canParse(inline as string) || integrity) && base?.[0] instanceof HTMLLinkElement) {
+        const I: any = (integrity ?? (typeof inline == "string" ? hash(inline) : null));
         if (typeof I?.then == "function") {
             I?.then?.((H)=>base?.[0]?.setAttribute?.("integrity", H));
-        } else {
+        } else
+        if (I) {
             base?.[0]?.setAttribute?.("integrity", I as string);
         }
     }
-    if (base) setStyleURL(base, url);
+    if (base && url) setStyleURL(base, url);
 };
 
 //
@@ -72,12 +73,13 @@ export const loadBlobStyle = (inline: string)=>{
 
 //
 export const loadInlineStyle = (inline: string, rootElement = document.head)=>{
-    const PLACE = (rootElement.querySelector("head") ?? rootElement);
+    const PLACE = (rootElement?.querySelector("head") ?? rootElement);
     if (PLACE instanceof HTMLHeadElement) { loadBlobStyle(inline); }
 
     //
     const style = document.createElement("style");
     style.dataset.owner = OWNER;
     loadStyleSheet(inline, [style, "innerHTML"]);
-    PLACE.appendChild(style);
+    PLACE?.appendChild?.(style);
+    return style;
 };
