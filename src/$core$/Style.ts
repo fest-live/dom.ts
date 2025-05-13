@@ -80,6 +80,7 @@ export const loadInlineStyle = (inline: string, rootElement = document.head)=>{
     const style = document.createElement("style");
     style.dataset.owner = OWNER;
     loadStyleSheet(inline, [style, "innerHTML"]);
-    PLACE?.prepend?.(style);
+    //PLACE?.prepend?.(style); // ! WE NOT ABLE TO RESOLVE 'UI.system' issues, UNTIL to re-writing new version!
+    PLACE?.append?.(style);
     return style;
 };
