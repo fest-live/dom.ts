@@ -67,7 +67,7 @@ export const loadBlobStyle = (inline: string)=>{
     style.crossOrigin = "same-origin";
     style.dataset.owner = OWNER;
     loadStyleSheet(inline, [style, "href"]);
-    document.head.appendChild(style);
+    document.head.append(style);
     return style;
 };
 
@@ -80,6 +80,6 @@ export const loadInlineStyle = (inline: string, rootElement = document.head)=>{
     const style = document.createElement("style");
     style.dataset.owner = OWNER;
     loadStyleSheet(inline, [style, "innerHTML"]);
-    PLACE?.appendChild?.(style);
+    PLACE?.prepend?.(style);
     return style;
 };
