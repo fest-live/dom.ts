@@ -74,13 +74,13 @@ export const loadBlobStyle = (inline: string)=>{
 //
 export const loadInlineStyle = (inline: string, rootElement = document.head)=>{
     const PLACE = (rootElement?.querySelector("head") ?? rootElement);
-    if (PLACE instanceof HTMLHeadElement) { loadBlobStyle(inline); }
+    if (PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); }
 
     //
     const style = document.createElement("style");
     style.dataset.owner = OWNER;
     loadStyleSheet(inline, [style, "innerHTML"]);
-    //PLACE?.prepend?.(style); // ! WE NOT ABLE TO RESOLVE 'UI.system' issues, UNTIL to re-writing new version!
-    PLACE?.append?.(style);
+    PLACE?.prepend?.(style);
+    //PLACE?.append?.(style);
     return style;
 };
