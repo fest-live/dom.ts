@@ -1,0 +1,19 @@
+//
+*[data-hidden]:not([data-hidden="false"], .u2-while-animation) {
+    &, * {
+        display: none !important;
+        pointer-events: none !important;
+        touch-action: none !important;
+        content-visibility: hidden !important;
+    }
+}
+
+//
+:host([data-hidden]:not([data-hidden="false"], .u2-while-animation)) {
+    &, *, ::slotted(*) {
+        display: none !important;
+        pointer-events: none !important;
+        touch-action: none !important;
+        content-visibility: hidden !important;
+    }
+}

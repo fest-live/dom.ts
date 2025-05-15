@@ -1,0 +1,181 @@
+@use "./Profile" as ps;
+
+//
+@layer u2-normalize {
+
+    //
+    @layer ux-agate;
+    @media screen {
+
+        //
+        :where(html, body) {
+            padding: 0px;
+            margin: 0px;
+            inset: 0px;
+            border: none 0px transparent;
+            background-color: transparent;
+            @include ps.HQRendering();
+        }
+
+        //
+        :where(*), ::slotted(*) {
+            transition-behavior: allow-discrete;
+            interpolate-size: allow-keywords;
+            box-sizing: border-box;
+            background-color: transparent;
+            background-image: none;
+            mask-image: none;
+        }
+
+        // if there is nothing, why there is needs content?
+        ui-icon, body, html, canvas, img, #markdown, #viewport,
+        *:not(img, canvas, ui-icon, video, picture, input, ui-calendar, ui-status, ui-statusbar, ui-navbar, ui-taskbar, ui-task, iframe):empty { content-visibility: auto; }
+
+        //
+        :where(ui-frame, ui-modal, .ui-grid-item):active,
+        :where(ui-icon, label, form),
+        [data-dragging], [data-hidden] {
+            will-change: transform;
+            transform: translateZ(0px);
+            @include ps.LQRendering();
+        };
+
+        //
+        :where(body, button, html, :root) { font-family: 'Open Sans', 'Gill Sans Nova', Ubuntu, 'DejaVu Sans', Candara, Segoe, "Segoe UI", Optima, source-sans-pro, sans-serif; }
+        :where(head, script, link, style, meta) { display: none !important; user-select: none !important; pointer-events: none !important; }
+
+        // optimize effects
+        [data-hidden] { content-visibility: hidden; filter: none !important; backdrop-filter: none !important; };
+        [data-dragging] * { backdrop-filter: none !important; user-select: none !important; pointer-events: none !important; };
+        [data-dragging], [data-hidden] { backdrop-filter: none !important; user-select: none !important; };
+        //:has([data-dragging]) * { user-select: none !important; };
+        //content-visibility: auto;
+
+        //
+        :where([inert], *[inert]) {
+            pointer-events: none !important;
+            user-select: none !important;
+            touch-action: none !important;
+        }
+
+        //
+        @media (prefers-reduced-motion: reduce) {
+            :where(*),
+            ::after,
+            ::before {
+                animation-delay: -1ms !important;
+                animation-duration: 1ms !important;
+                animation-iteration-count: 1 !important;
+                background-attachment: initial !important;
+                scroll-behavior: auto !important;
+                transition-delay: 0s !important;
+                transition-duration: 0s !important;
+            }
+        }
+
+        //
+        :host, :scope, :root {
+
+            //
+            :where(*) {
+                touch-action: none;
+
+                //
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -o-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+
+                //
+                -webkit-tap-highlight-color: transparent;
+                -moz-tap-highlight-color: transparent;
+            }
+
+            //
+            :where(button, input, form) {
+                border: none;
+                outline: none;
+            }
+
+            //
+            :where(img, picture, span, a, button, input, svg, video, canvas) {
+                touch-action: none;
+                -webkit-user-drag: none;
+                -khtml-user-drag: none;
+                -moz-user-drag: none;
+                -o-user-drag: none;
+                -ms-user-drag: none;
+                user-drag: none;
+            }
+
+            //
+            :where(picture) { display: contents; }
+            :where(picture, canvas, img, video) {
+                user-select: none;
+                overflow: hidden;
+                //pointer-events: none;
+            }
+
+            //
+            :dir(rtl) :where(*), :where(*):dir(rtl) { direction: rtl; }
+            :dir(ltr) :where(*), :where(*):dir(ltr) { direction: ltr; }
+
+            //
+            :where(button) {
+                display: flex;
+                place-items: center;
+                place-content: center;
+
+                //
+                color: var(--current-glyph-color);
+                background-color: var(--current-surface-color);
+
+                //
+                cursor: pointer;
+                pointer-events: auto;
+
+                //
+                margin: 0px;
+                padding: 0px;
+
+                //
+                border: none 0px transparent;
+                outline: none 0px transparent;
+
+                //
+                line-height: 0px;
+            }
+
+            //
+            :where(a, span) {
+                text-decoration: none;
+                background-color: transparent;
+                place-content: center;
+                place-items: center;
+                justify-content: start;
+            }
+
+            // relative by default
+            :where(label) { position: relative; }
+            :where(.space, flex-space) {
+                flex-grow: 1;
+                flex-shrink: 0;
+            }
+
+            //
+            :where(.break, flex-break, br) {
+                flex-basis: 100%;
+                flex-grow: 1;
+                flex-shrink: 0;
+            }
+
+            // weird idea...
+            label > input:where([type="radio"], [type="checkbox"]) { display: none; pointer-events: none; }
+
+            // able to select inputs when edit
+            :where(input[type="text"], input[type="number"]) { user-select: auto; }
+        }
+    };
+};
