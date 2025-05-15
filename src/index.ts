@@ -30,3 +30,21 @@ export default run;
 */
 //
 //import "./$scss$/_States.scss";
+
+
+/*
+import UCanvas from "../../../core/dom.ts/src/$core$/Canvas";
+export * from "../../../core/dom.ts/src/$core$/Canvas";
+export default UCanvas;
+
+import {importCdn} from "/externals/modules/cdnImport.mjs";
+export {importCdn};
+
+// @ts-ignore
+import styles from "./$scss$/Canvas.scss?inline&compress";
+
+// @ts-ignore
+Promise.try(importCdn, ["/externals/lib/dom.js"])?.then?.(({ loadBlobStyle })=>{
+    loadBlobStyle(styles);
+});
+*/
