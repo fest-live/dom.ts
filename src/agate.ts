@@ -8,9 +8,8 @@ export {importCdn};
 //
 import { updateVP } from "./$agate$/sw/Viewport";
 import { availSize } from "./$agate$/sw/Viewport";
-import { UIOrientBox } from "../../ui.system/src/$ext$/orientbox/OrientBox";
-import { UIGridBoxElement } from "../../ui.system/src/$ext$/gridbox/GridBox";
 import { agWrapEvent } from "./$agate$/sw/WrapEvent";
+export * from "./$agate$/sw/PointerAPI";
 
 //
 export const classes: StyleTuple[] = [
@@ -67,7 +66,7 @@ const initialize = async ()=>{
 };
 
 //
-export { UIOrientBox, UIGridBoxElement };
+//export { UIOrientBox, UIGridBoxElement };
 export default initialize;
 
 //
