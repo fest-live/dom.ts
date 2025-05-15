@@ -40,7 +40,7 @@ export default class UICanvas extends HTMLCanvasElement {
         //
         const fixSize = () => {
             this.#orient = orientationNumberMap[getCorrectOrientation() || ""] || 0;
-            
+
             //
             const old = this.#size;
             this.#size = [
