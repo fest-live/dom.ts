@@ -6,10 +6,10 @@ import {importCdn} from "/externals/modules/cdnImport.mjs";
 export {importCdn};
 
 //
-import { updateVP } from "./$agate$/sw/Viewport";
-import { availSize } from "./$agate$/sw/Viewport";
+import { updateVP } from "./$core$/Viewport";
+import { availSize } from "./$core$/Viewport";
 import { agWrapEvent } from "./$agate$/sw/WrapEvent";
-export * from "./$agate$/sw/PointerAPI";
+export * from "./$core$/PointerAPI";
 
 //
 export const classes: StyleTuple[] = [
@@ -94,8 +94,8 @@ export * from "./$agate$/_Detect";
 export * from "./$agate$/_Zoom";
 
 //
-export * from "./$agate$/grid/TrackingSystem";
-export * from "./$agate$/grid/GridItemUtils";
+export * from "../../ui.system/src/$ext$/gridbox/TrackingSystem";
+export * from "../../ui.system/src/$ext$/gridbox/GridItemUtils";
 
 //
 export {agWrapEvent};
