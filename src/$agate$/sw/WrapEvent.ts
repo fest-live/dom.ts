@@ -1,6 +1,6 @@
 import { cvt_cs_to_os, cvt_rel_cs_to_os } from "../_Utils.js";
 import { getBoundingOrientRect, getZoom, orientOf, zoomOf } from "../_Zoom.js";
-import { elementPointerMap } from "../wcomp/OrientBox.js";
+import { elementPointerMap } from "../../../../ui.system/src/$ext$/orientbox/OrientBox.js";
 
 //
 const withCtx = (target, got)=>{

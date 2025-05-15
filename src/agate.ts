@@ -6,11 +6,11 @@ import {importCdn} from "/externals/modules/cdnImport.mjs";
 export {importCdn};
 
 //
-import { updateVP } from "./ts/sw/Viewport";
-import { availSize } from "./ts/sw/Viewport";
-import { UIOrientBox } from "./ts/wcomp/OrientBox";
-import { UIGridBoxElement } from "./ts/wcomp/GridBox";
-import { agWrapEvent } from "./ts/sw/WrapEvent";
+import { updateVP } from "./$agate$/sw/Viewport";
+import { availSize } from "./$agate$/sw/Viewport";
+import { UIOrientBox } from "../../ui.system/src/$ext$/orientbox/OrientBox";
+import { UIGridBoxElement } from "../../ui.system/src/$ext$/gridbox/GridBox";
+import { agWrapEvent } from "./$agate$/sw/WrapEvent";
 
 //
 export const classes: StyleTuple[] = [
@@ -90,13 +90,13 @@ export const fixOrientToScreen = (element)=>{
 }
 
 //
-export * from "./ts/_Utils";
-export * from "./ts/_Detect";
-export * from "./ts/_Zoom";
+export * from "./$agate$/_Utils";
+export * from "./$agate$/_Detect";
+export * from "./$agate$/_Zoom";
 
 //
-export * from "./ts/grid/TrackingSystem";
-export * from "./ts/grid/GridItemUtils";
+export * from "./$agate$/grid/TrackingSystem";
+export * from "./$agate$/grid/GridItemUtils";
 
 //
 export {agWrapEvent};

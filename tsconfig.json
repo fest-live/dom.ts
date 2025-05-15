@@ -1,5 +1,5 @@
 {
-    "include": ["./src/**/*"],
+    "include": ["./src/**/*", "../ui.system/src/$ext$/orientbox/OrientBox.ts", "../ui.system/src/$ext$/gridbox/GridBox.ts"],
     "exclude": ["./test/**/*", "./dist/**/*", "./externals/**/*", "./src/$polyfill$/*"],
     "compilerOptions": {
         "target": "ESNext",
