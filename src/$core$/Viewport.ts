@@ -17,6 +17,15 @@ export const getAvailSize = () => {
 
 //
 export const availSize = getAvailSize();
+export const classes: StyleTuple[] = [ [":root, :host, :scope", availSize] ];
+export const orientationNumberMap = {
+    "portrait-primary": 0, // as 0deg, aka. 360deg
+    "landscape-primary": 1, // as -90deg, aka. 270deg
+    "portrait-secondary": 2, // as -180deg, aka. 180deg
+    "landscape-secondary": 3 // as -270deg, aka. 90deg
+}
+
+//
 export const updateVP = (ev?: any)=>{
     const rule = document.documentElement;
     Object.assign(availSize, getAvailSize());
@@ -32,15 +41,6 @@ export const updateVP = (ev?: any)=>{
 }
 
 //
-export const orientationNumberMap = {
-    "portrait-primary": 0, // as 0deg, aka. 360deg
-    "landscape-primary": 1, // as -90deg, aka. 270deg
-    "portrait-secondary": 2, // as -180deg, aka. 180deg
-    "landscape-secondary": 3 // as -270deg, aka. 90deg
-}
-
-//
-export const classes: StyleTuple[] = [ [":root, :host, :scope", availSize] ];
 export const getCorrectOrientation = () => {
     let orientationType: string = screen.orientation.type;
     if (!window.matchMedia("((display-mode: fullscreen) or (display-mode: standalone) or (display-mode: window-controls-overlay))").matches) {
@@ -52,7 +52,6 @@ export const getCorrectOrientation = () => {
 
 //
 export const whenAnyScreenChanges = (cb)=>{
-    //
     if ("virtualKeyboard" in navigator) {
         // @ts-ignore
         navigator?.virtualKeyboard?.addEventListener?.(
@@ -72,7 +71,6 @@ export const whenAnyScreenChanges = (cb)=>{
     matchMedia("(orientation: portrait)").addEventListener("change", cb, {passive: true });
     requestIdleCallback(cb, {timeout: 100});
     requestAnimationFrame(cb);
-    //cb();
 };
 
 //

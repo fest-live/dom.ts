@@ -1,4 +1,11 @@
 import { getCorrectOrientation, whenAnyScreenChanges } from "./Viewport";
+const blobImageMap = new WeakMap(), delayed = new Map<number, Function | null>([]);
+const orientationNumberMap = {
+    "landscape-primary": 0, // as 0deg, aka. 360deg
+    "portrait-primary": 1, // as -90deg, aka. 270deg
+    "landscape-secondary": 2, // as -180deg, aka. 180deg
+    "portrait-secondary": 3, // as -270deg, aka. 90deg
+}
 
 //
 /*const orientationNumberMap = {
@@ -7,16 +14,6 @@ import { getCorrectOrientation, whenAnyScreenChanges } from "./Viewport";
     "portrait-secondary": 2, // as -180deg, aka. 180deg
     "landscape-secondary": 3 // as -270deg, aka. 90deg
 }*/
-
-//
-const blobImageMap = new WeakMap();
-const delayed = new Map<number, Function | null>([]);
-const orientationNumberMap = {
-    "landscape-primary": 0, // as 0deg, aka. 360deg
-    "portrait-primary": 1, // as -90deg, aka. 270deg
-    "landscape-secondary": 2, // as -180deg, aka. 180deg
-    "portrait-secondary": 3, // as -270deg, aka. 90deg
-}
 
 //
 requestIdleCallback(async ()=>{

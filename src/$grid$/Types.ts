@@ -1,7 +1,7 @@
 //
 export interface GridItemType {
-    cell?: [number, number];
     pointerId?: number;
+    cell?: [number, number];
     id: string;
 };
 

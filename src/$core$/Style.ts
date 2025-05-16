@@ -1,14 +1,12 @@
 //
 const OWNER = "DOM", styleElement = document.createElement("style"); document.querySelector("head")?.appendChild?.(styleElement); styleElement.dataset.owner = OWNER;
-export type StyleTuple = [selector: string, sheet: object];
-export const setStyleURL = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
+export type  StyleTuple    = [selector: string, sheet: object];
+export const setStyleURL   = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
 export const setStyleRules = (classes: StyleTuple[]) => { return classes?.map?.((args) => setStyleRule(...args)); };
-export const setStyleRule = (selector: string, sheet: object) => {
+export const setStyleRule  = (selector: string, sheet: object) => {
     const styleRules = styleElement.sheet;
     let ruleId = Array.from(styleRules?.cssRules || []).findIndex((rule) => (rule instanceof CSSStyleRule ? (selector == rule?.selectorText) : false));
     if (ruleId <= -1) {ruleId = styleRules?.insertRule(`${selector} {}`) as number;}
-
-    //
     const rule = styleElement?.sheet?.cssRules[ruleId];
     Object.entries(sheet).forEach(([propName, propValue]) => {
         if (rule instanceof CSSStyleRule) {

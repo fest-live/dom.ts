@@ -1,7 +1,3 @@
-// @ts-ignore /* @vite-ignore */
-import {importCdn} from "/externals/modules/cdnImport.mjs";
-export {importCdn};
-
 // @ts-ignore
 import styles from "./$scss$/_Main.scss?inline&compress";
 export const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
@@ -9,17 +5,15 @@ export const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}
 //
 import { updateVP, whenAnyScreenChanges } from "./$core$/Viewport";
 import run from "./$core$/Appear";
-
-//
-const initialize = async ()=>{
+const  initialize = async ()=>{
     // @ts-ignore
     loadBlobStyle(preInit);
     whenAnyScreenChanges(updateVP);
     run();
 }
-export default initialize;
 
 //
+export default initialize;
 export * from "./$agate$/_Utils";
 export * from "./$agate$/_Detect";
 export * from "./$agate$/_Zoom";

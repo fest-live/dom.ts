@@ -11,18 +11,8 @@ export class Boot {
     }
 
     //
-    addSystem(module) {
-        module.forEach((m)=>this.#system.add(m));
-        return this;
-    }
-
-    //
-    addPreInit(module) {
-        module.forEach((m)=>this.#preInit.add(m));
-        return this;
-    }
-
-    //
+    addSystem (module) { module.forEach((m)=>this.#system.add(m));  return this; }
+    addPreInit(module) { module.forEach((m)=>this.#preInit.add(m)); return this; }
     async boot(options = {}) {
         this.#booted = true;
         const system = await Promise.allSettled(Array.from(this.#system.values()).map(async (module: any)=>{
@@ -37,9 +27,5 @@ export class Boot {
 
 //
 let boot: Boot|null = null;
-export const initBoot = (): Boot =>{
-    return (boot ??= new Boot());
-}
-
-//
+export const initBoot = (): Boot =>{ return (boot ??= new Boot()); }
 export default initBoot;

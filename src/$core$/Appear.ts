@@ -1,9 +1,6 @@
 // @ts-ignore /* @vite-ignore */
 import {importCdn} from "/externals/modules/cdnImport.mjs";
-export {importCdn};
-
-//
-const initialize = async ()=>{
+export const initialize = async ()=>{
     // @ts-ignore
     const {observeAttributeBySelector, loadBlobStyle} = await Promise.try(importCdn, ["/externals/lib/dom.js"]);
     observeAttributeBySelector(document.body, "*", "data-hidden", (mutation)=>{
@@ -18,6 +15,4 @@ const initialize = async ()=>{
         }
     });
 }
-
-//
 export default initialize;

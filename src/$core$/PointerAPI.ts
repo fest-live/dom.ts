@@ -1,6 +1,5 @@
 // @ts-ignore /* @vite-ignore */
 import {importCdn} from "/externals/modules/cdnImport.mjs";
-export {importCdn};
 
 //
 class PointerEdge {
@@ -10,39 +9,18 @@ class PointerEdge {
     //
     constructor(pointer: [number, number] = [0, 0]) {
         this.pointer = pointer;
-        this.results = {
-            left: false,
-            top: false,
-            bottom: false,
-            right: false,
-        };
+        this.results = { left: false, top: false, bottom: false, right: false };
     }
 
-    get left() {
-        const current = Math.abs(this.pointer[0] - 0) < 10;
-        return (this.results.left = current);
-    }
-
-    get top() {
-        const current = Math.abs(this.pointer[1] - 0) < 10;
-        return (this.results.top = current);
-    }
-
-    get right() {
-        const current = Math.abs(this.pointer[0] - window.innerWidth) < 10;
-        return (this.results.right = current);
-    }
-
-    get bottom() {
-        const current = Math.abs(this.pointer[1] - window.innerHeight) < 10;
-        return (this.results.bottom = current);
-    }
+    //
+    get left() { const current = Math.abs(this.pointer[0] - 0) < 10; return (this.results.left = current); }
+    get top () { const current = Math.abs(this.pointer[1] - 0) < 10; return (this.results.top  = current); }
+    get right () { const current = Math.abs(this.pointer[0] - window.innerWidth)  < 10; return (this.results.right  = current); }
+    get bottom() { const current = Math.abs(this.pointer[1] - window.innerHeight) < 10; return (this.results.bottom = current); }
 }
 
-interface EvStub {
-    pointerId: number;
-}
-
+//
+interface EvStub { pointerId: number; }
 interface HoldingElement {
     propertyName?: string;
     shifting?: [number, number];
