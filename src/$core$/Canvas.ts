@@ -9,6 +9,8 @@ import { getCorrectOrientation, whenAnyScreenChanges } from "./Viewport";
 }*/
 
 //
+const blobImageMap = new WeakMap();
+const delayed = new Map<number, Function | null>([]);
 const orientationNumberMap = {
     "landscape-primary": 0, // as 0deg, aka. 360deg
     "portrait-primary": 1, // as -90deg, aka. 270deg
@@ -17,24 +19,15 @@ const orientationNumberMap = {
 }
 
 //
-const delayed = new Map<number, Function | null>([]);
 requestIdleCallback(async ()=>{
     while(true) {
-        for (const dl of delayed.entries()) {
-            dl[1]?.(); delayed.delete(dl[0]);
-        }
-
-        //
+        for (const dl of delayed.entries()) { dl[1]?.(); delayed.delete(dl[0]); }
         try { await (new Promise((rs)=>requestAnimationFrame(rs))); } catch(e) { break; };
     }
 }, {timeout: 100});
 
 //
-export const callByFrame = (pointerId, cb)=>{
-    delayed.set(pointerId, cb);
-}
-
-//
+export const callByFrame = (pointerId, cb)=>{ delayed.set(pointerId, cb); }
 export const cover = (ctx, img, scale = 1, port, orient = 0) => {
     const canvas = ctx.canvas;
     ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -44,7 +37,6 @@ export const cover = (ctx, img, scale = 1, port, orient = 0) => {
 };
 
 //
-const blobImageMap = new WeakMap();
 export const createImageBitmapCache = (blob)=>{
     if (!blobImageMap.has(blob) && (blob instanceof Blob || blob instanceof File || blob instanceof OffscreenCanvas || blob instanceof ImageBitmap || blob instanceof Image)) {
         blobImageMap.set(blob, createImageBitmap(blob));
@@ -65,6 +57,7 @@ export default class UICanvas extends HTMLCanvasElement {
     #ready: string|Blob|File = "";
 
     //
+    attributeChangedCallback(name, _, newValue) { if (name == "data-src") { this.#preload(newValue); }; }
     connectedCallback() {
         const parent: HTMLElement = this.parentNode as HTMLElement;
         this.#size = [
@@ -117,12 +110,9 @@ export default class UICanvas extends HTMLCanvasElement {
             this.classList.add("ui-canvas");
 
             //
-            fixSize();
+            fixSize(); whenAnyScreenChanges(()=>this.#render(this.#ready));
 
             //
-            whenAnyScreenChanges(()=>this.#render(this.#ready));
-
-            // TODO! Safari backward compatible
             new ResizeObserver((entries) => {
                 for (const entry of entries) {
                     const box = entry?.devicePixelContentBoxSize?.[0];
@@ -146,12 +136,17 @@ export default class UICanvas extends HTMLCanvasElement {
     }
 
     //
-    #render(whatIsReady?: File|Blob|string) {
-        const canvas = this;
-        const ctx = this.ctx;
-        const img = this.image;
+    async $useImageAsSource(blob, ready?: any|null) {
+        ready ||= this.#loading;
+        const img = (blob instanceof ImageBitmap) ? blob : (await createImageBitmapCache(blob).catch(console.warn.bind(console)));
+        if (img && ready == this.#loading) { this.image = img; this.#render(ready);}
+        return blob;
+    }
 
-        //
+    //
+    #preload(src) { const ready = src || this.#loading; this.#loading = ready; return fetch(src)?.then?.(async (rsp)=> this.$useImageAsSource(await rsp.blob(), ready)?.catch(console.warn.bind(console)))?.catch?.(console.warn.bind(console)); }
+    #render(whatIsReady?: File|Blob|string) {
+        const canvas = this, ctx = this.ctx, img = this.image;
         if (img && ctx && (whatIsReady == this.#loading || !whatIsReady)) {
 
             // TODO! multiple canvas support
@@ -178,27 +173,6 @@ export default class UICanvas extends HTMLCanvasElement {
                 ctx.restore();
             });
         }
-    }
-
-    //
-    async $useImageAsSource(blob, ready?: any|null) {
-        ready ||= this.#loading;
-        const img = (blob instanceof ImageBitmap) ? blob : (await createImageBitmapCache(blob).catch(console.warn.bind(console)));
-        if (img && ready == this.#loading) { this.image = img; this.#render(ready);}
-        return blob;
-    }
-
-    //
-    #preload(src) {
-        const ready = src || this.#loading; this.#loading = ready;
-        return fetch(src)?.then?.(async (rsp)=> this.$useImageAsSource(await rsp.blob(), ready)?.catch(console.warn.bind(console)))?.catch?.(console.warn.bind(console));;
-    }
-
-    //
-    attributeChangedCallback(name, _, newValue) {
-        if (name == "data-src") {
-            this.#preload(newValue);
-        };
     }
 }
 
