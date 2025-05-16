@@ -1,3 +1,5 @@
+import type { StyleTuple } from "./Style";
+
 //
 export const getAvailSize = () => {
     const l = matchMedia("(orientation: landscape)")?.matches;
@@ -38,7 +40,6 @@ export const orientationNumberMap = {
 }
 
 //
-export type StyleTuple = [selector: string, sheet: object];
 export const classes: StyleTuple[] = [
     [":root, :host, :scope", availSize]
 ];

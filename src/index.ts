@@ -30,3 +30,4 @@ export * from "./$core$/PointerAPI";
 export * from "./$core$/Observer";
 export * from "./$core$/Utils";
 export * from "./$core$/Style";
+export * from "./$core$/Viewport";

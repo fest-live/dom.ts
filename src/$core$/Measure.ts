@@ -1,7 +1,4 @@
-// @ts-ignore /* @vite-ignore */
 import { unfixedClientZoom } from "../$agate$/_Zoom";
-import {importCdn} from "/externals/modules/cdnImport.mjs";
-export {importCdn};
 
 //
 const canvas = new OffscreenCanvas(1, 1);

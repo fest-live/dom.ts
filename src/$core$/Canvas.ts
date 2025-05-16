@@ -1,12 +1,7 @@
-// @ts-ignore /* @vite-ignore */
-import {importCdn} from "/externals/modules/cdnImport.mjs";
-export {importCdn};
-
-// @ts-ignore
-const { whenAnyScreenChanges, getCorrectOrientation } = await Promise.try(importCdn, ["/externals/core/agate.js"]);
+import { getCorrectOrientation, whenAnyScreenChanges } from "./Viewport";
 
 //
-/*export const orientationNumberMap = {
+/*const orientationNumberMap = {
     "portrait-primary": 0, // as 0deg, aka. 360deg
     "landscape-primary": 1, // as -90deg, aka. 270deg
     "portrait-secondary": 2, // as -180deg, aka. 180deg
@@ -14,7 +9,7 @@ const { whenAnyScreenChanges, getCorrectOrientation } = await Promise.try(import
 }*/
 
 //
-export const orientationNumberMap = {
+const orientationNumberMap = {
     "landscape-primary": 0, // as 0deg, aka. 360deg
     "portrait-primary": 1, // as -90deg, aka. 270deg
     "landscape-secondary": 2, // as -180deg, aka. 180deg
