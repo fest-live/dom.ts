@@ -174,4 +174,4 @@ export default class UICanvas extends HTMLCanvasElement {
 }
 
 //
-customElements.define('ui-canvas', UICanvas, {extends: 'canvas'});
+try { customElements.define('ui-canvas', UICanvas, {extends: 'canvas'}); } catch(e) {};

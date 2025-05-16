@@ -1,8 +1,8 @@
-// @ts-ignore /* @vite-ignore */
-import {importCdn} from "/externals/modules/cdnImport.mjs";
+import { observeAttributeBySelector } from "./Observer";
+import { animateShow, animateHide } from "./Animation";
+
+//
 export const initialize = async ()=>{
-    // @ts-ignore
-    const {observeAttributeBySelector, loadBlobStyle} = await Promise.try(importCdn, ["/externals/lib/dom.js"]);
     observeAttributeBySelector(document.body, "*", "data-hidden", (mutation)=>{
         if (mutation.attributeName == 'data-hidden') {
             const target = mutation.target as HTMLElement;

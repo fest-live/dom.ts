@@ -1,5 +1,4 @@
-// @ts-ignore /* @vite-ignore */
-import {importCdn} from "/externals/modules/cdnImport.mjs";
+import { agWrapEvent } from "./WrapEvent";
 
 //
 class PointerEdge {
@@ -94,10 +93,6 @@ export const grabForDrag = async (
         result = [{value: 0}, {value: 0}]
     } = {}
 ) => {
-    // @ts-ignore
-    const { agWrapEvent } = await Promise.try(importCdn, ["/externals/core/agate.js"]);
-
-    //
     let last: any = ex?.detail || ex;
     let changed: boolean = false;
     let frameTime = 0.01, lastLoop = performance.now(), thisLoop;
