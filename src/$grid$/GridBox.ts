@@ -1,8 +1,6 @@
 //
 export class UIGridBoxElement extends HTMLElement {
     #initialized: boolean = false;
-
-    //
     #initialize() {
         if (!this.#initialized) {
             this.#initialized = true;
@@ -13,14 +11,8 @@ export class UIGridBoxElement extends HTMLElement {
     }
 
     //
-    constructor() {
-        super();
-    }
-
-    //
-    connectedCallback() {
-        this.#initialize();
-    }
+    constructor() { super(); }
+    connectedCallback() { this.#initialize(); }
 }
 
 //
