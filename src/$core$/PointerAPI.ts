@@ -106,6 +106,7 @@ export const grabForDrag = async (
 
     //
     const hm: any = {
+        result,
         movement: [...(ex?.movement || [0, 0])],
         shifting: [...shifting],
         modified: [...shifting],
@@ -158,8 +159,7 @@ export const grabForDrag = async (
             changed = false;
 
             //
-            if (hm.canceled) return;
-            hm.canceled = true;
+            if (hm.canceled) return; hm.canceled = true;
             em?.removeEventListener?.("pointermove", ...moveEvent);
             em?.removeEventListener?.("pointercancel", ...releaseEvent);
             em?.removeEventListener?.("pointerup", ...releaseEvent);

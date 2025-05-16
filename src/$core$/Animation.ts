@@ -1,5 +1,6 @@
 const computed = Symbol("@computed");
-const depAxis  = (axis: string = "x")=>{ return {["x"]: "c", ["y"]: "r"}[axis]; }
+const depAxis  = (axis: string = "x")=>{ const m = /*matchMedia("(orientation: portrait)").matches*/true; return {["x"]: m?"c":"r", ["y"]: m?"r":"c"}[axis]; }
+const swapped  = (axis: string = "x")=>{ const m = matchMedia("(orientation: portrait)").matches; return {["x"]: m?"x":"y", ["y"]: m?"y":"x"}[axis]; }
 const isMobile = () => {
     // @ts-ignore
     let check = navigator?.userAgentData?.mobile || false;
@@ -10,20 +11,22 @@ const isMobile = () => {
 
 //
 export const animationSequence = (DragCoord = 0, ValStart: any = null, ValEnd: any = null, axis = "x") => {
+    const drag = "--drag-" + swapped(axis);
     return [
-        { ["--drag-" + axis]: DragCoord || 0, ["--grid-" + depAxis(axis)]: ValStart != null ? (ValStart+1) : "var(--fp-cell-"+axis+")", }, // starting...
-        { ["--drag-" + axis]:              0, ["--grid-" + depAxis(axis)]: ValEnd   != null ? (ValEnd  +1) : "var(--fc-cell-"+axis+")" }];
+        { [drag]: DragCoord || 0, ["--grid-" + depAxis(axis)]: ValStart != null ? (ValStart+1) : "var(--fp-cell-"+axis+")", }, // starting...
+        { [drag]:              0, ["--grid-" + depAxis(axis)]: ValEnd   != null ? (ValEnd  +1) : "var(--fc-cell-"+axis+")" }];
 };
 
 //
 export const doAnimate = async (newItem, val, axis = "x", animate = false, signal?: AbortSignal)=>{
-    setProperty(newItem, "--cell-" + axis, val);
+    const drag = "--drag-" + swapped(axis);
     const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(
-        parseFloat(newItem.style.getPropertyValue("--drag-" + axis)) || 0,
+        parseFloat(newItem.style.getPropertyValue(drag)) || 0,
         parseInt(newItem.style.getPropertyValue("--p-cell-" + axis)) || 0,
-        val, axis
+        val,
+        axis
     ), {
-        fill: "both",
+        fill: "none",
         duration: 150,
         easing: "linear"
     }) : null;
@@ -49,27 +52,22 @@ export const doAnimate = async (newItem, val, axis = "x", animate = false, signa
     delete newItem.dataset.dragging;
 
     //
-    if (!shifted) {
-        // commit dragging result
-        onShift?.[0]?.();
-        setProperty(newItem, "--p-cell-" + axis, val);
-        setProperty(newItem, "--drag-" + axis, 0);
-    }
+    if (!shifted) { onShift?.[0]?.(); } // commit dragging result
+    setProperty(newItem, "--p-cell-" + axis, val);
+    setProperty(newItem, drag, 0);
 }
 
 //
 export const setProperty = (target, name, value, importance = "")=>{
     if (!target) return;
     if ("attributeStyleMap" in target) {
-        const raw = target.attributeStyleMap.get(name);
-        const prop = raw?.[0] ?? raw?.value;
-        if (prop != value || prop == null) {
-            if (raw?.value != null && !(raw instanceof CSSKeywordValue)) { raw.value = value; } else
-            { target.attributeStyleMap.set(name, value); };
+        const raw = target.attributeStyleMap.get(name), prop = raw?.[0] ?? raw?.value;
+        if (parseFloat(prop) != value || prop != value || !prop) {
+            if (raw?.value != null) { raw.value = value; } else { target.attributeStyleMap.set(name, value); };
         }
     } else {
         const prop = target?.style?.getPropertyValue?.(name);
-        if (prop != value || prop == null) {
+        if (parseFloat(prop) != value || prop != value || !prop) {
             target?.style?.setProperty?.(name, value, importance);
         }
     }
