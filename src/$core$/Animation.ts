@@ -1,3 +1,5 @@
+const computed = Symbol("@computed");
+const depAxis  = (axis: string = "x")=>{ return {["x"]: "c", ["y"]: "r"}[axis]; }
 const isMobile = () => {
     // @ts-ignore
     let check = navigator?.userAgentData?.mobile || false;
@@ -7,34 +9,20 @@ const isMobile = () => {
 };
 
 //
-export const animationSequence = (DragCoord = [0, 0], CellStart: any = null, CellEnd: any = null) => {
-    return [{
-        "--drag-x": DragCoord?.[0] || 0,
-        "--drag-y": DragCoord?.[1] || 0,
-        "--grid-c": CellStart?.[0] != null ? (CellStart?.[0]+1) : "var(--fp-cell-x)",
-        "--grid-r": CellStart?.[1] != null ? (CellStart?.[1]+1) : "var(--fp-cell-y)",
-    }, // starting...
-    {
-        "--drag-x": 0,
-        "--drag-y": 0,
-        "--grid-c": CellEnd?.[0] != null ? (CellEnd?.[0]+1) : "var(--fc-cell-x)",
-        "--grid-r": CellEnd?.[1] != null ? (CellEnd?.[1]+1) : "var(--fc-cell-y)",
-    }];
+export const animationSequence = (DragCoord = 0, ValStart: any = null, ValEnd: any = null, axis = "x") => {
+    return [
+        { ["--drag-" + axis]: DragCoord || 0, ["--grid-" + depAxis(axis)]: ValStart != null ? (ValStart+1) : "var(--fp-cell-"+axis+")", }, // starting...
+        { ["--drag-" + axis]:              0, ["--grid-" + depAxis(axis)]: ValEnd   != null ? (ValEnd  +1) : "var(--fc-cell-"+axis+")" }];
 };
 
 //
-export const doAnimate = async (newItem, cell, animate = false)=>{
-    setProperty(newItem, "--cell-x", cell[0]);
-    setProperty(newItem, "--cell-y", cell[1]);
-
-    //
-    const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence([
-        parseInt(newItem.style.getPropertyValue("--drag-x")),
-        parseInt(newItem.style.getPropertyValue("--drag-y"))
-    ], [
-        parseInt(newItem.style.getPropertyValue("--p-cell-x")),
-        parseInt(newItem.style.getPropertyValue("--p-cell-y"))
-    ], cell), {
+export const doAnimate = async (newItem, val, axis = "x", animate = false, signal?: AbortSignal)=>{
+    setProperty(newItem, "--cell-" + axis, val);
+    const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(
+        parseFloat(newItem.style.getPropertyValue("--drag-" + axis)) || 0,
+        parseInt(newItem.style.getPropertyValue("--p-cell-" + axis)) || 0,
+        val, axis
+    ), {
         fill: "both",
         duration: 150,
         easing: "linear"
@@ -46,7 +34,7 @@ export const doAnimate = async (newItem, cell, animate = false)=>{
         if (!shifted) {
             shifted = true;
             //animation?.commitStyles?.();
-            animation?.cancel?.();
+            animation?.finish?.();
         }
 
         //
@@ -54,6 +42,7 @@ export const doAnimate = async (newItem, cell, animate = false)=>{
     }, {once: true}];
 
     // not fact, but for animation
+    signal?.addEventListener?.("abort", ()=>animation?.finish?.(), {once: true});
     newItem?.addEventListener?.("m-dragstart", ...onShift);
     //await new Promise((r)=>requestAnimationFrame(r));
     await animation?.finished?.catch?.(console.warn.bind(console));
@@ -63,10 +52,8 @@ export const doAnimate = async (newItem, cell, animate = false)=>{
     if (!shifted) {
         // commit dragging result
         onShift?.[0]?.();
-        setProperty(newItem, "--p-cell-x", cell[0]);
-        setProperty(newItem, "--p-cell-y", cell[1]);
-        setProperty(newItem, "--drag-x", 0);
-        setProperty(newItem, "--drag-y", 0);
+        setProperty(newItem, "--p-cell-" + axis, val);
+        setProperty(newItem, "--drag-" + axis, 0);
     }
 }
 
@@ -91,6 +78,7 @@ export const setProperty = (target, name, value, importance = "")=>{
 /*
 //
 export const setProperty = (target, name, value, importance = "")=>{
+    if (!target) return;
     if ("attributeStyleMap" in target) {
         const raw = target.attributeStyleMap.get(name);
         const prop = raw?.[0] ?? raw?.value;
@@ -111,7 +99,6 @@ export const setProperty = (target, name, value, importance = "")=>{
 
 
 //
-const computed = Symbol("@computed");
 export const animateHide = async (target)=>{
     //
     if (target?.dispatchEvent?.(new CustomEvent("u2-before-hide", {
