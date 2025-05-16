@@ -1,19 +1,66 @@
-//
-*[data-hidden]:not([data-hidden="false"], .u2-while-animation) {
-    &, * {
-        display: none !important;
-        pointer-events: none !important;
-        touch-action: none !important;
-        content-visibility: hidden !important;
+@layer u2-existence {
+    //
+    *[data-hidden]:not([data-hidden="false"], .u2-while-animation) {
+        &, * {
+            display: none !important;
+            pointer-events: none !important;
+            touch-action: none !important;
+            content-visibility: hidden !important;
+        }
+    }
+
+    //
+    :host([data-hidden]:not([data-hidden="false"], .u2-while-animation)) {
+        &, *, ::slotted(*) {
+            display: none !important;
+            pointer-events: none !important;
+            touch-action: none !important;
+            content-visibility: hidden !important;
+        }
     }
 }
 
 //
-:host([data-hidden]:not([data-hidden="false"], .u2-while-animation)) {
-    &, *, ::slotted(*) {
-        display: none !important;
+@layer u2-canvas {
+    //
+    :where(canvas):is([is="ui-canvas"]), :host(canvas[is="ui-canvas"]) {
+        min-inline-size: 1px;
+        min-block-size: 1px;
+
+        //
+        inline-size: 100%;
+        block-size: 100%;
+
+        //
+        max-inline-size: 100%;
+        max-block-size: 100%;
+
+        //
         pointer-events: none !important;
-        touch-action: none !important;
-        content-visibility: hidden !important;
+        place-content: center;
+        place-items: center;
+        place-self: center;
+
+        //
+        aspect-ratio: auto;
+        display: flex;
+
+        //
+        image-rendering: auto;
+        image-rendering: optimizeQuality;
+        image-rendering: smooth;
+        image-rendering: high-quality;
+
+        //
+        object-fit: cover;
+        object-position: center;
+
+        //
+        background-color: var(--theme-base-color, transparent);
+        border-image-source: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+
+        //
+        position: fixed !important;
+        inset: 0px !important;
     }
 }

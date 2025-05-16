@@ -1,18 +1,8 @@
+import { getPxValue } from "./Utils";
 
 //
 const onBorderObserve = new WeakMap<HTMLElement, Function[]>();
 const onContentObserve = new WeakMap<HTMLElement, Function[]>();
-
-//
-export const getPxValue = (element, name)=>{
-    if ("computedStyleMap" in element) {
-        const cm = element?.computedStyleMap();
-        return cm.get(name)?.value || 0;
-    } else {
-        const cs = getComputedStyle(element, "");
-        return (parseFloat(cs.getPropertyValue(name)?.replace?.("px", "")) || 0);
-    }
-}
 
 // TODO: support of fragments
 export const observeContentBox = (element, cb) => {

@@ -1,5 +1,5 @@
-import { cvt_cs_to_os, cvt_rel_cs_to_os } from "../_Utils.js";
-import { getBoundingOrientRect, getZoom, orientOf, zoomOf } from "../_Zoom.js";
+import { cvt_cs_to_os, cvt_rel_cs_to_os } from "../$agate$/_Utils.js";
+import { getBoundingOrientRect, getZoom, orientOf, zoomOf } from "../$agate$/_Zoom.js";
 
 //
 export const elementPointerMap = new WeakMap<any>()

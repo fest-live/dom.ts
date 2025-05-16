@@ -1,50 +1,37 @@
-import Q2 from "./$utils$/Query2";
-export * from "./$utils$/FieldSet";
-export * from "./$utils$/Observer";
-export * from "./$utils$/Query2";
-export * from "./$utils$/Utils";
-export * from "./$utils$/Style";
-//export default Q2;
-
-// @ts-ignore
-import styles from "./$scss$/_Module.scss?inline&compress";
-
 // @ts-ignore /* @vite-ignore */
 import {importCdn} from "/externals/modules/cdnImport.mjs";
 export {importCdn};
 
 //
+export * from "./$agate$/_Utils";
+export * from "./$agate$/_Detect";
+export * from "./$agate$/_Zoom";
+
+//
+export * from "./$grid$/GridItemUtils";
+
+// @ts-ignore
+import styles from "./$scss$/_Module.scss?inline&compress";
+
+// @ts-ignore
+export const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
+
+//
+import { updateVP, whenAnyScreenChanges } from "./$core$/Viewport";
+import run from "./$core$/Appear";
+export * from "./$core$/Appear";
+export * from "./$core$/Canvas";
+export * from "./$core$/PointerAPI";
+export * from "./$core$/FieldSet";
+export * from "./$core$/Observer";
+export * from "./$core$/Utils";
+export * from "./$core$/Style";
+
+//
 const initialize = async ()=>{
     // @ts-ignore
-    const {loadBlobStyle} = await Promise.try(importCdn, ["/externals/lib/dom.js"]);
     loadBlobStyle(styles);
+    whenAnyScreenChanges(updateVP);
+    run();
 }
 export default initialize;
-
-//
-/*
-
-export * from "./$core$/Appear";
-import run from "./$core$/Appear";
-export default run;
-*/
-//
-//import "./$scss$/_States.scss";
-
-
-/*
-import UCanvas from "../../../core/dom.ts/src/$core$/Canvas";
-export * from "../../../core/dom.ts/src/$core$/Canvas";
-export default UCanvas;
-
-import {importCdn} from "/externals/modules/cdnImport.mjs";
-export {importCdn};
-
-// @ts-ignore
-import styles from "./$scss$/Canvas.scss?inline&compress";
-
-// @ts-ignore
-Promise.try(importCdn, ["/externals/lib/dom.js"])?.then?.(({ loadBlobStyle })=>{
-    loadBlobStyle(styles);
-});
-*/

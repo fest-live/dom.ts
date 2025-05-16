@@ -111,23 +111,25 @@ export const properties = [
     }
 ];
 
+/*
 //
 export const setProperty = (target, name, value, importance = "")=>{
-    if (!target) return;
     if ("attributeStyleMap" in target) {
         const raw = target.attributeStyleMap.get(name);
         const prop = raw?.[0] ?? raw?.value;
-        if (prop != value || prop == null) {
-            if (raw?.value != null && !(raw instanceof CSSKeywordValue)) { raw.value = value; } else
+        if (parseFloat(prop) != value && prop != value || prop == null) {
+            //if (raw?.[0] != null) { raw[0] = value; } else
+            if (raw?.value != null) { raw.value = value; } else
             { target.attributeStyleMap.set(name, value); };
         }
     } else {
         const prop = target?.style?.getPropertyValue?.(name);
-        if (prop != value || prop == null) {
+        if (parseFloat(prop) != value && prop != value || prop == null) {
             target?.style?.setProperty?.(name, value, importance);
         }
     }
-}
+}*/
+
 
 // define properties
 properties.forEach((o) => {
@@ -137,3 +139,62 @@ properties.forEach((o) => {
         console.warn(e);
     }
 });
+
+
+//
+const regProp = (options: any)=>{
+    try {
+        CSS?.registerProperty?.(options);
+    } catch(e) {
+        console.warn(e);
+    };
+};
+
+//
+regProp?.({
+    name: "--resize-x",
+    syntax: "<number>",
+    inherits: true,
+    initialValue: `0`,
+});
+
+//
+regProp?.({
+    name: "--resize-y",
+    syntax: "<number>",
+    inherits: true,
+    initialValue: `0`,
+});
+
+//
+regProp?.({
+    name: "--shift-x",
+    syntax: "<number>",
+    inherits: true,
+    initialValue: `0`,
+});
+
+//
+regProp?.({
+    name: "--shift-y",
+    syntax: "<number>",
+    inherits: true,
+    initialValue: `0`,
+});
+
+//
+regProp?.({
+    name: "--drag-x",
+    syntax: "<number>",
+    inherits: true,
+    initialValue: `0`,
+});
+
+//
+regProp?.({
+    name: "--drag-y",
+    syntax: "<number>",
+    inherits: true,
+    initialValue: `0`,
+});
+

@@ -99,4 +99,40 @@
     //
     @property --rot   { syntax: "<angle>"; initial-value: 0deg; inherits: true; };
     @property --i-rot { syntax: "<angle>"; initial-value: 0deg; inherits: true; };
-};
+
+    //
+    @property --ox-c-span { syntax: "<number>"; initial-value: 1; inherits: true; }
+    @property --ox-r-span { syntax: "<number>"; initial-value: 1; inherits: true; }
+    @property --ox-c-unit { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; }
+    @property --ox-r-unit { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; }
+
+    //
+    @property --r-gap { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; }
+    @property --c-gap { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; }
+    @property --dir-x { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --dir-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --f-col { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --f-row { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --grid-c { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --grid-r { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+
+    //
+    @property --p-drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --p-drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --layout-r { syntax: "<integer>"; initial-value: 1; inherits: true; }
+    @property --layout-c { syntax: "<integer>"; initial-value: 1; inherits: true; }
+    @property --p-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --p-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --fc-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --fc-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --fp-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+    @property --fp-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+
+    //
+    @property --c-shift-mod { syntax: "<number>"; initial-value: 0; inherits: true; }
+    @property --r-shift-mod { syntax: "<number>"; initial-value: 0; inherits: true; }
+}

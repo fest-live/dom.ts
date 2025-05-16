@@ -1,5 +1,5 @@
 {
-    "include": ["./src/**/*", "../ui.system/src/$ext$/orientbox/OrientBox.ts", "../ui.system/src/$ext$/gridbox/GridBox.ts", "../ui.system/src/$ext$/gridbox/GridItemUtils.ts", "../ui.system/src/$ext$/gridbox/TrackingSystem.ts", "../ui.system/src/$ext$/gridbox/Types.ts"],
+    "include": ["./src/**/*", "../ui.system/src/$ext$/orientbox/OrientBox.ts", "src/$grid$/GridBox.ts", "src/$grid$/GridItemUtils.ts", "src/$grid$/TrackingSystem.ts", "src/$grid$/Types.ts", "../ui.system/src/$ext$/shared/Gesture.ts"],
     "exclude": ["./test/**/*", "./dist/**/*", "./externals/**/*", "./src/$polyfill$/*"],
     "compilerOptions": {
         "target": "ESNext",

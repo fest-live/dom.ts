@@ -3,15 +3,6 @@ import {importCdn} from "/externals/modules/cdnImport.mjs";
 export {importCdn};
 
 //
-const regProp = (options: any)=>{
-    try {
-        CSS?.registerProperty?.(options);
-    } catch(e) {
-        console.warn(e);
-    };
-};
-
-//
 class PointerEdge {
     pointer: [number, number] = [0, 0];
     results: any;
@@ -70,72 +61,6 @@ interface PointerObject {
 };
 
 //
-regProp?.({
-    name: "--resize-x",
-    syntax: "<number>",
-    inherits: true,
-    initialValue: `0`,
-});
-
-//
-regProp?.({
-    name: "--resize-y",
-    syntax: "<number>",
-    inherits: true,
-    initialValue: `0`,
-});
-
-//
-regProp?.({
-    name: "--shift-x",
-    syntax: "<number>",
-    inherits: true,
-    initialValue: `0`,
-});
-
-//
-regProp?.({
-    name: "--shift-y",
-    syntax: "<number>",
-    inherits: true,
-    initialValue: `0`,
-});
-
-//
-regProp?.({
-    name: "--drag-x",
-    syntax: "<number>",
-    inherits: true,
-    initialValue: `0`,
-});
-
-//
-regProp?.({
-    name: "--drag-y",
-    syntax: "<number>",
-    inherits: true,
-    initialValue: `0`,
-});
-
-//
-export const setProperty = (target, name, value, importance = "")=>{
-    if ("attributeStyleMap" in target) {
-        const raw = target.attributeStyleMap.get(name);
-        const prop = raw?.[0] ?? raw?.value;
-        if (parseFloat(prop) != value && prop != value || prop == null) {
-            //if (raw?.[0] != null) { raw[0] = value; } else
-            if (raw?.value != null) { raw.value = value; } else
-            { target.attributeStyleMap.set(name, value); };
-        }
-    } else {
-        const prop = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(prop) != value && prop != value || prop == null) {
-            target?.style?.setProperty?.(name, value, importance);
-        }
-    }
-}
-
-//
 const clickPrevention = (element, pointerId = 0)=>{
     //
     const preventClick = (e: PointerEvent | MouseEvent | CustomEvent | any) => {
@@ -188,7 +113,7 @@ export const grabForDrag = async (
     ex: any = {pointerId: 0},
     {
         shifting = [0, 0],
-        propertyName = "drag", // use dragging events for use limits
+        result = [{value: 0}, {value: 0}]
     } = {}
 ) => {
     // @ts-ignore
@@ -214,7 +139,6 @@ export const grabForDrag = async (
         canceled: false,
         duration: frameTime,
         element: new WeakRef(em),
-        propertyName,
         client: null///[0, 0]
     };
 
@@ -302,24 +226,11 @@ export const grabForDrag = async (
         while (!hm.canceled) {
 
             //
-            if (changed) {
+            if (changed && hm?.result) {
                 changed = false;
-
-                // time dimension
-                setProperty(em,
-                    `--${hm.propertyName || "drag"}-d`,
-                    0//Math.min(hm.duration, 8)
-                );
-
-                // space dimension
-                setProperty(em,
-                    `--${hm.propertyName || "drag"}-x`,
-                    hm.modified[0] as unknown as string
-                );
-                setProperty(em,
-                    `--${hm.propertyName || "drag"}-y`,
-                    hm.modified[1] as unknown as string
-                );
+                if (hm?.result?.[0]) hm.result[0].value = hm.modified[0] || 0;
+                if (hm?.result?.[1]) hm.result[1].value = hm.modified[1] || 0;
+                if (hm?.result?.[2]) hm.result[2].value = 0;
             }
 
             //

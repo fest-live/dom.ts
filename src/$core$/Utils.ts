@@ -1,51 +1,80 @@
-//
-/*export const orientationNumberMap = {
-    "portrait-primary": 0, // as 0deg, aka. 360deg
-    "landscape-primary": 1, // as -90deg, aka. 270deg
-    "portrait-secondary": 2, // as -180deg, aka. 180deg
-    "landscape-secondary": 3 // as -270deg, aka. 90deg
-}*/
+/*
+ * Made by o1-preview, with my rewriting, but who I am? I don't say...
+ */
 
 //
-export const orientationNumberMap = {
-    "landscape-primary": 0, // as 0deg, aka. 360deg
-    "portrait-primary": 1, // as -90deg, aka. 270deg
-    "landscape-secondary": 2, // as -180deg, aka. 180deg
-    "portrait-secondary": 3, // as -270deg, aka. 90deg
+export type Point = DOMPoint;
+
+//
+export const getPxValue = (element, name)=>{
+    if ("computedStyleMap" in element) {
+        const cm = element?.computedStyleMap();
+        return cm.get(name)?.value || 0;
+    } else {
+        const cs = getComputedStyle(element, "");
+        return (parseFloat(cs.getPropertyValue(name)?.replace?.("px", "")) || 0);
+    }
 }
 
 //
-const delayed = new Map<number, Function | null>([]);
-requestIdleCallback(async ()=>{
-    while(true) {
-        for (const dl of delayed.entries()) {
-            dl[1]?.(); delayed.delete(dl[0]);
+export function parseOrigin(origin: string, element: Element): Point {
+    const values = origin.split(' ');
+    const x = parseLength(values[0], ()=>element.clientWidth);
+    const y = parseLength(values[1], ()=>element.clientHeight);
+    return new DOMPoint(x, y);
+}
+
+//
+export function parseLength(value: string, size: ()=>number): number {
+    if (value.endsWith('%')) {
+        return (parseFloat(value) / 100) * size();
+    }
+    return parseFloat(value);
+}
+
+//
+export function getOffsetParent(element: Element): Element | null {
+    return (element as HTMLElement)?.offsetParent ?? (element as any)?.host;
+}
+
+//
+export function getOffsetParentChain(element: Element): Element[] {
+    const parents: Element[] = [];
+    let current: Element | null = element;
+    while (current) {
+        const parent = getOffsetParent(current);
+
+        //
+        if (parent && (/*parent instanceof HTMLBodyElement ||*/ parent instanceof HTMLHtmlElement)) {
+            break;
         }
 
         //
-        try { await (new Promise((rs)=>requestAnimationFrame(rs))); } catch(e) { break; };
+        if (current = parent) {
+            parents.push(current);
+        }
     }
-}, {timeout: 100});
-
-//
-export const callByFrame = (pointerId, cb)=>{
-    delayed.set(pointerId, cb);
+    return parents;
 }
 
 //
-export const cover = (ctx, img, scale = 1, port, orient = 0) => {
-    const canvas = ctx.canvas;
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((orient || 0) * (Math.PI * 0.5));
-    ctx.rotate(port * -(Math.PI / 2));
-    ctx.translate(-(img.width / 2) * scale, -(img.height / 2) * scale);
+export const url = (type, ...source) => {
+    return URL.createObjectURL(new Blob(source, {type}));
 };
 
 //
-const blobImageMap = new WeakMap();
-export const createImageBitmapCache = (blob)=>{
-    if (!blobImageMap.has(blob) && (blob instanceof Blob || blob instanceof File || blob instanceof OffscreenCanvas || blob instanceof ImageBitmap || blob instanceof Image)) {
-        blobImageMap.set(blob, createImageBitmap(blob));
-    }
-    return blobImageMap.get(blob);
-}
+export const html = (source, type: DOMParserSupportedType = 'text/html') => {
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(source, type);
+    return parsed.querySelector('template') ?? parsed.querySelector("*");
+};
+
+//
+export const MOC = (element: HTMLElement | null, selector: string): boolean => {
+    return (!!element?.matches?.(selector) || !!element?.closest?.(selector));
+};
+
+//
+export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => {
+    return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null;
+};
