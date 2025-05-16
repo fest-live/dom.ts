@@ -1,7 +1,8 @@
-import { observeAttributeBySelector, observeBySelector } from "./Observer";
+import { observeAttributeBySelector, observeBySelector } from "../$core$/Observer";
 import { MOCElement } from "./Utils";
 
 //
+export const $$ = (selector = "*", rootElement = document.documentElement)=>{ return new AxQuery2(selector, rootElement); }
 export default class AxQuery2 {
     #rootElement: HTMLElement = document.documentElement;
     #selector: string = "*";
@@ -13,26 +14,8 @@ export default class AxQuery2 {
     }
 
     //
-    observeAttribute(attribute, fx) {
-        return observeAttributeBySelector(this.#rootElement, this.#selector, attribute, fx);
-    }
-
-    //
-    observeNodes(fx) {
-        return observeBySelector(this.#rootElement, this.#selector, fx);
-    }
-
-    //
-    get query() {
-        return this.#rootElement.querySelector(this.#selector);
-    }
-
-    //
-    get queryAll() {
-        return Array.from(this.#rootElement.querySelectorAll(this.#selector));
-    }
-
-    //
+    observeAttribute(attribute, fx) { return observeAttributeBySelector(this.#rootElement, this.#selector, attribute, fx); }
+    observeNodes(fx) { return observeBySelector(this.#rootElement, this.#selector, fx); }
     delegated(name, cb, options) {
         this.#rootElement.addEventListener(name, (ev)=>{
             if (ev.target.matches(this.#selector)) { cb(ev); };
@@ -48,9 +31,8 @@ export default class AxQuery2 {
             if (treeElement && Array.from(document.elementsFromPoint(ev.clientX, ev.clientY)).indexOf(treeElement) >= 0) { return cb(ev); }
         }, options);
     }
-}
 
-//
-export const $$ = (selector = "*", rootElement = document.documentElement)=>{
-    return new AxQuery2(selector, rootElement);
+    //
+    get query() { return this.#rootElement.querySelector(this.#selector); }
+    get queryAll() { return Array.from(this.#rootElement.querySelectorAll(this.#selector)); }
 }
