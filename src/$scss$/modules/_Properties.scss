@@ -1,4 +1,8 @@
-@scope(:root, :host, :scope)
+@scope(
+    :root,
+    :host,
+    :scope
+)
 {
     @property --ppx { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; };
     @property --zpx { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; };

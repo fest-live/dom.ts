@@ -1,5 +1,5 @@
-@use "./Profile" as ps;
-@use "./Shape" as s;
+@use "../lib/Profile" as ps;
+@use "../lib/Shapes" as s;
 
 //
 @layer u2-grid {
