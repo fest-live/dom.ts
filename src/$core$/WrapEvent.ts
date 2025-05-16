@@ -2,29 +2,16 @@ import { cvt_cs_to_os } from "../$agate$/_Utils.js";
 import { getBoundingOrientRect, orientOf, zoomOf } from "../$agate$/_Zoom.js";
 
 //
+const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }
+
+//
 export const elementPointerMap = new WeakMap<any>()
-
-//
-const withCtx = (target, got)=>{
-    if (typeof got == "function") { return got?.bind?.(target) ?? got; };
-    return got;
-}
-
-//
 export class DecorWith {
     #addition: any;
 
     // needs prototype extends with Reflect
-    constructor(addition) {
-        this.#addition = addition;
-    }
-
-    //
-    get(target, name, rec) {
-        return withCtx(target, target?.[name]) ?? withCtx(this.#addition, this.#addition?.[name]);
-    }
-
-    //
+    constructor(addition) { this.#addition = addition; }
+    get(target, name, rec) { return withCtx(target, target?.[name]) ?? withCtx(this.#addition, this.#addition?.[name]); }
     set(target, name, val) {
         if (!Reflect.set(target, name, val)) {
             this.#addition[name] = val;

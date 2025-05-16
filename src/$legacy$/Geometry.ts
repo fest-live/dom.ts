@@ -1,19 +1,13 @@
-/*
- * Made by o1-preview, with my rewriting, but who I am? I don't say...
- */
-
-//
-import { isNearlyIdentity, parseOrigin, getOffsetParentChain, type Point, getTransform, getTransformOrigin, getElementZoom } from "./Utils";
-
-//
+import { isNearlyIdentity, getOffsetParentChain, type Point, getTransform, getTransformOrigin, getElementZoom } from "./Utils";
 export const transformationMatrixCache = new WeakMap<Element, DOMMatrix>();
+export function convertPointFromPageToNode(element: Element, pageX: number, pageY: number): Point { return (getNodeFullTransform(element).inverse()).transformPoint(new DOMPoint(pageX, pageY)); }
+export function convertPointFromNodeToPage(element: Element, nodeX: number, nodeY: number): Point { return getNodeFullTransform(element).transformPoint(new DOMPoint(nodeX, nodeY)); }
 export function getNodeFullTransform(element: Element): DOMMatrix {
-    let matrix = new DOMMatrix();
-    let chain = [element, ...getOffsetParentChain(element)];
+    let matrix = new DOMMatrix(), chain = [element, ...getOffsetParentChain(element)];
     for (const el of chain) {
-        let elementMatrix = getTransform(el);//new DOMMatrix(transform);
+        let elementMatrix = getTransform(el);
         if (!isNearlyIdentity(elementMatrix)) {
-            const originPoint = getTransformOrigin(el);//computedStyle.transformOrigin || computedStyle.webkitTransformOrigin || `${((el as HTMLElement)?.clientWidth||0)*0.5}px ${((el as HTMLElement)?.clientHeight || 0)*0.5}px`;
+            const originPoint = getTransformOrigin(el);
             const originMatrix = new DOMMatrix().translate(originPoint.x, originPoint.y);
             const inverseOriginMatrix = new DOMMatrix().translate(-originPoint.x, -originPoint.y);
             elementMatrix = originMatrix.multiply(elementMatrix).multiply(inverseOriginMatrix);
@@ -38,10 +32,7 @@ export function getNodeFullTransform(element: Element): DOMMatrix {
         }
 
         //
-        const zoom = getElementZoom(el);
-        const zoomMatrix = new DOMMatrix().scale(zoom);
-
-        //
+        const zoomMatrix  = new DOMMatrix().scale(getElementZoom(el));
         const totalMatrix = positionMatrix.multiply(zoomMatrix).multiply(elementMatrix);
         matrix = totalMatrix.multiply(matrix);
     }
@@ -49,16 +40,4 @@ export function getNodeFullTransform(element: Element): DOMMatrix {
     //
     transformationMatrixCache.set(element, matrix);
     return matrix;
-}
-
-//
-export function convertPointFromPageToNode(element: Element, pageX: number, pageY: number): Point {
-    const inverseMatrix = getNodeFullTransform(element).inverse();
-    return inverseMatrix.transformPoint(new DOMPoint(pageX, pageY));
-}
-
-//
-export function convertPointFromNodeToPage(element: Element, nodeX: number, nodeY: number): Point {
-    const matrix = getNodeFullTransform(element);
-    return matrix.transformPoint(new DOMPoint(nodeX, nodeY));
 }

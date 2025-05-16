@@ -40,11 +40,7 @@ export const orientationNumberMap = {
 }
 
 //
-export const classes: StyleTuple[] = [
-    [":root, :host, :scope", availSize]
-];
-
-//
+export const classes: StyleTuple[] = [ [":root, :host, :scope", availSize] ];
 export const getCorrectOrientation = () => {
     let orientationType: string = screen.orientation.type;
     if (!window.matchMedia("((display-mode: fullscreen) or (display-mode: standalone) or (display-mode: window-controls-overlay))").matches) {
