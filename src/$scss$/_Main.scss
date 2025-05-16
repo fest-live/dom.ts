@@ -1,6 +1,8 @@
 //
-@use "./Properties";
-@use "./Normalize";
-@use "./States";
-@use "./Layout";
-@use "./Grid";
+@use "./modules/Properties";
+@use "./modules/Normalize";
+@use "./modules/States";
+@use "./modules/Layout";
+@use "./grid/GridBox" as gb;
+@use "./grid/GridLayout" as gl;
+@use "./grid/Shapes" as sh;

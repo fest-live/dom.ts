@@ -4,21 +4,9 @@
 $cps: 0.0001;
 
 //
-@function abs($a) {
-    @return string.unquote("max(#{$a}, calc(-1 * #{$a}))");
-}
-
-//
-@function sign($a) {
-    @return string.unquote("round(to-zero, clamp(-1, calc(#{$a} / max(#{abs($a)}, #{$cps})), 1), 1)");
-}
-
-
-
-//
-@function mix($a, $b, $i) {
-    @return string.unquote("calc(#{$b} * #{$i} + #{$a} * calc(1 - #{$i}))");
-}
+@function abs($a) { @return string.unquote("max(#{$a}, calc(-1 * #{$a}))"); }
+@function sign($a) { @return string.unquote("round(to-zero, clamp(-1, calc(#{$a} / max(#{abs($a)}, #{$cps})), 1), 1)"); }
+@function mix($a, $b, $i) { @return string.unquote("calc(#{$b} * #{$i} + #{$a} * calc(1 - #{$i}))"); }
 
 //
 @function land($a, $b) {
