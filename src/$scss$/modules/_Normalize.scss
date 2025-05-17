@@ -29,7 +29,7 @@
 
         // if there is nothing, why there is needs content?
         ui-icon, body, html, canvas, img, #markdown, #viewport,
-        *:not(img, canvas, ui-icon, video, picture, input, ui-calendar, ui-status, ui-statusbar, ui-navbar, ui-taskbar, ui-task, iframe):empty { content-visibility: auto; }
+        *:not(img, canvas, ui-icon, video, picture, input, ui-calendar, ui-status, ui-statusbar, ui-navbar, ui-taskbar, ui-module, ui-task, iframe):empty { content-visibility: auto; }
 
         //
         :where(ui-frame, ui-modal, .ui-grid-item):active,
