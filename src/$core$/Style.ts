@@ -27,12 +27,14 @@ export const hash = async (string: string|ArrayBuffer|Blob|File) => {
 //
 export const loadStyleSheet = async (inline: string|File|Blob, base?: [any, any], layer: string = "", integrity?: string|Promise<string>)=>{
     const url: string|null = URL.canParse(inline as string) ? (inline as string) : URL.createObjectURL((inline instanceof Blob || inline instanceof File) ? inline : new Blob([inline], {type: "text/css"}));
+    const load = fetch(url, {priority: "high"});
     if (base?.[0] && (!URL.canParse(inline as string) || integrity) && base?.[0] instanceof HTMLLinkElement) {
         const I: any = (integrity ?? (typeof inline == "string" ? hash(inline) : null));
             if (typeof I?.then == "function") { I?.then?.((H)=>base?.[0]?.setAttribute?.("integrity", H)); } else
             if (I) { base?.[0]?.setAttribute?.("integrity", I as string); }
     }
     if (base && url) setStyleURL(base, url, layer);
+    load?.then?.(()=>{if(base?.[0]) base?.[0].setAttribute("loaded", ""); });
 };
 
 //
