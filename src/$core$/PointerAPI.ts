@@ -21,10 +21,10 @@ class PointerEdge {
 //
 interface EvStub { pointerId: number; }
 interface HoldingElement {
-    propertyName?: string;
     shifting?: [number, number];
     modified?: [number, number];
     element?: WeakRef<HTMLElement>;
+    result?: [any, any];
 }
 
 interface PointerObject {
@@ -96,7 +96,7 @@ export const grabForDrag = async (
     let last: any = ex?.detail || ex;
     let changed: boolean = false;
     let frameTime = 0.01, lastLoop = performance.now(), thisLoop;
-    const filterStrength = 100;
+    const filterStrength  = 100;
     const computeDuration = () => {
         var thisFrameTime = (thisLoop=performance.now()) - lastLoop;
         frameTime += (thisFrameTime - frameTime) / filterStrength;
@@ -117,14 +117,7 @@ export const grabForDrag = async (
     };
 
     //
-    const hasParent = (current, parent)=>{
-        while (current) {
-            if (current === parent) return true;
-            current = current.parentElement;
-        }
-    }
-
-    //
+    const hasParent = (current, parent)=>{ while (current) { if (current === parent) return true; current = current.parentElement; } }
     const moveEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             if (evc.target != em && !hasParent(evc.target, em)) { return; };
@@ -135,6 +128,7 @@ export const grabForDrag = async (
             evc?.stopImmediatePropagation?.();
 
             //
+            hm.duration = computeDuration();
             hm.movement = [...(ex?.movement || (hm.client ? [evc.client[0] - hm.client[0], evc.client[1] - hm.client[1]] : hm.movement))];
             hm.client   = [...(evc?.client || [evc?.clientX || 0, evc?.clientY || 0] || [0, 0])];
             hm.shifting[0] += hm.movement[0], hm.shifting[1] += hm.movement[1];
@@ -149,7 +143,6 @@ export const grabForDrag = async (
                     holding: hm,
                 },
             }));
-            hm.duration = computeDuration();
         }
     }), {capture: true}];
 
@@ -174,10 +167,7 @@ export const grabForDrag = async (
             clickPrevention(em, evc?.pointerId);
             em?.dispatchEvent?.(new CustomEvent("m-dragend", {
                 bubbles: true,
-                detail: {
-                    event: (last = evc),
-                    holding: hm,
-                },
+                detail: { event: (last = evc), holding: hm },
             }));
         }
     }), {capture: true}];
@@ -190,9 +180,7 @@ export const grabForDrag = async (
         em?.addEventListener?.("pointercancel", ...releaseEvent);
         em?.addEventListener?.("pointerup", ...releaseEvent);
         em?.addEventListener?.("click", ...releaseEvent);
-    } else {
-        hm.canceled = true;
-    }
+    } else { hm.canceled = true; }
 
     //
     (async ()=>{
