@@ -28,10 +28,9 @@
         }
 
         // if there is nothing, why there is needs content?
-        ui-icon, body, html, canvas, img, #markdown, #viewport,
-        *:not(img, canvas, ui-icon, video, picture, input, ui-calendar, ui-status, ui-statusbar, ui-navbar, ui-taskbar, ui-module, ui-task, iframe):empty { content-visibility: auto; }
-
-        //
+        :where(img, video, audio, picture, canvas) { content-visibility: auto; }
+        :where(h1, h2, h3, h4, h5, h6, p, div, form, label, input, button) { content-visibility: auto; }
+        :where(div, span, a, h1, h2, h3, h4, h5, h6, p, label, form):empty { content-visibility: hidden; }
         :where(ui-frame, ui-modal, .ui-grid-item):active,
         :where(ui-icon, label, form),
         [data-dragging], [data-hidden] {

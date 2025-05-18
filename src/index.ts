@@ -16,7 +16,6 @@ export default initialize;
 export * from "./$agate$/_Utils";
 export * from "./$agate$/_Detect";
 export * from "./$agate$/_Zoom";
-export * from "./$grid$/GridItemUtils";
 export * from "./$core$/Appear";
 export * from "./$core$/Canvas";
 export * from "./$core$/PointerAPI";
