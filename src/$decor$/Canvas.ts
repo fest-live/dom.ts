@@ -1,4 +1,4 @@
-import { getCorrectOrientation, whenAnyScreenChanges } from "./Viewport";
+import { getCorrectOrientation, whenAnyScreenChanges } from "../$agate$/Viewport";
 const blobImageMap = new WeakMap(), delayed = new Map<number, Function | null>([]);
 const orientationNumberMap = {
     "landscape-primary": 0, // as 0deg, aka. 360deg

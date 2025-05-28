@@ -1,4 +1,4 @@
-import type { StyleTuple } from "./Style";
+import type { StyleTuple } from "../$mixin$/Style";
 
 //
 export const getAvailSize = () => {

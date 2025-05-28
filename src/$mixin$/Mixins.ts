@@ -1,4 +1,4 @@
-import { observeAttributeBySelector } from "../$core$/Observer";
+import { observeAttributeBySelector } from "./Observer";
 import { getStoresOfElement, namedStoreMaps } from "./Store";
 import { boundBehaviors } from "./Behavior";
 

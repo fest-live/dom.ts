@@ -1,5 +1,5 @@
-import { cvt_cs_to_os } from "../$agate$/_Utils.js";
-import { getBoundingOrientRect, orientOf, zoomOf } from "../$agate$/_Zoom.js";
+import { cvt_cs_to_os } from "../$agate$/Convert.js";
+import { getBoundingOrientRect, orientOf, zoomOf } from "../$agate$/Zoom.js";
 
 //
 const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }

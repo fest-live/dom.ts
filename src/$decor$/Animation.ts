@@ -1,4 +1,4 @@
-import { setProperty } from "./Style";
+import { setProperty } from "../$mixin$/Style";
 
 //
 const computed = Symbol("@computed");

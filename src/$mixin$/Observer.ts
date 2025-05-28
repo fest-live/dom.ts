@@ -1,5 +1,3 @@
-import { getPxValue } from "./Utils";
-
 //
 const onBorderObserve = new WeakMap<HTMLElement, Function[]>();
 const onContentObserve = new WeakMap<HTMLElement, Function[]>();
@@ -23,8 +21,8 @@ export const observeContentBox = (element, cb) => {
 
         //
         cb?.({
-            inlineSize: element.clientWidth - (getPxValue(element, "padding-left") + getPxValue(element, "padding-right")),
-            blockSize: element.clientHeight - (getPxValue(element, "padding-top") + getPxValue(element, "padding-bottom")),
+            inlineSize: element.clientWidth/* - (getPxValue(element, "padding-left") + getPxValue(element, "padding-right"))*/,
+            blockSize: element.clientHeight/* - (getPxValue(element, "padding-top") + getPxValue(element, "padding-bottom"))*/,
         }, observer);
 
         //

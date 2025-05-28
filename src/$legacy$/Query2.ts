@@ -1,4 +1,4 @@
-import { observeAttributeBySelector, observeBySelector } from "../$core$/Observer";
+import { observeAttributeBySelector, observeBySelector } from "../$mixin$/Observer";
 import { MOCElement } from "./Utils";
 
 //

@@ -1,4 +1,4 @@
-import { unfixedClientZoom } from "../$agate$/_Zoom";
+import { unfixedClientZoom } from "./Zoom";
 
 //
 const canvas = new OffscreenCanvas(1, 1);

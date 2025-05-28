@@ -1,5 +1,5 @@
 //
-const properties = [
+[   // @ts-ignore
     { name: "--screen-width",  syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
     { name: "--screen-height", syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
     { name: "--visual-width",  syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
@@ -22,13 +22,7 @@ const properties = [
     { name: "--resize-y",      syntax: "<number>",           inherits: true, initialValue: "0" },
     { name: "--shift-x",       syntax: "<number>",           inherits: true, initialValue: "0" },
     { name: "--shift-y",       syntax: "<number>",           inherits: true, initialValue: "0" }
-];
-
-//
-const regProp = (options: any) => {
+].forEach((options: any) => {
     try { CSS?.registerProperty?.(options); }
     catch (e) { console.warn(e); }
-};
-
-//
-properties.forEach(regProp);
+});
