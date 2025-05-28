@@ -24,7 +24,6 @@ export * from "./$core$/Utils";
 export * from "./$core$/Style";
 export * from "./$core$/Viewport";
 export * from "./$core$/Measure";
-export * from "./$core$/WrapEvent";
 export * from "./$core$/Animation";
 export * from "./$grid$/GridBox";
 export * from "./$grid$/GridItemUtils";

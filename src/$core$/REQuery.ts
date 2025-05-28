@@ -1,14 +1,14 @@
 import { getStyleRule } from "./Style";
 
 //
-const extensions = {
+export const extensions = {
     logAll(target, handler) {
         console.log(handler._getArray(target));
     }
 };
 
 //
-class UniversalElementHandler {
+export class UniversalElementHandler {
     selector: string | HTMLElement;
     index: number = 0;
 
@@ -133,8 +133,8 @@ class UniversalElementHandler {
 }
 
 // Фабрика для создания прокси
-function elementProxy(host, selector, index = 0) {
-    return new Proxy(host, new UniversalElementHandler(selector, index));
+export function elementProxy(host, selector, index = 0) {
+    return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
 
 // Пример использования:

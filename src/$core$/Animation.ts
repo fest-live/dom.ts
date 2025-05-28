@@ -1,3 +1,6 @@
+import { setProperty } from "./Style";
+
+//
 const computed = Symbol("@computed");
 const depAxis  = (axis: string = "x")=>{ const m = /*matchMedia("(orientation: portrait)").matches*/true; return {["x"]: m?"c":"r", ["y"]: m?"r":"c"}[axis]; }
 const swapped  = (axis: string = "x")=>{ const m = matchMedia("(orientation: portrait)").matches; return {["x"]: m?"x":"y", ["y"]: m?"y":"x"}[axis]; }
@@ -56,22 +59,6 @@ export const doAnimate = async (newItem, val, axis = "x", animate = false, signa
     if (!shifted) { onShift?.[0]?.(); } // commit dragging result
     setProperty(newItem, "--p-cell-" + axis, val);
     setProperty(newItem, drag, 0);
-}
-
-//
-export const setProperty = (target, name, value, importance = "")=>{
-    if (!target) return;
-    if ("attributeStyleMap" in target) {
-        const raw = target.attributeStyleMap.get(name), prop = raw?.[0] ?? raw?.value;
-        if (parseFloat(prop) != value || prop != value || !prop) {
-            if (raw?.value != null) { raw.value = value; } else { target.attributeStyleMap.set(name, value); };
-        }
-    } else {
-        const prop = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(prop) != value || prop != value || !prop) {
-            target?.style?.setProperty?.(name, value, importance);
-        }
-    }
 }
 
 /*

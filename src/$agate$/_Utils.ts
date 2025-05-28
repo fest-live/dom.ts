@@ -34,8 +34,6 @@ export const cvt_os_to_cs = (pos_in_os: [number, number], size_in_cs: [number, n
 
 
 
-
-
 // for dragging relative (from zero)
 export const cvt_rel_cs_to_os = (rel_in_cs: [number, number], or_i: number = 0): [number, number] => {
     const rel_in_swap: [number, number] = [...rel_in_cs];

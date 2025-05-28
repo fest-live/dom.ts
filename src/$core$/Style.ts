@@ -79,6 +79,7 @@ export const getStyleLayer = (layerName, sheet?)=>{
         { layerRule = sheet?.cssRules?.[layerRuleIndex = sheet.insertRule(`@layer ${layerName} {}`)]; } else
         { layerRule = sheet?.cssRules?.[layerRuleIndex]; }
 
+    //
     return layerRule;
 }
 
@@ -125,7 +126,7 @@ export const hash = async (string: string|ArrayBuffer|Blob|File) => {
 };
 
 //
-export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], layer: string = "", integrity?: string|Promise<string>)=>{
+export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], layer: string = "", integrity?: string|Promise<string>)=>{ // @ts-ignore
     const url: string|null = URL.canParse(inline as string) ? (inline as string) : URL.createObjectURL((inline instanceof Blob || inline instanceof File) ? inline : new Blob([inline], {type: "text/css"}));
     const load = fetch(url, {priority: "high"});
     if (base && url) setStyleURL(base, url, layer);
@@ -140,6 +141,22 @@ export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], laye
 //
 export const loadBlobStyle = (inline: string)=>{ const style = document.createElement("link"); Object.assign(style, {rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" }); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "href"]); document.head.append(style); return style; };
 export const loadInlineStyle = (inline: string, rootElement = document.head, layer: string = "")=>{
-    const PLACE = (rootElement?.querySelector("head") ?? rootElement); if (PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); }
+    const PLACE = (rootElement?.querySelector("head") ?? rootElement); if (PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); } // @ts-ignore
     const style = document.createElement("style"); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "innerHTML"], layer); PLACE?.prepend?.(style); return style;
 };
+
+//
+export const setProperty = (target, name, value, importance = "")=>{
+    if (!target) return;
+    if ("attributeStyleMap" in target) {
+        const raw = target.attributeStyleMap.get(name), prop = raw?.[0] ?? raw?.value;
+        if (parseFloat(prop) != value || prop != value || !prop) {
+            if (raw?.value != null) { raw.value = value; } else { target.attributeStyleMap.set(name, value); };
+        }
+    } else {
+        const prop = target?.style?.getPropertyValue?.(name);
+        if (parseFloat(prop) != value || prop != value || !prop) {
+            target?.style?.setProperty?.(name, value, importance);
+        }
+    }
+}
