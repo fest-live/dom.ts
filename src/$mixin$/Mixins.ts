@@ -120,6 +120,8 @@ export class DOMMixin {
     //
     storeForElement(element) { return namedStoreMaps.get(this.name)?.get?.(element); };
     relatedForElement(element) { return getElementRelated(element); }
+
+    //
     get elements() { return mixinElements.get(this); }
     get storage() { return namedStoreMaps.get(this.name); }
     get name() { return mixinNamespace.get(this); }

@@ -4,15 +4,6 @@
 
 //
 export type Point = DOMPoint;
-export const MOC  = (element: HTMLElement | null, selector: string): boolean => { return (!!element?.matches?.(selector) || !!element?.closest?.(selector)); };
-export const url  = (type, ...source) => { return URL.createObjectURL(new Blob(source, {type})); };
-export const html = (source, type: DOMParserSupportedType = 'text/html') => {
-    const parsed  = (new DOMParser()).parseFromString(source, type);
-    return parsed.querySelector('template') ?? parsed.querySelector("*");
-};
-
-//
-export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => { return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null; };
 export const getPxValue = (element, name) => {
     if ("computedStyleMap" in element) {
         const cm = element?.computedStyleMap();
@@ -36,3 +27,50 @@ export function getOffsetParentChain(element: Element): Element[] {
     }
     return parents;
 }
+
+//
+export function isNearlyIdentity(matrix: DOMMatrix, epsilon: number = 1e-6): boolean {
+    return (
+        Math.abs(matrix.a - 1) < epsilon &&
+        Math.abs(matrix.b) < epsilon &&
+        Math.abs(matrix.c) < epsilon &&
+        Math.abs(matrix.d - 1) < epsilon &&
+        Math.abs(matrix.e) < epsilon &&
+        Math.abs(matrix.f) < epsilon
+    );
+};
+
+//
+export const getTransform = (el)=>{
+    if (el?.computedStyleMap) {
+        const styleMap = el.computedStyleMap(), transform = styleMap.get("transform"), matrix = transform?.toMatrix?.();
+        if (matrix) return matrix;
+    } else
+    if (el) { const style = getComputedStyle(el); return new DOMMatrix(style?.getPropertyValue?.("transform")); }
+    return new DOMMatrix();
+};
+
+//
+export const getTransformOrigin = (el)=>{
+    const style = getComputedStyle(el);
+    const cssOrigin = style.getPropertyValue("transform-origin") || `50% 50%`;
+    return parseOrigin(cssOrigin, el);
+};
+
+//
+export const getElementZoom = (element: Element): number => {
+    let zoom = 1, currentElement: Element | null = element;
+    while (currentElement) {
+        if ('currentCSSZoom' in (currentElement as any)) {
+            const currentCSSZoom = (currentElement as any).currentCSSZoom;
+            if (typeof currentCSSZoom === 'number') { return (zoom *= currentCSSZoom); }
+        }
+
+        //
+        const style = getComputedStyle(currentElement);
+        if  (style.zoom && style.zoom !== 'normal') { return (zoom *= parseFloat(style.zoom)); }
+        if ((style.zoom && style.zoom !== 'normal') || 'currentCSSZoom' in (currentElement as any)) { return zoom; }
+        currentElement = (currentElement as HTMLElement)?.offsetParent ?? currentElement?.parentElement;
+    }
+    return zoom;
+};

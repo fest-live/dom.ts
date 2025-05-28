@@ -1,13 +1,12 @@
 //
-const onBorderObserve = new WeakMap<HTMLElement, Function[]>();
+const onBorderObserve  = new WeakMap<HTMLElement, Function[]>();
 const onContentObserve = new WeakMap<HTMLElement, Function[]>();
 
 // TODO: support of fragments
 export const observeContentBox = (element, cb) => {
     if (!onContentObserve.has(element)) {
-        const callbacks: Function[] = [];
-
         //
+        const callbacks: Function[] = [];
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 if (entry.contentBoxSize) {

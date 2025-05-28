@@ -22,12 +22,13 @@ export * from "./$agate$/Zoom";
 export * from "./$agate$/Utils";
 export * from "./$agate$/Viewport";
 export * from "./$agate$/Measure";
+export * from "./$agate$/PointerAPI";
 
 export * from "./$decor$/Animation";
 export * from "./$decor$/Appear";
 export * from "./$decor$/Canvas";
+export * from "./$decor$/Shape";
 
-export * from "./$mixin$/PointerAPI";
 export * from "./$mixin$/Observer";
 export * from "./$mixin$/Style";
 export * from "./$mixin$/Behavior";
@@ -36,5 +37,3 @@ export * from "./$mixin$/Store";
 
 export * from "./$grid$/GridBox";
 export * from "./$grid$/GridItemUtils";
-export * from "./$decor$/Shape";
-
