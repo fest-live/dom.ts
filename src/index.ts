@@ -6,7 +6,9 @@ export const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}
 import run from "./$core$/Appear";
 import { updateVP, whenAnyScreenChanges } from "./$core$/Viewport";
 import { loadBlobStyle } from "./$core$/Style";
-const  initialize = async ()=>{
+
+//
+const initialize = async ()=>{
     loadBlobStyle(preInit); run();
     whenAnyScreenChanges(updateVP);
 }
@@ -28,3 +30,6 @@ export * from "./$core$/Animation";
 export * from "./$grid$/GridBox";
 export * from "./$grid$/GridItemUtils";
 export * from "./$grid$/Shape";
+export * from "./$mixin$/Behavior";
+export * from "./$mixin$/Mixins";
+export * from "./$mixin$/Store";
