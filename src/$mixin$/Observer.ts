@@ -1,9 +1,17 @@
 //
 const onBorderObserve  = new WeakMap<HTMLElement, Function[]>();
 const onContentObserve = new WeakMap<HTMLElement, Function[]>();
+const unwrapFromQuery  = (element: any)=>{
+    if (typeof element?.current == "object")
+        { element = element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; }
+    return element;
+}
 
 // TODO: support of fragments
 export const observeContentBox = (element, cb) => {
+    element = unwrapFromQuery(element);
+
+    //
     if (!onContentObserve.has(element)) {
         //
         const callbacks: Function[] = [];
@@ -35,6 +43,9 @@ export const observeContentBox = (element, cb) => {
 
 // TODO: support of fragments
 export const observeBorderBox = (element, cb) => {
+    element = unwrapFromQuery(element);
+
+    //
     if (!onBorderObserve.has(element)) {
         const callbacks: Function[] = [];
 
@@ -77,16 +88,14 @@ export const observeAttribute = (element, attribute, cb) => {
     });
 
     //
-    observer.observe(element, {
+    observer.observe(element = unwrapFromQuery(element), {
         attributeOldValue: true,
         attributes: true,
         attributeFilter: [...attributeList]
     });
 
     //
-    attributeList.forEach((attribute)=>{
-        cb({ target: element, type: "attributes", attributeName: attribute, oldValue: (element as HTMLElement)?.getAttribute?.(attribute) }, observer);
-    });
+    attributeList.forEach((attribute)=>cb({ target: element, type: "attributes", attributeName: attribute, oldValue: (element as HTMLElement)?.getAttribute?.(attribute) }, observer));
 
     //
     return observer;
@@ -94,6 +103,9 @@ export const observeAttribute = (element, attribute, cb) => {
 
 //
 export const observeAttributeBySelector = (element, selector, attribute, cb) => {
+    element = unwrapFromQuery(element);
+
+    //
     const attributeList = new Set<string>((attribute.split(",") || [attribute]).map((s) => s.trim()));
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
@@ -102,14 +114,8 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
                 const removedNodes = Array.from(mutation.removedNodes) || [];
 
                 //
-                addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=>{
-                    return Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[];
-                }));
-
-                //
-                removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=>{
-                    return Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[];
-                }));
+                addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=>Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
+                removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=>Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
 
                 //
                 [...Array.from((new Set(addedNodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector)).forEach((target)=>{
@@ -147,6 +153,7 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
 
 //
 export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) => {
+    element = unwrapFromQuery(element);
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
             if (mutation.type == "childList") {
@@ -154,14 +161,8 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
                 const $removedNodes = Array.from(mutation.removedNodes) || [];
 
                 //
-                $addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=>{
-                    return Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[];
-                }));
-
-                //
-                $removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=>{
-                    return Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[];
-                }));
+                $addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=> Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
+                $removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=> Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
 
                 //
                 const addedNodes   = [...Array.from((new Set($addedNodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector));
@@ -185,10 +186,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     });
 
     //
-    observer.observe(element, {
-        childList: true,
-        subtree : true
-    });
+    observer.observe(element, { childList: true, subtree : true });
 
     //
     const selected = Array.from(element.querySelectorAll(selector));

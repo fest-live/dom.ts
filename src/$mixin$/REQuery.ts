@@ -11,16 +11,47 @@ export const extensions = {
 export class UniversalElementHandler {
     selector: string | HTMLElement;
     index: number = 0;
+    direction: "children" | "parent" = "children";
 
     //
-    constructor(selector, index = 0) {
-        this.selector = selector;
+    constructor(selector, index = 0, direction: "children" | "parent" = "children") {
+        this.selector  = selector;
+        this.direction = direction;
         this.index = index;
     }
 
     //
-    _getArray   (target) { return (typeof this.selector == "string") ? Array.from(target?.querySelectorAll?.(this.selector) ?? []) : (Array.isArray(this.selector) ? this.selector : [this.selector]); }
-    _getSelected(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector)) : this.selector; }
+    //_getArray   (target) { return (typeof this.selector == "string") ? Array.from(target?.querySelectorAll?.(this.selector) ?? []) : (Array.isArray(this.selector) ? this.selector : [this.selector]); }
+    //_getSelected(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector)) : this.selector; }
+    //_getWClosest(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.closest?.(this.selector)) : this.selector; }
+
+    //
+    _getArray(target) {
+        if (typeof this.selector == "string") {
+            const inclusion = target?.matches?.(this.selector) ? [target] : [];
+            if (this.direction === "children") {
+                const list = target?.querySelectorAll?.(this.selector);
+                return list?.length >= 1 ? [...list] : inclusion;
+            } else if (this.direction === "parent") {
+                // closest возвращает только первый найденный элемент, обернём в массив для совместимости
+                const closest = target?.closest?.(this.selector);
+                return closest ? [closest] : inclusion;
+            }
+        }
+        return Array.isArray(this.selector) ? this.selector : [this.selector];
+    }
+
+    //
+    _getSelected(target) {
+        if (typeof this.selector == "string") {
+            if (this.direction === "children") {
+                return target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector);
+            } else if (this.direction === "parent") {
+                return target?.matches?.(this.selector) ? target : target?.closest?.(this.selector);
+            }
+        }
+        return this.selector;
+    }
 
     //
     get(target, name, ctx) {
