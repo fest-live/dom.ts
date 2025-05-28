@@ -27,6 +27,10 @@ export class UniversalElementHandler {
 
     //
     _getArray(target) {
+        if (typeof target == "function") { target = target?.() ?? target; };
+        if (!this.selector) return [target];
+
+        //
         if (typeof this.selector == "string") {
             const inclusion = target?.matches?.(this.selector) ? [target] : [];
             if (this.direction === "children") {
@@ -43,6 +47,10 @@ export class UniversalElementHandler {
 
     //
     _getSelected(target) {
+        if (typeof target == "function") { target = target?.() ?? target; };
+        if (!this.selector) return target;
+
+        //
         if (typeof this.selector == "string") {
             if (this.direction === "children") {
                 return target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector);
@@ -96,6 +104,13 @@ export class UniversalElementHandler {
         if (name === "selector") return this.selector;
         if (name === "current") return selected;
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
+
+        // for BLU.E
+        if (name === "element") {
+            const fragment = document.createDocumentFragment();
+            fragment.append(...this._getArray(target));
+            return fragment;
+        }
         return;
     }
 
@@ -160,20 +175,25 @@ export class UniversalElementHandler {
         }
         return false;
     }
+
+    apply(target, self, args) {
+        const result = target?.apply?.(self, args); this.selector = result;
+        return new Proxy(target, this as ProxyHandler<any>);
+    }
 }
 
-// Фабрика для создания прокси
-export function elementProxy(host, selector, index = 0) {
+//
+export const Q = (selector, host = document.documentElement, index = 0) => {
+    if (typeof selector == "function") {
+        return new Proxy(selector, new UniversalElementHandler("", index) as ProxyHandler<any>);
+    }
     return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
 
-// Пример использования:
-// const el = elementProxy(document, '.item'); // коллекция
-// el[0].textContent = 'Hello';
-// el.forEach(e => e.classList.add('active'));
-// el.logAll();
-// el.length;
-// el.textContent; // textContent первого найденного
-// el.current; // первый найденный элемент
-// el.selector; // селектор
-// el.self; // исходный host
+/* // WILL not be released!
+const proxied = (ref)=>{
+    const actual = Q((val)=>val); // или Q(()=>ref?.value)
+    subscribe(ref, (value, prop)=>actual?.(value))
+    return actual;
+}
+*/
