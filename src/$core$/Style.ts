@@ -3,19 +3,119 @@ const OWNER = "DOM", styleElement = document.createElement("style"); document.qu
 export type  StyleTuple    = [selector: string, sheet: object];
 export const setStyleURL   = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
 export const setStyleRules = (classes: StyleTuple[]) => { return classes?.map?.((args) => setStyleRule(...args)); };
-export const setStyleRule  = (selector: string, sheet: object) => {
+
+//
+function camelToKebab(str) { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
+function kebabToCamel(str) { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
+
+//
+export const setStyleProperty = (element, name, value: any)=>{
+    if (!element) return element;
+    // custom properties currently doesn't supports Typed OM
+    if (name?.trim?.()?.startsWith?.("--")) {
+        const old = element.style?.getPropertyValue?.(name);
+        const val = (value?.value ?? value);
+        value = (value instanceof CSSStyleValue ? value.toString() : val);
+        if (old !== value) { element.style?.setProperty?.(name, value, ""); };
+    } else
+    if (value instanceof CSSStyleValue) {
+        const kebab = camelToKebab(name);
+        if (element.attributeStyleMap != null) {
+            const old = element.attributeStyleMap?.get?.(kebab);
+            if (old !== value) {
+                // CSSStyleValue is internally reactive itself!
+                element.attributeStyleMap?.set?.(kebab, value);
+
+                // bred, changing `.value` in CSSStyleValue isn't change value again
+                /*if (value instanceof CSSUnitValue) {
+                    if (old != null && value.unit && value.unit !== old?.unit) {
+                        element.attributeStyleMap.set(kebab, value);
+                    } else { old.value = value.value; }
+                } else {
+                    element.attributeStyleMap.set(kebab, value);
+                }*/
+            }
+        } else {
+            element?.style?.setProperty(kebab, value.toString(), "");
+        }
+    } else // very specific case if number and unit value can be changed directly
+    if (!Number.isNaN(value?.value ?? value) && element.attributeStyleMap != null) {
+        const numeric = value?.value ?? value;
+        const kebab = camelToKebab(name);
+        const old = element.attributeStyleMap?.get?.(kebab);
+        if (old instanceof CSSUnitValue) { old.value = numeric; } else
+        {   // hard-case
+            const computed = element?.computedStyleMap?.();
+            const oldCmVal = computed?.get?.(kebab);
+            if (oldCmVal instanceof CSSUnitValue) {
+                if (oldCmVal.value != numeric) {
+                    oldCmVal.value = numeric;
+                    element.attributeStyleMap?.set?.(kebab, oldCmVal);
+                }
+            } else {
+                element.style?.setProperty?.(kebab, numeric);
+            }
+        }
+    } else
+    if (element.style) {
+        const camel = kebabToCamel(name), val = value?.value ?? value;
+        if (element.style[camel] != val || !element.style[camel]) {
+            element.style[camel] = val;
+        }
+    }
+    return element;
+}
+
+//
+export const getStyleLayer = (layerName, sheet?)=>{
+    sheet ||= styleElement.sheet;
+
+    // Ищем или создаём @layer
+    let layerRuleIndex = Array.from(sheet?.cssRules || []).findIndex((rule) => (rule instanceof CSSLayerBlockRule) && rule?.name === layerName);
+    let layerRule;
+
+    // Создаём пустой слой
+    if (layerRuleIndex === -1 && sheet)
+        { layerRule = sheet?.cssRules?.[layerRuleIndex = sheet.insertRule(`@layer ${layerName} {}`)]; } else
+        { layerRule = sheet?.cssRules?.[layerRuleIndex]; }
+
+    return layerRule;
+}
+
+//
+export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query") => {
+    sheet ||= styleElement.sheet;
+
+    // Если не указан слой — работаем как раньше
+    if (!layerName) {
+        let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText === selector);
+        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${selector} {}`); }
+        return sheet?.cssRules?.[ruleId];
+    }
+
+    //
+    return getStyleRule(selector, getStyleLayer(layerName), null);
+};
+
+//
+/*
+export const getStyleRule = (selector: string) => {
     const styleRules = styleElement.sheet;
     let ruleId = Array.from(styleRules?.cssRules || []).findIndex((rule) => (rule instanceof CSSStyleRule ? (selector == rule?.selectorText) : false));
     if (ruleId <= -1) {ruleId = styleRules?.insertRule(`${selector} {}`) as number;}
-    const rule = styleElement?.sheet?.cssRules[ruleId];
-    Object.entries(sheet).forEach(([propName, propValue]) => {
-        if (rule instanceof CSSStyleRule) {
-            const exists = rule?.style?.getPropertyValue(propName);
-            if (!exists || exists != propValue) {
-                rule?.style?.setProperty?.(propName, (propValue || "") as string, "");
-            }
-        }
-    });
+    return styleElement?.sheet?.cssRules[ruleId];
+};*/
+
+//
+export const setStyleInRule = (selector: string, name: string, value: any) => {
+    return setStyleProperty(getStyleRule(selector), name, value);
+};
+
+//
+export const setStyleRule = (selector: string, sheet: object) => {
+    const rule = getStyleRule(selector);
+    Object.entries(sheet).forEach(([propName, propValue]) => setStyleProperty(rule, propName, propValue));
+    return rule;
 };
 
 //
