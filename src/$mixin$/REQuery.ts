@@ -1,17 +1,12 @@
+import { observeAttribute, observeAttributeBySelector } from "./Observer";
 import { getStyleRule } from "./Style";
 
 //
-export const extensions = {
-    logAll(target, handler) {
-        console.log(handler._getArray(target));
-    }
-};
-
-//
+export const extensions = { logAll(target, handler) { console.log(handler._getArray(target)); } };
 export class UniversalElementHandler {
+    direction: "children" | "parent" = "children";
     selector: string | HTMLElement;
     index: number = 0;
-    direction: "children" | "parent" = "children";
 
     //
     constructor(selector, index = 0, direction: "children" | "parent" = "children") {
@@ -24,6 +19,11 @@ export class UniversalElementHandler {
     //_getArray   (target) { return (typeof this.selector == "string") ? Array.from(target?.querySelectorAll?.(this.selector) ?? []) : (Array.isArray(this.selector) ? this.selector : [this.selector]); }
     //_getSelected(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector)) : this.selector; }
     //_getWClosest(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.closest?.(this.selector)) : this.selector; }
+
+    //
+    _observeAttributes(target, attribute, cb) {
+        return (typeof this.selector == "string" ? observeAttributeBySelector(target, this.selector, attribute, cb) : observeAttribute(target ?? this.selector, attribute, cb));
+    }
 
     //
     _getArray(target) {
@@ -69,9 +69,7 @@ export class UniversalElementHandler {
         }
 
         // Длина коллекции
-        if (name === "length") {
-            return array.length;
-        }
+        if (name === "length") { return array.length; }
 
         //
         if (["style", "attributeStyleMap"].indexOf(name) >= 0) {
@@ -97,6 +95,7 @@ export class UniversalElementHandler {
         if (name === "self") return target;
         if (name === "selector") return this.selector;
         if (name === "current") return selected;
+        if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
         return;
     }
 

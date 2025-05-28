@@ -78,6 +78,9 @@ export const observeBorderBox = (element, cb) => {
 
 //
 export const observeAttribute = (element, attribute, cb) => {
+    if (typeof element?.selector == "string") { return observeAttributeBySelector(element, element?.selector, attribute, cb); };
+
+    //
     const attributeList = new Set<string>((attribute.split(",") || [attribute]).map((s) => s.trim()));
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
