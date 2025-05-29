@@ -177,7 +177,7 @@ export class UniversalElementHandler {
     }
 
     apply(target, self, args) {
-        const result = target?.apply?.(self, args); this.selector = result;
+        const result = target?.apply?.(self, args); this.selector = result || this.selector;
         return new Proxy(target, this as ProxyHandler<any>);
     }
 }
