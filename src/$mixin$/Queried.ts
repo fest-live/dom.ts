@@ -81,7 +81,7 @@ export class UniversalElementHandler {
 
         //
         if (["style", "attributeStyleMap"].indexOf(name) >= 0) {
-            const basis = typeof this.selector == "string" ? getStyleRule(this.selector) : (this.selector?.dataset?.id ? getStyleRule(`[data-id="${this.selector?.dataset?.id}"]`) : this.selector);
+            const basis = this.selector ? (typeof this.selector == "string" ? getStyleRule(this.selector) : (selected?.dataset?.id ? getStyleRule(`[data-id="${selected?.dataset?.id}"]`) : selected)) : (selected ?? target);
             if (basis?.[name] != null) { return basis?.[name]; }
         }
 
