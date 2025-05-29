@@ -49,14 +49,9 @@ export class UniversalElementHandler {
     _getSelected(target) {
         if (typeof target == "function") { target = (target?.() || this.selector) || target; };
         if (!this.selector) return target;
-
-        //
         if (typeof this.selector == "string") {
-            if (this.direction === "children") {
-                return target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector);
-            } else if (this.direction === "parent") {
-                return target?.matches?.(this.selector) ? target : target?.closest?.(this.selector);
-            }
+            if (this.direction === "children") { return target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector); } else
+            if (this.direction === "parent"  ) { return target?.matches?.(this.selector) ? target : target?.closest?.(this.selector);}
         }
         return this.selector;
     }
