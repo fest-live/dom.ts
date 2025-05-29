@@ -27,7 +27,7 @@ export class UniversalElementHandler {
 
     //
     _getArray(target) {
-        if (typeof target == "function") { target = target?.() ?? target; };
+        if (typeof target == "function") { target = (target?.() || this.selector) || target; };
         if (!this.selector) return [target];
 
         //
@@ -47,7 +47,7 @@ export class UniversalElementHandler {
 
     //
     _getSelected(target) {
-        if (typeof target == "function") { target = target?.() ?? target; };
+        if (typeof target == "function") { target = (target?.() || this.selector) || target; };
         if (!this.selector) return target;
 
         //
