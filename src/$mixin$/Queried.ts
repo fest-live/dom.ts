@@ -62,17 +62,9 @@ export class UniversalElementHandler {
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
 
         // Extensions
-        if (name in extensions) {
-            return extensions[name].bind(null, target, this);
-        }
-
-        // Индексация: el[0], el[1] и т.д.
-        if (typeof name === "string" && /^\d+$/.test(name)) {
-            return array[parseInt(name)];
-        }
-
-        // Длина коллекции
-        if (name === "length") { return array.length; }
+        if (name in extensions) { return extensions[name].bind(null, target, this); }
+        if (name === "length" && array?.length) { return array?.length; }
+        if (typeof name === "string" && /^\d+$/.test(name)) { return array[parseInt(name)]; }
 
         //
         if (["style", "attributeStyleMap"].indexOf(name) >= 0) {
@@ -80,31 +72,32 @@ export class UniversalElementHandler {
             if (basis?.[name] != null) { return basis?.[name]; }
         }
 
-        // Свойства первого найденного элемента
-        if (selected && selected[name] != null) {
+        //
+        if (selected?.[name] != null) {
             return typeof selected[name] === "function"
                 ? selected[name].bind(selected)
                 : selected[name];
         }
 
-        // Методы коллекции (например, forEach, map)
-        if (array[name] != null) {
+        //
+        if (array?.[name] != null) {
             return typeof array[name] === "function"
                 ? array[name].bind(array)
                 : array[name];
         }
 
-        // Специальные свойства
+        //
         if (name === "self") return target;
         if (name === "selector") return this.selector;
         if (name === "current") return selected;
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
+        if (name === "append") return (...args)=>selected?.append?.([...(args||[])]?.map?.((e)=>e?.element??e) || args);
 
         // for BLU.E
         if (name === "element") {
+            if (array?.length <= 1) return selected?.element ?? selected;
             const fragment = document.createDocumentFragment();
-            fragment.append(...this._getArray(target));
-            return fragment;
+            fragment.append(...array); return fragment;
         }
         return;
     }
@@ -113,21 +106,10 @@ export class UniversalElementHandler {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
 
-        // Индексация запрещена (можно реализовать если нужно)
-        if (typeof name === "string" && /^\d+$/.test(name)) {
-            return false;
-        }
-
-        // Свойства коллекции не изменяемы
-        if (array[name] != null) {
-            return false;
-        }
-
-        // Устанавливаем свойство на выбранный элемент
-        if (selected) {
-            selected[name] = value;
-            return true;
-        }
+        //
+        if (typeof name === "string" && /^\d+$/.test(name)) { return false; }
+        if (array[name] != null) { return false; }
+        if (selected) { selected[name] = value; return true; }
         return false;
     }
 
@@ -144,10 +126,7 @@ export class UniversalElementHandler {
     deleteProperty(target, name) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
-        if (selected && name in selected) {
-            delete selected[name];
-            return true;
-        }
+        if (selected && name in selected) { delete selected[name]; return true; }
         return false;
     }
 
@@ -164,10 +143,7 @@ export class UniversalElementHandler {
     defineProperty(target, name, desc) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
-        if (selected) {
-            Object.defineProperty(selected, name, desc);
-            return true;
-        }
+        if (selected) { Object.defineProperty(selected, name, desc); return true; }
         return false;
     }
 
