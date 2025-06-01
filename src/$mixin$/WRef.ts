@@ -3,8 +3,10 @@ class WeakRefProxyHandler<T extends object> implements ProxyHandler<object> {
     // here can be only options or left params
     constructor(args?: any) {}
 
+    //
     private _deref(target): T | undefined { return (target instanceof WeakRef || typeof target?.deref == "function") ? (target?.deref?.()) : target; }
 
+    //
     get(tg: object, prop: PropertyKey, _receiver: any): any {
         const obj = this._deref(tg);
         const value = (obj as any)?.[prop];
@@ -16,7 +18,8 @@ class WeakRefProxyHandler<T extends object> implements ProxyHandler<object> {
                 const realObj = this._deref(tg);
                 return (realObj as any)?.[prop]?.(...args);
             };
-        }
+        }; // wrap-away deref from side-effects
+        if (prop === "deref") { return ()=>this._deref(tg); };
         return value;
     }
 
