@@ -1,4 +1,5 @@
 //
+const existsMap = new WeakMap<any, WR<any>>();
 class WeakRefProxyHandler<T extends object> implements ProxyHandler<object> {
     // here can be only options or left params
     constructor(args?: any) {}
@@ -8,18 +9,19 @@ class WeakRefProxyHandler<T extends object> implements ProxyHandler<object> {
 
     //
     get(tg: object, prop: PropertyKey, _receiver: any): any {
-        const obj = this._deref(tg);
-        const value = (obj as any)?.[prop];
+        const obj = this._deref(tg), value = (obj as any)?.[prop];
 
         // libraries specific (LUR.E/object.ts)
-        if ((prop === "element" || prop === "value") && obj && (!(prop in obj) || obj?.[prop] == null)) { return obj; }
+        if ((prop === "element" || prop === "value") && obj && (value == null || !(prop in obj))) { return obj; }
+        // wrap-away deref from side-effects
+        if (prop === "deref") { return ()=>this._deref(tg); };
+        // if function, workaround callable
         if (typeof value === 'function') {
             return (...args: any[]) => {
                 const realObj = this._deref(tg);
                 return (realObj as any)?.[prop]?.(...args);
             };
-        }; // wrap-away deref from side-effects
-        if (prop === "deref") { return ()=>this._deref(tg); };
+        };
         return value;
     }
 
@@ -82,7 +84,6 @@ export type WR<T> = {
 };
 
 //
-const existsMap = new WeakMap<any, WR<any>>();
 export function WRef<T extends object>(target: T|WeakRef<T>): WR<T> {
     if (!(typeof target == "object" || typeof target == "function")) return target;
     target = ((target instanceof WeakRef || typeof (target as any)?.deref == "function") ? (target as any)?.deref?.() : target) as unknown as T;
