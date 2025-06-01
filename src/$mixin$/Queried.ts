@@ -260,7 +260,7 @@ export type WR<T> = {
 
 //
 const existsMap = new WeakMap<any, WR<any>>();
-export function createWeakRefProxy<T extends object>(target: T|WeakRef<T>): WR<T> {
+export function WRef<T extends object>(target: T|WeakRef<T>): WR<T> {
     if (!(typeof target == "object" || typeof target == "function")) return target;
     target = ((target instanceof WeakRef || typeof (target as any)?.deref == "function") ? (target as any)?.deref?.() : target) as unknown as T;
     if (existsMap.has(target)) return existsMap.get(target) as WR<T>;
