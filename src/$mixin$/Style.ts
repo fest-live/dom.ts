@@ -3,10 +3,39 @@ const OWNER = "DOM", styleElement = document.createElement("style"); document.qu
 export type  StyleTuple    = [selector: string, sheet: object];
 export const setStyleURL   = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
 export const setStyleRules = (classes: StyleTuple[]) => { return classes?.map?.((args) => setStyleRule(...args)); };
+export const camelToKebab  = (str) => { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
+export const kebabToCamel  = (str) => { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
+export const getStyleLayer = (layerName, sheet?)=>{
+    sheet ||= styleElement.sheet;
+
+    // Ищем или создаём @layer
+    let layerRuleIndex = Array.from(sheet?.cssRules || []).findIndex((rule) => (rule instanceof CSSLayerBlockRule) && rule?.name === layerName);
+    let layerRule;
+
+    // Создаём пустой слой
+    if (layerRuleIndex === -1 && sheet)
+        { layerRule = sheet?.cssRules?.[layerRuleIndex = sheet.insertRule(`@layer ${layerName} {}`)]; } else
+        { layerRule = sheet?.cssRules?.[layerRuleIndex]; }
+
+    //
+    return layerRule;
+}
 
 //
-function camelToKebab(str) { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
-function kebabToCamel(str) { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
+export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query") => {
+    sheet ||= styleElement.sheet;
+
+    // Если не указан слой — работаем как раньше
+    if (!layerName) {
+        let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText === selector);
+        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${selector} {}`); }
+        return sheet?.cssRules?.[ruleId];
+    }
+
+    //
+    return getStyleRule(selector, getStyleLayer(layerName), null);
+};
+
 
 //
 export const setStyleProperty = (element, name, value: any)=>{
@@ -65,38 +94,6 @@ export const setStyleProperty = (element, name, value: any)=>{
     }
     return element;
 }
-
-//
-export const getStyleLayer = (layerName, sheet?)=>{
-    sheet ||= styleElement.sheet;
-
-    // Ищем или создаём @layer
-    let layerRuleIndex = Array.from(sheet?.cssRules || []).findIndex((rule) => (rule instanceof CSSLayerBlockRule) && rule?.name === layerName);
-    let layerRule;
-
-    // Создаём пустой слой
-    if (layerRuleIndex === -1 && sheet)
-        { layerRule = sheet?.cssRules?.[layerRuleIndex = sheet.insertRule(`@layer ${layerName} {}`)]; } else
-        { layerRule = sheet?.cssRules?.[layerRuleIndex]; }
-
-    //
-    return layerRule;
-}
-
-//
-export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query") => {
-    sheet ||= styleElement.sheet;
-
-    // Если не указан слой — работаем как раньше
-    if (!layerName) {
-        let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText === selector);
-        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${selector} {}`); }
-        return sheet?.cssRules?.[ruleId];
-    }
-
-    //
-    return getStyleRule(selector, getStyleLayer(layerName), null);
-};
 
 //
 /*
