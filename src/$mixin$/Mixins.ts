@@ -74,9 +74,7 @@ export const updateAllMixins = (element)=>{
 }
 
 //
-export const roots = new Set([document]);
-
-//
+export const roots   = new Set([document]);
 export const addRoot = (root: any = document) => {
     if (!roots.has(root)) {
         roots.add(root);
@@ -87,9 +85,7 @@ export const addRoot = (root: any = document) => {
 
 //
 const updateMixinAttributesAllInRoots = (mixin) => {
-    for (const root of roots) {
-        updateMixinAttributesAll(root.querySelectorAll("[data-mixin]"), mixin);
-    }
+    for (const root of roots) { updateMixinAttributesAll(root.querySelectorAll("[data-mixin]"), mixin); }
 }
 
 //
