@@ -5,10 +5,25 @@ import {resolve} from "node:path";
 export const __dirname = resolve(import.meta.dirname, "./");
 export default {
     plugins,
+    resolve: {
+        alias: {
+            'u2re-src/': resolve(__dirname, '../'),
+            'u2re/': resolve(__dirname, '/externals/modules/'),
+            "u2re/cdnImport": resolve(__dirname, '../cdnImport.mjs'),
+            "u2re/dom": resolve(__dirname, "../dom.ts/src/index.ts"),
+            "u2re/lure": resolve(__dirname, "../BLU.E/src/index.ts"),
+            "u2re/object": resolve(__dirname, "../object.ts/src/index.ts"),
+            "u2re/uniform": resolve(__dirname, "../uniform.ts/src/index.ts"),
+            "u2re/theme": resolve(__dirname, "../theme.core/src/index.ts"),
+        },
+    },
     server: {
         port: 5173,
         open: false,
         origin: "http://localhost:5173",
+        fs: {
+            allow: ['..', resolve(__dirname, '../') ]
+        },
     },
     build: {
         chunkSizeWarningLimit: 1600,

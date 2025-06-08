@@ -1,7 +1,11 @@
 {
     "include": ["./src/**/*", "../ui.system/src/$ext$/orientbox/OrientBox.ts", "src/$grid$/GridBox.ts", "src/$grid$/GridItemUtils.ts", "src/$grid$/TrackingSystem.ts", "src/$grid$/Types.ts", "../ui.system/src/$ext$/shared/Gesture.ts"],
-    "exclude": ["./test/**/*", "./dist/**/*", "./externals/**/*", "./src/$polyfill$/*"],
+    "exclude": ["./test/**/*", "./dist/**/*", "./u2re/**/*", "./src/$polyfill$/*"],
     "compilerOptions": {
+        "paths": {
+            "u2re/*": ["./externals/modules/*"],
+            "u2re-src/*": ["../*"],
+        },
         "target": "ESNext",
         "module": "ESNext",
         "lib": ["ESNext", "DOM", "WebWorker"],
