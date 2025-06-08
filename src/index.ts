@@ -34,6 +34,8 @@ export * from "./$mixin$/Style";
 export * from "./$mixin$/Behavior";
 export * from "./$mixin$/Mixins";
 export * from "./$mixin$/Store";
+export * from "./$mixin$/Queried";
+export * from "./$mixin$/WRef";
 
 export * from "./$grid$/GridBox";
 export * from "./$grid$/GridItemUtils";
