@@ -1,7 +1,6 @@
-// @ts-ignore /* @vite-ignore */
+
 import { importCdn } from "u2re/cdnImport";
 
-// @ts-ignore /* @vite-ignore */
 import { elementPointerMap } from "u2re/dom";
 
 // @ts-ignore
@@ -32,7 +31,7 @@ export class UIOrientBox extends HTMLElement {
         super();
         const shadowRoot = this.attachShadow({mode: "open"});
 
-        // @ts-ignore /* @vite-ignore */
+        
         Promise.try(importCdn, ["u2re/theme"]).then((module)=>{
             // @ts-ignore
             this.#themeStyle = module?.default?.(this.shadowRoot);
