@@ -39,3 +39,4 @@ export * from "./$mixin$/WRef";
 
 export * from "./$grid$/GridBox";
 export * from "./$grid$/GridItemUtils";
+export * from "./$grid$/OrientBox";
