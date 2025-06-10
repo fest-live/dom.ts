@@ -34,9 +34,8 @@ export const agWrapEvent = (cb)=>{
         //
         let {pointerCache, pointerMap} = elementPointerMap?.get?.(el) || { pointerCache: new Map<number, any>(), pointerMap: new Map<number, any>() };
 
-        //
-        const zoom: number = zoomOf(ev?.target || el) || 1;
-        const coord: [number, number] = [(ev?.clientX || 0) / zoom, (ev?.clientY || 0) / zoom];
+        //const zoom: number = zoomOf(ev?.target || el) || 1;
+        const coord: [number, number] = [(ev?.offsetX || 0), (ev?.offsetY || 0)];
         const cache: any = pointerCache?.get?.(ev?.pointerId || 0) || {
             client: coord,
             orient: null,
@@ -59,14 +58,14 @@ export const agWrapEvent = (cb)=>{
             type: (ev?.type||"pointer"),
             event: ev,
             target: ev?.target || el,
-            cs_box: el?.size,
+            cs_box: [el?.offsetWidth || 1, el?.offsetHeight || 1],
             cap_element: null,
             pointerType: ev?.pointerType || "mouse",
             pointerId: ev?.pointerId || 0,
 
             //
             get client() { return cache.client; },
-            get orient() { return cache.orient ??= cvt_cs_to_os([...pointer.client] as [number, number], el?.size, orientOf(ev.target || el) || 0); },
+            get orient() { return cache.orient ??= cvt_cs_to_os([...pointer.client] as [number, number], [el?.offsetWidth || 1, el?.offsetHeight || 1], orientOf(ev.target || el) || 0); },
             //get movement() { return cvt_rel_cs_to_os([cache.client[0] - cache.delta[0], cache.client[1] - cache.delta[1]], orientOf(ev.target || el) || 0); },
             get movement() { return [cache.client[0] - cache.delta[0], cache.client[1] - cache.delta[1]]; },
             get boundingBox() { return (cache.boundingBox ??= getBoundingOrientRect(ev?.target || el, orientOf(ev.target || el) || 0)); },
@@ -84,7 +83,7 @@ export const agWrapEvent = (cb)=>{
             type: (ev?.type||"pointer"),
             event: ev,
             target: ev?.target || el,
-            cs_box: el?.size,
+            cs_box: [el?.offsetWidth || 1, el?.offsetHeight || 1],
             pointerId: ev?.pointerId || 0
         });
 
