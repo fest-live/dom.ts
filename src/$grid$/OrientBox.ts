@@ -31,7 +31,6 @@ export class UIOrientBox extends HTMLElement {
         super();
         const shadowRoot = this.attachShadow({mode: "open"});
 
-        
         Promise.try(importCdn, ["u2re/theme"]).then((module)=>{
             // @ts-ignore
             this.#themeStyle = module?.default?.(this.shadowRoot);
