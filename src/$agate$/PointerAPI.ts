@@ -240,7 +240,7 @@ export const grabForDrag = async (
             //
             hm.duration = computeDuration();
             hm.movement = [...(ex?.movement || (hm.client ? [evc.client[0] - hm.client[0], evc.client[1] - hm.client[1]] : hm.movement))];
-            hm.client   = [...(evc?.client || [evc?.clientX || 0, evc?.clientY || 0] || [0, 0])];
+            hm.client   = [...(evc?.client || [evc?.offsetX || 0, evc?.offsetY || 0] || [0, 0])];
             hm.shifting[0] += hm.movement[0], hm.shifting[1] += hm.movement[1];
             hm.modified[0]  = hm.shifting[0], hm.modified[1]  = hm.shifting[1];
             changed = true;
