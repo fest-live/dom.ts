@@ -71,7 +71,8 @@ export class UniversalElementHandler {
     //
     _addEventListener(target, name, cb, option?) {
         // TODO: use wrap-map
-        const wrap = (ev) => { if (ev.target.matches(this.selector)) { cb?.call?.(ev.target ?? target, ev); } };
+        const wrap = (ev) => { if (typeof this.selector == "string" ? ev.target.matches(this.selector) : ev.target === this.selector)
+            { cb?.call?.(ev.target ?? target, ev); } };
         target?.addEventListener?.(this._redirectToBubble(name), wrap, option); return wrap;
     }
 
