@@ -57,6 +57,25 @@ export class UniversalElementHandler {
     }
 
     //
+    _redirectToBubble(eventName) {
+        return {
+            ["pointerenter"]: "pointerover",
+            ["pointerleave"]: "pointerout",
+            ["mouseenter"]: "mouseover",
+            ["mouseleave"]: "mouseout",
+            ["focus"]: "focusin",
+            ["blur"]: "focusout",
+        }?.[eventName] || eventName;
+    }
+
+    //
+    _addEventListener(target, name, cb, option?) {
+        // TODO: use wrap-map
+        const wrap = (ev) => { if (ev.target.matches(this.selector)) { cb?.call?.(ev.target ?? target, ev); } };
+        target?.addEventListener?.(this._redirectToBubble(name), wrap, option); return wrap;
+    }
+
+    //
     get(target, name, ctx) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
@@ -92,6 +111,7 @@ export class UniversalElementHandler {
         if (name === "current") return selected;
         if (name === "append") return (...args)=>selected?.append?.([...(args||[])]?.map?.((e)=>e?.element??e) || args);
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
+        if (name === "addEventListener") return (name, cb, opt?)=>this._addEventListener(target, name, cb, opt);
 
         // for BLU.E
         if (name === "element") {
