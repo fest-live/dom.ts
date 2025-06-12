@@ -11,8 +11,8 @@ export const bindBehavior = (element, behSet, behavior)=>{
 export const reflectBehaviors = (element, behaviors)=>{
     if (!element) return;
     if (behaviors) {
-        const behSet = boundBehaviors.get(element) ?? new Set();
-        if (!boundBehaviors.has(element)) { boundBehaviors.set(element, behSet); }
+        // !experimental `getOrInsert` feature!
+        const behSet = boundBehaviors.getOrInsert(element, new Set());
         [...(behaviors?.values?.() || [])].map((e)=>bindBehavior(element, behSet, e));
     }
     return element;

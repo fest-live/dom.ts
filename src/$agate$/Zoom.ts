@@ -14,22 +14,20 @@ const zoomValues = new WeakMap<HTMLElement, number>();
 
 //
 export const zoomOf = (element = document.documentElement) => {
-    if (zoomValues.has(element)) return zoomValues.get(element);
+    return zoomValues.getOrInsertComputed(element, ()=>{
+        // getting zoom performance broken...
+        const container: any = ((element?.matches?.("ui-orientbox") ? element : null) || element?.closest?.("ui-orientbox") || document.body) as HTMLElement;
 
-    // getting zoom performance broken...
-    const container: any = ((element?.matches?.("ui-orientbox") ? element : null) || element?.closest?.("ui-orientbox") || document.body) as HTMLElement;
+        // get software zoom value
+        if (container?.zoom) {
+            return (container?.zoom || 1);
+        }
 
-    // get software zoom value
-    if (container?.zoom) {
-        return (container?.zoom || 1);
-    }
-
-    // get and cache zoom value
-    if (element?.currentCSSZoom) {
-        const zoomValue = element?.currentCSSZoom || 1;
-        zoomValues?.set?.(element, zoomValue);
-        return zoomValue;
-    }
+        // get and cache zoom value
+        if (element?.currentCSSZoom) {
+            return element?.currentCSSZoom || 1;;
+        }
+    });
 }
 
 //
