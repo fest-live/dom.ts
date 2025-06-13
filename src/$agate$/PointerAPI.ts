@@ -253,6 +253,11 @@ export const grabForDrag = async (
                     holding: hm,
                 },
             }));
+
+            //
+            if (hm?.result?.[0] != null) hm.result[0].value = hm.modified[0] || 0;
+            if (hm?.result?.[1] != null) hm.result[1].value = hm.modified[1] || 0;
+            if (hm?.result?.[2] != null) hm.result[2].value = 0;
         }
     }), {capture: true}];
 
@@ -291,21 +296,4 @@ export const grabForDrag = async (
         em?.addEventListener?.("pointerup", ...releaseEvent);
         em?.addEventListener?.("click", ...releaseEvent);
     } else { hm.canceled = true; }
-
-    //
-    (async ()=>{
-        while (!hm.canceled) {
-
-            //
-            if (changed && hm?.result) {
-                changed = false;
-                if (hm?.result?.[0]) hm.result[0].value = hm.modified[0] || 0;
-                if (hm?.result?.[1]) hm.result[1].value = hm.modified[1] || 0;
-                if (hm?.result?.[2]) hm.result[2].value = 0;
-            }
-
-            //
-            await new Promise((r)=>requestAnimationFrame(r));
-        }
-    })();
 };
