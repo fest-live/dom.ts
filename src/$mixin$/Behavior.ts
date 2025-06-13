@@ -12,6 +12,7 @@ export const reflectBehaviors = (element, behaviors)=>{
     if (!element) return;
     if (behaviors) {
         // !experimental `getOrInsert` feature!
+        // @ts-ignore
         const behSet = boundBehaviors.getOrInsert(element, new Set());
         [...(behaviors?.values?.() || [])].map((e)=>bindBehavior(element, behSet, e));
     }

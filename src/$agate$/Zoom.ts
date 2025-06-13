@@ -14,6 +14,7 @@ const zoomValues = new WeakMap<HTMLElement, number>();
 
 //
 export const zoomOf = (element = document.documentElement) => {
+    // @ts-ignore
     return zoomValues.getOrInsertComputed(element, ()=>{
         // getting zoom performance broken...
         const container: any = ((element?.matches?.("ui-orientbox") ? element : null) || element?.closest?.("ui-orientbox") || document.body) as HTMLElement;
