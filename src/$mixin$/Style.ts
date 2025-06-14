@@ -136,8 +136,8 @@ export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], laye
 };
 
 //
-export const loadBlobStyle = (inline: string)=>{ const style = document.createElement("link"); Object.assign(style, {rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" }); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "href"]); document.head.append(style); return style; };
-export const loadInlineStyle = (inline: string, rootElement = document.head, layer: string = "")=>{
+export const loadBlobStyle   = (inline: string)=>{ const style = document.createElement("link"); Object.assign(style, {rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" }); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "href"]); document.head.append(style); return style; };
+export const loadInlineStyle = (inline: string, rootElement: any = document.head, layer: string = "")=>{
     const PLACE = (rootElement?.querySelector("head") ?? rootElement); if (PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); } // @ts-ignore
     const style = document.createElement("style"); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "innerHTML"], layer); PLACE?.prepend?.(style); return style;
 };

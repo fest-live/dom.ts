@@ -1,13 +1,14 @@
-
-import { importCdn } from "u2re/cdnImport";
-
-import { elementPointerMap } from "u2re/dom";
+import { elementPointerMap } from "../$agate$/PointerAPI"; // @ts-ignore
+import { loadInlineStyle } from "../$mixin$/Style";
 
 // @ts-ignore
 import styles from "./OrientBox.scss?inline&compress";
+
+//
+const html    = `<template><slot></slot></template>`;
 const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
 const loading = fetch(preInit, {priority: "high", keepalive: true, cache: "force-cache", mode: "same-origin"});
-const html = `<template><slot></slot></template>`;
+const styled  = loadInlineStyle(preInit, null, "ux-layer");
 
 //
 export class UIOrientBox extends HTMLElement {
@@ -41,16 +42,10 @@ export class UIOrientBox extends HTMLElement {
         //
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, "text/html");
-        dom.querySelector("template")?.content?.childNodes.forEach(cp => {
-            shadowRoot.appendChild(cp.cloneNode(true));
-        });
+        dom.querySelector("template")?.content?.childNodes.forEach(cp => shadowRoot.appendChild(cp.cloneNode(true)));
 
         //
-        const style = document.createElement("style");
-        style.innerHTML = `@import url("${preInit}");`;
-
-        //
-        shadowRoot.appendChild(style);
+        shadowRoot.appendChild(styled.cloneNode(true));
         requestAnimationFrame(()=>{
             this.style.setProperty("--orient", this.getAttribute("orient") || "0");
             this.style.setProperty("--zoom", this.getAttribute("zoom") || "1");
