@@ -22,6 +22,9 @@ export const animationSequence = (DragCoord = 0, ValStart: any = null, ValEnd: a
 
 //
 export const doAnimate = async (newItem, val, axis = "x", animate = false, signal?: AbortSignal)=>{
+    setProperty(newItem, "--p-cell-" + axis, newItem.style.getPropertyValue("--cell-" + axis) || 0);
+
+    //
     const drag = "--drag-" + swapped(axis);
     const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(
         parseFloat(newItem.style.getPropertyValue(drag)) || 0,
