@@ -74,3 +74,31 @@ export const getElementZoom = (element: Element): number => {
     }
     return zoom;
 };
+
+/**
+ * Starts/stops a requestAnimationFrame async scheduler loop.
+ * All scheduled cbs will be run after each rAF.
+ * @returns {{
+ *     canceled: boolean,
+ *     rAFs: Set<Function>,
+ *     last: any,
+ *     cancel: () => any,
+ *     shedule: (cb: Function) => any
+ * }}
+ */
+export const makeRAFCycle = () => {
+    const control: any = {
+        canceled: false,
+        rAFs: new Set<any>(),
+        last: null,
+        cancel() { this.canceled = true; cancelAnimationFrame(this.last); return this; },
+        shedule(cb: any) { this.rAFs.add(cb); return this; }
+    };
+    (async () => {
+        while (!control?.canceled) { // @ts-ignore
+            await Promise.all((control?.rAFs?.values?.() ?? [])?.map?.((rAF) => Promise.try(rAF)?.catch?.(console.warn.bind(console)))); control.rAFs?.clear?.();
+            await new Promise((res) => { control.last = requestAnimationFrame(res); });
+        }
+    })();
+    return control;
+};

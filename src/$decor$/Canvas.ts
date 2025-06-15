@@ -1,3 +1,4 @@
+import { makeRAFCycle } from "../$agate$/Utils";
 import { getCorrectOrientation, whenAnyScreenChanges } from "../$agate$/Viewport";
 const blobImageMap = new WeakMap(), delayed = new Map<number, Function | null>([]);
 const orientationNumberMap = {
@@ -16,14 +17,7 @@ const orientationNumberMap = {
 }*/
 
 //
-requestIdleCallback(async ()=>{
-    while(true) {
-        for (const dl of delayed.entries()) { dl[1]?.(); delayed.delete(dl[0]); }
-        try { await (new Promise((rs)=>requestAnimationFrame(rs))); } catch(e) { break; };
-    }
-}, {timeout: 100});
-
-//
+const sheduler = makeRAFCycle();
 export const callByFrame = (pointerId, cb)=>{ delayed.set(pointerId, cb); }
 export const cover = (ctx, img, scale = 1, port, orient = 0) => {
     const canvas = ctx.canvas;
@@ -90,7 +84,7 @@ export default class UICanvas extends HTMLCanvasElement {
         }
 
         //
-        requestAnimationFrame(()=>{
+        sheduler?.shedule?.(()=>{
             this.ctx = canvas.getContext("2d", {
                 alpha: true,
                 desynchronized: true,
@@ -141,35 +135,38 @@ export default class UICanvas extends HTMLCanvasElement {
     }
 
     //
-    #preload(src) { const ready = src || this.#loading; this.#loading = ready; return fetch(src)?.then?.(async (rsp)=> this.$useImageAsSource(await rsp.blob(), ready)?.catch(console.warn.bind(console)))?.catch?.(console.warn.bind(console)); }
-    #render(whatIsReady?: File|Blob|string) {
+    $renderPass(whatIsReady?: File|Blob|string) {
         const canvas = this, ctx = this.ctx, img = this.image;
         if (img && ctx && (whatIsReady == this.#loading || !whatIsReady)) {
+            if (whatIsReady) { this.#ready = whatIsReady; };
+            if (this.width  != this.#size[0]) { this.width  = this.#size[0]; };
+            if (this.height != this.#size[1]) { this.height = this.#size[1]; };
+            this.style.aspectRatio = `${this.width || 1} / ${this.height || 1}`;
+            //this.style.containIntrinsicInlineSize = `${this.width  || 1}px`;
+            //this.style.containIntrinsicBlockSize  = `${this.height || 1}px`;
 
-            // TODO! multiple canvas support
-            callByFrame(0, ()=>{
-                if (whatIsReady) { this.#ready = whatIsReady; };
-                if (this.width  != this.#size[0]) { this.width  = this.#size[0]; };
-                if (this.height != this.#size[1]) { this.height = this.#size[1]; };
-                this.style.aspectRatio = `${this.width || 1} / ${this.height || 1}`;
-                //this.style.containIntrinsicInlineSize = `${this.width  || 1}px`;
-                //this.style.containIntrinsicBlockSize  = `${this.height || 1}px`;
+            //
+            const ox = (this.#orient%2) || 0;
+            const port = img.width < img.height ? 1 : 0;
+            const scale = Math.max(
+                canvas[["width", "height"][ox]] / img[["width", "height"][port]],
+                canvas[["height", "width"][ox]] / img[["height", "width"][port]]);
 
-                //
-                const ox = (this.#orient%2) || 0;
-                const port = img.width < img.height ? 1 : 0;
-                const scale = Math.max(
-                    canvas[["width", "height"][ox]] / img[["width", "height"][port]],
-                    canvas[["height", "width"][ox]] / img[["height", "width"][port]]);
-
-                //
-                ctx.save();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                cover(ctx, img, scale, port, this.#orient);
-                ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
-                ctx.restore();
-            });
+            //
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            cover(ctx, img, scale, port, this.#orient);
+            ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
+            ctx.restore();
         }
+    }
+
+    //
+    #preload(src) { const ready = src || this.#loading; this.#loading = ready; return fetch(src)?.then?.(async (rsp)=> this.$useImageAsSource(await rsp.blob(), ready)?.catch(console.warn.bind(console)))?.catch?.(console.warn.bind(console)); }
+    #render(whatIsReady?: File|Blob|string) {
+        const ctx = this.ctx, img = this.image;
+        if (img && ctx && (whatIsReady == this.#loading || !whatIsReady))
+            { sheduler?.shedule?.(this.$renderPass?.bind?.(this)); }
     }
 }
 
