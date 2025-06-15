@@ -36,6 +36,13 @@ export const createImageBitmapCache = (blob)=>{
 }
 
 //
+const bindCache = new WeakMap();
+const bindCached = (cb, ctx)=>{
+    return bindCache.getOrInsert(cb, cb?.bind?.(ctx));
+}
+
+
+//
 export default class UICanvas extends HTMLCanvasElement {
     static observedAttributes = ["data-src"];
 
@@ -154,8 +161,7 @@ export default class UICanvas extends HTMLCanvasElement {
 
             //
             ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            cover(ctx, img, scale, port, this.#orient);
+            ctx.clearRect(0, 0, canvas.width, canvas.height); cover(ctx, img, scale, port, this.#orient);
             ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
             ctx.restore();
         }
@@ -166,7 +172,7 @@ export default class UICanvas extends HTMLCanvasElement {
     #render(whatIsReady?: File|Blob|string) {
         const ctx = this.ctx, img = this.image;
         if (img && ctx && (whatIsReady == this.#loading || !whatIsReady))
-            { sheduler?.shedule?.(this.$renderPass?.bind?.(this)); }
+            { sheduler?.shedule?.(bindCached(this.$renderPass, this)); }
     }
 }
 
