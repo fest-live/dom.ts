@@ -10,9 +10,9 @@ export const initTextStyle = (element, ctx)=>{
 
     //
     if (ctx && style) {
-        const fontWeight  = style.getPropertyValue('font-weight') || 'normal';
-        const fontSize    = style.getPropertyValue('font-size')   || '16px';
-        const fontFamily  = style.getPropertyValue('font-family') || 'Times New Roman';
+        const fontWeight  = (style.getPropertyValue('font-weight')  || 'normal');
+        const fontSize    = (style.getPropertyValue('font-size')    || '16px');
+        const fontFamily  = (style.getPropertyValue('font-family')  || 'Times New Roman');
         const fontStretch = (style.getPropertyValue('font-stretch') || 'normal') as CanvasFontStretch;
 
         //

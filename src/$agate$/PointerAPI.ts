@@ -200,11 +200,10 @@ export const grabForDrag = async (
     ex: any = {pointerId: 0},
     {
         shifting = [0, 0],
-        result = [{value: 0}, {value: 0}]
+        result   = [{value: 0}, {value: 0}]
     } = {}
 ) => {
     let last: any = ex?.detail || ex;
-    let changed: boolean = false;
     let frameTime = 0.01, lastLoop = performance.now(), thisLoop;
     const filterStrength  = 100;
     const computeDuration = () => {
@@ -243,7 +242,6 @@ export const grabForDrag = async (
             hm.client   = [...(evc?.client || [evc?.offsetX || 0, evc?.offsetY || 0] || [0, 0])];
             hm.shifting[0] += hm.movement[0], hm.shifting[1] += hm.movement[1];
             hm.modified[0]  = hm.shifting[0], hm.modified[1]  = hm.shifting[1];
-            changed = true;
 
             //
             em?.dispatchEvent?.(new CustomEvent("m-dragging", {
@@ -264,9 +262,6 @@ export const grabForDrag = async (
     //
     const releaseEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
-            changed = false;
-
-            //
             if (hm.canceled) return; hm.canceled = true;
             em?.removeEventListener?.("pointermove", ...moveEvent);
             em?.removeEventListener?.("pointercancel", ...releaseEvent);
@@ -296,4 +291,7 @@ export const grabForDrag = async (
         em?.addEventListener?.("pointerup", ...releaseEvent);
         em?.addEventListener?.("click", ...releaseEvent);
     } else { hm.canceled = true; }
+
+    //
+    return result;
 };
