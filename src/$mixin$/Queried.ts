@@ -186,9 +186,14 @@ export class UniversalElementHandler {
 }
 
 //
+const alreadyUsed = new WeakMap();
 export const Q = (selector, host = document.documentElement, index = 0) => {
+    if ((selector?.element ?? selector) instanceof HTMLElement) { // @ts-ignore
+        return alreadyUsed.getOrInsert(selector, new Proxy((selector as any)?.element ?? selector, new UniversalElementHandler("", index) as ProxyHandler<any>));
+    }
     if (typeof selector == "function") {
-        return new Proxy(selector, new UniversalElementHandler("", index) as ProxyHandler<any>);
+        const got: any = selector?.(); // @ts-ignore
+        return alreadyUsed.getOrInsert(selector, new Proxy(got?.element ?? got, new UniversalElementHandler("", index) as ProxyHandler<any>));
     }
     return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
