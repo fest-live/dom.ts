@@ -2,7 +2,9 @@ import { observeAttribute, observeAttributeBySelector } from "./Observer";
 import { getStyleRule } from "./Style";
 
 //
-export const extensions = { logAll(target, handler) { console.log(handler._getArray(target)); } };
+export const queryExtensions = { logAll(element) { console.log("attributes:", [...element?.attributes].map(x => ({ name: x.name, value: x.value })) ); } };
+
+//
 export class UniversalElementHandler {
     direction: "children" | "parent" = "children";
     selector: string | HTMLElement;
@@ -10,9 +12,9 @@ export class UniversalElementHandler {
 
     //
     constructor(selector, index = 0, direction: "children" | "parent" = "children") {
+        this.index     = index;
         this.selector  = selector;
         this.direction = direction;
-        this.index = index;
     }
 
     //
@@ -82,7 +84,7 @@ export class UniversalElementHandler {
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
 
         // Extensions
-        if (name in extensions) { return extensions[name].bind(null, target, this); }
+        if (name in queryExtensions) { return queryExtensions?.[name]?.bind?.(selected); }
         if (name === "length" && array?.length) { return array?.length; }
 
         //
@@ -92,18 +94,8 @@ export class UniversalElementHandler {
         }
 
         //
-        if (selected?.[name] != null) {
-            return typeof selected[name] === "function"
-                ? selected[name].bind(selected)
-                : selected[name];
-        }
-
-        //
-        if (array?.[name] != null) {
-            return typeof array[name] === "function"
-                ? array[name].bind(array)
-                : array[name];
-        }
+        if (selected?.[name] != null) { return typeof selected[name] === "function" ? selected[name].bind(selected) : selected[name]; }
+        if (   array?.[name] != null) { return typeof    array[name] === "function" ?    array[name].bind(array)    :    array[name]; }
 
         //
         if (name === "self") return target;
@@ -188,12 +180,13 @@ export class UniversalElementHandler {
 //
 const alreadyUsed = new WeakMap();
 export const Q = (selector, host = document.documentElement, index = 0) => {
-    if ((selector?.element ?? selector) instanceof HTMLElement) { // @ts-ignore
-        return alreadyUsed.getOrInsert(selector?.element ?? selector, new Proxy((selector as any)?.element ?? selector, new UniversalElementHandler("", index) as ProxyHandler<any>));
+    if ((selector?.element ?? selector) instanceof HTMLElement) {
+        const el = selector?.element ?? selector; // @ts-ignore
+        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
     }
     if (typeof selector == "function") {
-        const got: any = selector?.(); // @ts-ignore
-        return alreadyUsed.getOrInsert(selector, new Proxy(got?.element ?? got, new UniversalElementHandler("", index) as ProxyHandler<any>));
+        const got: any = selector?.(), el = got?.element ?? got; // @ts-ignore
+        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
     }
     return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
@@ -205,3 +198,8 @@ const proxied = (ref)=>{
     return actual;
 }
 */
+
+//
+export const extendQueryPrototype = (extended: any = {})=>{
+    return Object.assign(queryExtensions, extended);
+}
