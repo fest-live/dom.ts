@@ -84,7 +84,6 @@ export class UniversalElementHandler {
         // Extensions
         if (name in extensions) { return extensions[name].bind(null, target, this); }
         if (name === "length" && array?.length) { return array?.length; }
-        if (typeof name === "string" && /^\d+$/.test(name)) { return array[parseInt(name)]; }
 
         //
         if (["style", "attributeStyleMap"].indexOf(name) >= 0) {
@@ -126,6 +125,9 @@ export class UniversalElementHandler {
             const wk = new WeakRef(selected);
             return ()=>(wk?.deref()?.element ?? wk?.deref());
         }
+
+        //
+        if (typeof name === "string" && /^\d+$/.test(name)) { return array[parseInt(name)]; }
 
         //
         return;
