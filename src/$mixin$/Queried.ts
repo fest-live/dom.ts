@@ -3,10 +3,10 @@ import { getStyleRule } from "./Style";
 
 //
 export const queryExtensions = {
-    logAll() { console.log("attributes:", [...this?.attributes].map(x => ({ name: x.name, value: x.value })) ); },
-    append(...args) { return this?.append?.([...(args||[])]?.map?.((e)=>e?.element??e) || args) },
-    get current() { return this; },
-};
+    logAll (ctx) { return ()=> console.log("attributes:", [...ctx?.attributes].map(x => ({ name: x.name, value: x.value })) ); },
+    append (ctx) { return (...args)=> ctx?.append?.(...([...args||[]]?.map?.((e)=>e?.element??e) || args)) },
+    current(ctx) { return ctx; } // direct getter
+}
 
 //
 export class UniversalElementHandler {
@@ -88,7 +88,7 @@ export class UniversalElementHandler {
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
 
         // Extensions
-        if (name in queryExtensions) { return queryExtensions?.[name]?.bind?.(selected); }
+        if (name in queryExtensions) { return queryExtensions?.[name]?.(selected); }
         if (name === "length" && array?.length) { return array?.length; }
 
         //
@@ -190,7 +190,8 @@ export const Q = (selector, host = document.documentElement, index = 0) => {
     return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
 
-//
+// syntax:
+// - [name]: (ctx) => function() {}
 export const extendQueryPrototype = (extended: any = {})=>{
     return Object.assign(queryExtensions, extended);
 }
