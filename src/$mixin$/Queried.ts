@@ -2,7 +2,11 @@ import { observeAttribute, observeAttributeBySelector } from "./Observer";
 import { getStyleRule } from "./Style";
 
 //
-export const queryExtensions = { logAll(element) { console.log("attributes:", [...element?.attributes].map(x => ({ name: x.name, value: x.value })) ); } };
+export const queryExtensions = {
+    logAll() { console.log("attributes:", [...this?.attributes].map(x => ({ name: x.name, value: x.value })) ); },
+    append(...args) { return this?.append?.([...(args||[])]?.map?.((e)=>e?.element??e) || args) },
+    get current() { return this; },
+};
 
 //
 export class UniversalElementHandler {
@@ -88,6 +92,7 @@ export class UniversalElementHandler {
         if (name === "length" && array?.length) { return array?.length; }
 
         //
+        if (name === "_updateSelector") return (sel)=>(this.selector = sel || this.selector);
         if (["style", "attributeStyleMap"].indexOf(name) >= 0) {
             const basis = this.selector ? (typeof this.selector == "string" ? getStyleRule(this.selector) : (selected?.dataset?.id ? getStyleRule(`[data-id="${selected?.dataset?.id}"]`) : selected)) : (selected ?? target);
             if (basis?.[name] != null) { return basis?.[name]; }
@@ -99,9 +104,7 @@ export class UniversalElementHandler {
 
         //
         if (name === "self") return target;
-        if (name === "selector") return this.selector;
-        if (name === "current") return selected;
-        if (name === "append") return (...args)=>selected?.append?.([...(args||[])]?.map?.((e)=>e?.element??e) || args);
+        if (name === "selector") return this.selector;;
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
         if (name === "addEventListener") return (name, cb, opt?)=>this._addEventListener(target, name, cb, opt);
 
@@ -184,20 +187,8 @@ export const Q = (selector, host = document.documentElement, index = 0) => {
         const el = selector?.element ?? selector; // @ts-ignore
         return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
     }
-    if (typeof selector == "function") {
-        const got: any = selector?.(), el = got?.element ?? got; // @ts-ignore
-        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
-    }
     return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
-
-/* // WILL not be released!
-const proxied = (ref)=>{
-    const actual = Q((val)=>val); // или Q(()=>ref?.value)
-    subscribe(ref, (value, prop)=>actual?.(value))
-    return actual;
-}
-*/
 
 //
 export const extendQueryPrototype = (extended: any = {})=>{
