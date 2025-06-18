@@ -189,7 +189,7 @@ export class UniversalElementHandler {
 const alreadyUsed = new WeakMap();
 export const Q = (selector, host = document.documentElement, index = 0) => {
     if ((selector?.element ?? selector) instanceof HTMLElement) { // @ts-ignore
-        return alreadyUsed.getOrInsert(selector, new Proxy((selector as any)?.element ?? selector, new UniversalElementHandler("", index) as ProxyHandler<any>));
+        return alreadyUsed.getOrInsert(selector?.element ?? selector, new Proxy((selector as any)?.element ?? selector, new UniversalElementHandler("", index) as ProxyHandler<any>));
     }
     if (typeof selector == "function") {
         const got: any = selector?.(); // @ts-ignore
