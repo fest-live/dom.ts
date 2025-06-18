@@ -1,4 +1,3 @@
-//
 const onBorderObserve = new WeakMap<HTMLElement, Function[]>(), onContentObserve = new WeakMap<HTMLElement, Function[]>();
 const unwrapFromQuery = (element: any)=>{
     if (typeof element?.current == "object") { element = element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; };
