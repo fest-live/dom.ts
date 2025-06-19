@@ -150,21 +150,24 @@ interface PointerObject {
 
 //
 const clickPrevention = (element, pointerId = 0)=>{
+    const removeEvents = ()=>{
+        document.documentElement.removeEventListener("click", ...doc);
+        document.documentElement.removeEventListener("pointerdown", ...doc);
+        document.documentElement.removeEventListener("contextmenu", ...doc);
+
+        //
+        element?.removeEventListener?.("click", ...emt);
+        element?.removeEventListener?.("contextmenu", ...emt);
+        element?.removeEventListener?.("pointerdown", ...emt);
+    }
+
     //
     const preventClick = (e: PointerEvent | MouseEvent | CustomEvent | any) => {
-        // @ts-ignore
-        if (e?.pointerId == pointerId) {
+        if (e?.pointerId == pointerId || e?.pointerId == null || pointerId == null || pointerId < 0) {
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
-
-            //
-            document.documentElement.removeEventListener("click", ...doc);
-            document.documentElement.removeEventListener("contextmenu", ...doc);
-
-            //
-            element?.removeEventListener?.("click", ...emt);
-            element?.removeEventListener?.("contextmenu", ...emt);
+            removeEvents();
         }
     };
 
@@ -173,25 +176,10 @@ const clickPrevention = (element, pointerId = 0)=>{
     const doc: [(e: PointerEvent | MouseEvent | CustomEvent | any) => any, AddEventListenerOptions] = [preventClick, {once: true, capture: true}];
 
     //
-    {
-        document.documentElement.addEventListener("click", ...doc);
-        document.documentElement.addEventListener("contextmenu", ...doc);
-    }
-
-    {   //
-        element?.addEventListener?.("click", ...emt);
-        element?.addEventListener?.("contextmenu", ...emt);
-    }
-
-    //
-    setTimeout(() => {
-        element?.removeEventListener?.("click", ...emt);
-        element?.removeEventListener?.("contextmenu", ...emt);
-
-        //
-        document.documentElement.removeEventListener("click", ...doc);
-        document.documentElement.removeEventListener("contextmenu", ...doc);
-    }, 100);
+    document.documentElement.addEventListener("click"      , ...doc); element?.addEventListener?.("click"      , ...emt);
+    document.documentElement.addEventListener("pointerdown", ...doc); element?.addEventListener?.("pointerdown", ...emt);
+    document.documentElement.addEventListener("contextmenu", ...doc); element?.addEventListener?.("contextmenu", ...emt);
+    setTimeout(removeEvents, 100);
 }
 
 //
