@@ -110,12 +110,12 @@ export class DOMMixin {
     constructor(name) { if (name) { registerMixin(name, this); } }
 
     //
-    connect(wElement, wSelf, related) { return this; }
-    disconnect(wElement, wSelf, related) { return this; }
+    public connect(wElement, wSelf, related) { return this; }
+    public disconnect(wElement, wSelf, related) { return this; }
 
     //
-    storeForElement(element) { return namedStoreMaps.get(this.name)?.get?.(element); };
-    relatedForElement(element) { return getElementRelated(element); }
+    public storeForElement(element) { return namedStoreMaps.get(this.name)?.get?.(element); };
+    public relatedForElement(element) { return getElementRelated(element); }
 
     //
     get elements() { return mixinElements.get(this); }
