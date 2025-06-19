@@ -260,6 +260,7 @@ export const grabForDrag = async (
     }), {capture: true}];
 
     //
+    const promised = Promise.withResolvers();
     const releaseEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             if (hm.canceled) return; hm.canceled = true;
@@ -267,8 +268,7 @@ export const grabForDrag = async (
             em?.removeEventListener?.("pointercancel", ...releaseEvent);
             em?.removeEventListener?.("pointerup", ...releaseEvent);
             em?.removeEventListener?.("click", ...releaseEvent);
-            em?.releaseCapturePointer?.(evc?.pointerId);
-            evc?.release?.(em);
+            em?.releaseCapturePointer?.(evc?.pointerId); evc?.release?.(em);
 
             //
             if (evc.target != em && !hasParent(evc.target, em)) { return; };
@@ -279,13 +279,15 @@ export const grabForDrag = async (
                 bubbles: true,
                 detail: { event: (last = evc), holding: hm },
             }));
+
+            //
+            promised.resolve(result);
         }
     }), {capture: true}];
 
     //
     if (em?.dispatchEvent?.(new CustomEvent("m-dragstart", { bubbles: true, detail: { event: last, holding: hm }}))) {
-        ex?.capture?.(em);
-        em?.setPointerCapture?.(ex?.pointerId);
+        ex?.capture?.(em); em?.setPointerCapture?.(ex?.pointerId);
         em?.addEventListener?.("pointermove", ...moveEvent);
         em?.addEventListener?.("pointercancel", ...releaseEvent);
         em?.addEventListener?.("pointerup", ...releaseEvent);
@@ -293,5 +295,21 @@ export const grabForDrag = async (
     } else { hm.canceled = true; }
 
     //
-    return result;
+    return promised?.promise ?? result;
 };
+
+//
+export const bindDraggable = (elementOrEventListener, onEnd = ()=>{}, draggable: any|null = [{value: 0}, {value: 0}])=>{
+    if (!draggable) { return; }
+    const process = (ev)=>grabForDrag(elementOrEventListener, ev, {result: draggable})?.then?.(onEnd);
+    const dispose = (()=>{
+        if (typeof elementOrEventListener?.addEventListener == "function") {
+            elementOrEventListener.addEventListener("pointerdown", process);
+            return () => elementOrEventListener.removeEventListener("pointerdown", process);
+        } else
+        if (typeof elementOrEventListener == "function")  {
+            return elementOrEventListener(process);
+        }
+    })();
+    return { draggable, dispose, process };
+}
