@@ -116,9 +116,9 @@ export class UniversalElementHandler {
         }
 
         //
-        if (name === "deref") {
+        if (name === "deref" && (typeof selected == "object" || typeof selected == "function") && selected != null) {
             const wk = new WeakRef(selected);
-            return ()=>(wk?.deref()?.element ?? wk?.deref());
+            return ()=>(wk?.deref?.()?.element ?? wk?.deref?.());
         }
 
         //
