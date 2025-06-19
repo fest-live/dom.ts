@@ -1,4 +1,3 @@
-//
 export const namedStoreMaps = new Map(); // Map<name, WeakMap<element, obj>>
 
 //

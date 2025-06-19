@@ -1,4 +1,3 @@
-//
 const existsMap = new WeakMap<any, WR<any>>();
 class WeakRefProxyHandler<T extends object> implements ProxyHandler<object> {
     // here can be only options or left params

@@ -1,4 +1,3 @@
-//
 export class UIGridBoxElement extends HTMLElement {
     #initialized: boolean = false;
     #initialize() {
