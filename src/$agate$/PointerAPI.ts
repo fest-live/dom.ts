@@ -140,12 +140,12 @@ interface HoldingElement {
 //
 interface PointerObject {
     id: number;
-    movement: [number, number];
     down?: [number, number],
-    current: [number, number],
     event?: MouseEvent | PointerEvent | EvStub;
-    holding?: HoldingElement[];
     edges?: PointerEdge;
+    current: [number, number],
+    holding?: HoldingElement[];
+    movement: [number, number];
 };
 
 //
