@@ -81,10 +81,9 @@ export class UniversalElementHandler {
     _addEventListener(target, name, cb, option?) {
         const eventName = this._redirectToBubble(name);
         const wrap = (ev) => {
-            const tg = (ev.currentTarget ?? ev.target) ?? (typeof this.selector != "string" ? this.selector : null) ?? target;
-            if (typeof this.selector == "string" ? tg.matches(this.selector) : tg === this.selector) {
-                cb?.call?.(tg, ev);
-            }
+            const tg = (ev?.target) ?? (typeof this.selector != "string" ? this.selector : null) ?? (ev?.currentTarget ?? target);
+            if (typeof this.selector == "string" ? tg.matches(this.selector) : tg === this.selector)
+                { cb?.call?.(tg, ev); }
         };
         target?.addEventListener?.(eventName, wrap, option);
 
