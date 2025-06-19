@@ -14,6 +14,9 @@ export class UniversalElementHandler {
     selector: string | HTMLElement;
     index: number = 0;
 
+    // Внутри UniversalElementHandler
+    private _eventMap = new WeakMap<object, Map<string, Map<Function, {wrap: Function, option: any}>>>();
+
     //
     constructor(selector, index = 0, direction: "children" | "parent" = "children") {
         this.index     = index;
@@ -76,10 +79,32 @@ export class UniversalElementHandler {
 
     //
     _addEventListener(target, name, cb, option?) {
-        // TODO: use wrap-map
-        const wrap = (ev) => { if (typeof this.selector == "string" ? ev.target.matches(this.selector) : ev.target === this.selector)
-            { cb?.call?.(ev.target ?? target, ev); } };
-        target?.addEventListener?.(this._redirectToBubble(name), wrap, option); return wrap;
+        const eventName = this._redirectToBubble(name);
+        const wrap = (ev) => {
+            const tg = (ev.currentTarget ?? ev.target) ?? (typeof this.selector != "string" ? this.selector : null) ?? target;
+            if (typeof this.selector == "string" ? tg.matches(this.selector) : tg === this.selector) {
+                cb?.call?.(tg, ev);
+            }
+        };
+        target?.addEventListener?.(eventName, wrap, option);
+
+        // @ts-ignore
+        const eventMap = this._eventMap.getOrInsert(target, new Map())!;
+        const cbMap = eventMap.getOrInsert(eventName, new WeakMap())!;
+        cbMap.set(cb, {wrap, option});
+        return wrap;
+    }
+
+    _removeEventListener(target, name, cb, option?) {
+        const eventName = this._redirectToBubble(name);
+        const eventMap = this._eventMap.get(target);
+        if (!eventMap) return;
+        const cbMap = eventMap.get(eventName);
+        const entry = cbMap?.get?.(cb);
+        target?.removeEventListener?.(eventName, entry?.wrap ?? cb, option ?? entry?.option ?? {});
+        cbMap?.delete?.(cb);
+        if (cbMap?.size === 0) eventMap?.delete?.(eventName);
+        if (eventMap.size === 0) this._eventMap.delete(target);
     }
 
     //
@@ -94,7 +119,7 @@ export class UniversalElementHandler {
         //
         if (name === "_updateSelector") return (sel)=>(this.selector = sel || this.selector);
         if (["style", "attributeStyleMap"].indexOf(name) >= 0) {
-            const basis = this.selector ? (typeof this.selector == "string" ? getStyleRule(this.selector) : (selected?.dataset?.id ? getStyleRule(`[data-id="${selected?.dataset?.id}"]`) : selected)) : (selected ?? target);
+            const basis = (this.selector ? (typeof this.selector == "string" ? getStyleRule(this.selector, null, "ux-query", target) : (selected?.dataset?.id ? getStyleRule(`[data-id="${selected?.dataset?.id}"]`) : selected)) : (selected ?? target)) ?? selected;
             if (basis?.[name] != null) { return basis?.[name]; }
         }
 
@@ -107,6 +132,7 @@ export class UniversalElementHandler {
         if (name === "selector") return this.selector;;
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
         if (name === "addEventListener") return (name, cb, opt?)=>this._addEventListener(target, name, cb, opt);
+        if (name === "removeEventListener") return (name, cb, opt?)=>this._removeEventListener(target, name, cb, opt);
 
         // for BLU.E
         if (name === "element") {

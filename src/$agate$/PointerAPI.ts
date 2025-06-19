@@ -35,7 +35,7 @@ export const agWrapEvent = (cb)=>{
         let {pointerCache, pointerMap} = elementPointerMap?.get?.(el) || { pointerCache: new Map<number, any>(), pointerMap: new Map<number, any>() };
 
         //const zoom: number = zoomOf(ev?.target || el) || 1;
-        const coord: [number, number] = [(ev?.offsetX || 0), (ev?.offsetY || 0)];
+        const coord: [number, number] = [(ev?.layerX || 0), (ev?.layerY || 0)];
         const cache: any = pointerCache?.get?.(ev?.pointerId || 0) || {
             client: coord,
             orient: null,
@@ -239,7 +239,7 @@ export const grabForDrag = async (
             //
             hm.duration = computeDuration();
             hm.movement = [...(ex?.movement || (hm.client ? [evc.client[0] - hm.client[0], evc.client[1] - hm.client[1]] : hm.movement))];
-            hm.client   = [...(evc?.client || [evc?.offsetX || 0, evc?.offsetY || 0] || [0, 0])];
+            hm.client   = [...(evc?.client  || [evc?.layerX || 0, evc?.layerY || 0] || [0, 0])];
             hm.shifting[0] += hm.movement[0], hm.shifting[1] += hm.movement[1];
             hm.modified[0]  = hm.shifting[0], hm.modified[1]  = hm.shifting[1];
 

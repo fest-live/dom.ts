@@ -22,8 +22,24 @@ export const getStyleLayer = (layerName, sheet?)=>{
 }
 
 //
-export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query") => {
-    sheet ||= styleElement.sheet;
+export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis = null) => {
+    // Определяем корень (ShadowRoot или document)
+    // @ts-ignore
+    const root = basis?.getRootNode ? basis.getRootNode() : document;
+
+    //
+    let $styleElement: any;// = styleElement;
+    if (root instanceof ShadowRoot) {
+        // Ищем style внутри ShadowRoot
+        if (!($styleElement = root.querySelector('style[data-ux-query]'))) {
+            $styleElement = document.createElement('style');
+            $styleElement.setAttribute('data-ux-query', '');
+            root.appendChild($styleElement);
+        }
+    } else { $styleElement = styleElement; }
+
+    //
+    sheet ||= $styleElement?.sheet || sheet;
 
     // Если не указан слой — работаем как раньше
     if (!layerName) {
@@ -33,9 +49,8 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
     }
 
     //
-    return getStyleRule(selector, getStyleLayer(layerName), null);
+    return getStyleRule(selector, getStyleLayer(layerName, sheet), null, basis);
 };
-
 
 //
 export const setStyleProperty = (element, name, value: any)=>{
@@ -145,14 +160,14 @@ export const loadInlineStyle = (inline: string, rootElement: any = document.head
 //
 export const setProperty = (target, name, value, importance = "")=>{
     if (!target) return;
-    if ("attributeStyleMap" in target) {
-        const raw = target.attributeStyleMap.get(name), prop = raw?.[0] ?? raw?.value;
-        if (parseFloat(prop) != value || prop != value || !prop) {
+    if ("attributeStyleMap" in target && typeof value != "string") {
+        const raw = target.attributeStyleMap.get(name), oldv = raw?.[0] ?? raw?.value;
+        if (parseFloat(value) != parseFloat(oldv) || oldv != value || !value) {
             if (raw?.value != null) { raw.value = value; } else { target.attributeStyleMap.set(name, value); };
         }
     } else {
-        const prop = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(prop) != value || prop != value || !prop) {
+        const oldv = target?.style?.getPropertyValue?.(name);
+        if (parseFloat(oldv) != value || oldv != value || !value) {
             target?.style?.setProperty?.(name, value, importance);
         }
     }

@@ -92,11 +92,11 @@ export const observeAttribute = (element, attribute, cb) => {
 
 //
 export const observeAttributeBySelector = (element, selector, attribute, cb) => {
-    const attributeList = new Set<string>((attribute.split(",") || [attribute]).map((s) => s.trim()));
+    const attributeList = new Set<string>([...(attribute.split(",") || [attribute])].map((s) => s.trim()));
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
             if (mutation.type == "childList") {
-                const addedNodes = Array.from(mutation.addedNodes) || [];
+                const addedNodes   = Array.from(mutation.addedNodes)   || [];
                 const removedNodes = Array.from(mutation.removedNodes) || [];
 
                 //
@@ -104,7 +104,7 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
                 removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=>Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
 
                 //
-                [...Array.from((new Set(addedNodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector)).forEach((target)=>{
+                [...new Set(addedNodes)]?.filter((el: any)=>el?.matches?.(selector))?.map?.((target)=>{
                     attributeList.forEach((attribute)=>{
                         cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer);
                     });
@@ -127,7 +127,7 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
     });
 
     //
-    Array.from(element.querySelectorAll(selector)).forEach((target)=>attributeList.forEach((attribute)=>cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer)));
+    [...element.querySelectorAll(selector)].map((target)=>attributeList.forEach((attribute)=>cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer)));
     return observer;
 };
 
