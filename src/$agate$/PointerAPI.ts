@@ -287,9 +287,9 @@ export const grabForDrag = async (
 };
 
 //
-export const bindDraggable = (elementOrEventListener, onEnd:any = ()=>{}, draggable: any|null = [{value: 0}, {value: 0}], shifting = [0, 0])=>{
+export const bindDraggable = (elementOrEventListener, onEnd:any = ()=>{}, draggable: any|null = [{value: 0}, {value: 0}], shifting: any = [0, 0])=>{
     if (!draggable) { return; }
-    const process = (ev)=>grabForDrag(elementOrEventListener, ev, {result: draggable, shifting})?.then?.(onEnd);
+    const process = (ev)=>grabForDrag(elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.() : shifting})?.then?.(onEnd);
     const dispose = (()=>{
         if (typeof elementOrEventListener?.addEventListener == "function") {
             elementOrEventListener.addEventListener("pointerdown", process);
