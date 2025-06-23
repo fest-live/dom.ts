@@ -14,10 +14,8 @@ export class UniversalElementHandler {
     selector: string | HTMLElement;
     index: number = 0;
 
-    // Внутри UniversalElementHandler
-    private _eventMap = new WeakMap<object, Map<string, Map<Function, {wrap: Function, option: any}>>>();
-
     //
+    private _eventMap = new WeakMap<object, Map<string, Map<Function, {wrap: Function, option: any}>>>();
     constructor(selector, index = 0, direction: "children" | "parent" = "children") {
         this.index     = index;
         this.selector  = selector;
@@ -25,21 +23,12 @@ export class UniversalElementHandler {
     }
 
     //
-    //_getArray   (target) { return (typeof this.selector == "string") ? Array.from(target?.querySelectorAll?.(this.selector) ?? []) : (Array.isArray(this.selector) ? this.selector : [this.selector]); }
-    //_getSelected(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector)) : this.selector; }
-    //_getWClosest(target) { return (typeof this.selector == "string") ? (target?.matches?.(this.selector) ? target : target?.closest?.(this.selector)) : this.selector; }
-
-    //
-    _observeAttributes(target, attribute, cb) {
-        return (typeof this.selector == "string" ? observeAttributeBySelector(target, this.selector, attribute, cb) : observeAttribute(target ?? this.selector, attribute, cb));
-    }
+    _observeAttributes(target, attribute, cb)
+        { return (typeof this.selector == "string" ? observeAttributeBySelector(target, this.selector, attribute, cb) : observeAttribute(target ?? this.selector, attribute, cb)); }
 
     //
     _getArray(target) {
-        if (typeof target == "function") { target = (target?.() || this.selector) || target; };
-        if (!this.selector) return [target];
-
-        //
+        if (typeof target == "function") { target = this.selector || target?.(this.selector); }; if (!this.selector) return [target];
         if (typeof this.selector == "string") {
             const inclusion = target?.matches?.(this.selector) ? [target] : [];
             if (this.direction === "children") {
@@ -56,8 +45,7 @@ export class UniversalElementHandler {
 
     //
     _getSelected(target) {
-        if (typeof target == "function") { target = (target?.() || this.selector) || target; };
-        if (!this.selector) return target;
+        if (typeof target == "function") { target = this.selector || target?.(this.selector); }; if (!this.selector) return target;
         if (typeof this.selector == "string") {
             if (this.direction === "children") { return target?.matches?.(this.selector) ? target : target?.querySelector?.(this.selector); } else
             if (this.direction === "parent"  ) { return target?.matches?.(this.selector) ? target : target?.closest?.(this.selector);}
