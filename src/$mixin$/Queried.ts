@@ -212,6 +212,11 @@ export const Q = (selector, host = document.documentElement, index = 0) => {
         const el = selector?.element ?? selector; // @ts-ignore
         return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
     }
+    // is "ref" hook!
+    if (typeof selector == "function") {
+        const el = selector; // @ts-ignore
+        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
+    }
     return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
 }
 

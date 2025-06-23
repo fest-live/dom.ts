@@ -9,7 +9,7 @@ export const getSpan = (el, ax)=>{ const prop = el.style.getPropertyValue(["--ox
 export const redirectCell = ($preCell: [number, number], gridArgs: GridArgsType, orient: number = 0): [number, number] => {
     const preCell: [number, number] = [...$preCell]; // make non-conflict copy
     const list = Array.from(gridArgs?.list||[]);
-    const icons: GridItemType[] = list?.length > 0 ? (list?.map((id) => get(gridArgs?.items, id)).filter((m) => !!m)) : Array.from(gridArgs?.items?.values());
+    const icons: GridItemType[] = list?.length > 0 ? (list?.map((id) => get(gridArgs?.items, id)).filter((m) => !!m)) : Array.from(gridArgs?.items?.values?.() || []);
     const item = gridArgs?.item || {};
     const checkBusy = (cell): boolean => {
         return icons
