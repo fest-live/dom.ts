@@ -82,15 +82,12 @@ export class UniversalElementHandler {
         return wrap;
     }
 
+    //
     _removeEventListener(target, name, cb, option?) {
-        const eventName = this._redirectToBubble(name);
-        const eventMap = this._eventMap.get(target);
-        if (!eventMap) return;
-        const cbMap = eventMap.get(eventName);
-        const entry = cbMap?.get?.(cb);
+        const eventName = this._redirectToBubble(name), eventMap = this._eventMap.get(target);
+        if (!eventMap) return; const cbMap = eventMap.get(eventName), entry = cbMap?.get?.(cb);
         target?.removeEventListener?.(eventName, entry?.wrap ?? cb, option ?? entry?.option ?? {});
-        cbMap?.delete?.(cb);
-        if (cbMap?.size === 0) eventMap?.delete?.(eventName);
+        cbMap?.delete?.(cb); if (cbMap?.size === 0) eventMap?.delete?.(eventName);
         if (eventMap.size === 0) this._eventMap.delete(target);
     }
 

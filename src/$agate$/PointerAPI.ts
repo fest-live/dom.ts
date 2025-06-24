@@ -225,11 +225,11 @@ export const grabForDrag = async (
             evc?.stopImmediatePropagation?.();
 
             //
-            hm.duration = computeDuration();
-            hm.movement = [...(ex?.movement || (hm.client ? [evc.client[0] - hm.client[0], evc.client[1] - hm.client[1]] : hm.movement))];
-            hm.client   = [...(evc?.client  || [evc?.layerX || 0, evc?.layerY || 0] || [0, 0])];
-            hm.shifting[0] += hm.movement[0], hm.shifting[1] += hm.movement[1];
-            hm.modified[0]  = hm.shifting[0], hm.modified[1]  = hm.shifting[1];
+            const client = [...(evc?.client  || [evc?.layerX || 0, evc?.layerY || 0] || [0, 0])]; hm.duration = computeDuration();
+            hm.movement  = [...(hm.client ? [client?.[0] - (hm.client?.[0] || 0), client?.[1] - (hm.client?.[1] || 0)] : [0, 0])];
+            hm.client    = client;
+            hm.shifting[0] +=  hm.movement[0] || 0                   , hm.shifting[1] +=  hm.movement[1] || 0;
+            hm.modified[0]  = (hm.shifting[0] ?? hm.modified[0]) || 0, hm.modified[1]  = (hm.shifting[1] ?? hm.modified[1]) | 0;
 
             //
             em?.dispatchEvent?.(new CustomEvent("m-dragging", {
@@ -289,7 +289,7 @@ export const grabForDrag = async (
 //
 export const bindDraggable = (elementOrEventListener, onEnd:any = ()=>{}, draggable: any|null = [{value: 0}, {value: 0}], shifting: any = [0, 0])=>{
     if (!draggable) { return; }
-    const process = (ev)=>grabForDrag(elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.() : shifting})?.then?.(onEnd);
+    const process = (ev, el)=>grabForDrag(el ?? elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.() : shifting})?.then?.(onEnd);
     const dispose = (()=>{
         if (typeof elementOrEventListener?.addEventListener == "function") {
             elementOrEventListener.addEventListener("pointerdown", process);
