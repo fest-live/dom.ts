@@ -1,5 +1,6 @@
 //import { getBoundingOrientRect } from "./Zoom";
 import { cvt_cs_to_os } from "./Convert";
+import { borderBoxHeight, borderBoxWidth, contentBoxHeight, contentBoxWidth } from "./Utils";
 
 //
 export const getZoom = ()=>{
@@ -89,3 +90,9 @@ export const getBoundingOrientRect = (element, orient: number|null|undefined = n
     const [width, height] = (or_i%2) ? [nbx.height, nbx.width] : [nbx.width, nbx.height];
     return { left, top, right, bottom, width, height };
 }
+
+//
+export const bbw    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[borderBoxHeight]  : el[borderBoxWidth]);
+export const bbh    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[borderBoxWidth]   : el[borderBoxHeight]);
+export const cbw    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[contentBoxHeight] : el[contentBoxWidth]);
+export const cbh    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[contentBoxWidth]  : el[contentBoxHeight]);
