@@ -25,6 +25,7 @@ export function getOffsetParentChain(element: Element): Element[] {
 }
 
 //
+export function handleListeners(root, fn, handlers) { Object.entries(handlers).forEach(([name, cb]) => root?.[fn]?.call?.(root, name, cb)); }
 export function isNearlyIdentity(matrix: DOMMatrix, epsilon: number = 1e-6): boolean {
     return (
         Math.abs(matrix.a - 1) < epsilon &&
