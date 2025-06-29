@@ -1,13 +1,9 @@
 const onBorderObserve = new WeakMap<HTMLElement, Function[]>(), onContentObserve = new WeakMap<HTMLElement, Function[]>();
-const unwrapFromQuery = (element: any)=>{
-    if (typeof element?.current == "object") { element = element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; };
-    return element;
-}
+const unwrapFromQuery = (element: any) => { if (typeof element?.current == "object") { element = element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; }; return element; }
 
 // TODO: support of fragments
 export const observeContentBox = (element, cb) => {
     if (!onContentObserve.has(element = unwrapFromQuery(element))) {
-        //
         const callbacks: Function[] = [];
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
@@ -32,18 +28,14 @@ export const observeContentBox = (element, cb) => {
     }
 
     //
-    onContentObserve.get(element)?.push(cb);
+    onContentObserve.get(element)?.push?.(cb);
+    return { disconnect: ()=>(onContentObserve.get(element)?.splice?.(onContentObserve.get(element)?.indexOf(cb) || -1, 1)) };
 };
 
 // TODO: support of fragments
 export const observeBorderBox = (element, cb) => {
-    element = unwrapFromQuery(element);
-
-    //
-    if (!onBorderObserve.has(element)) {
+    if (!onBorderObserve.has(element = unwrapFromQuery(element))) {
         const callbacks: Function[] = [];
-
-        //
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 if (entry.borderBoxSize) {
@@ -67,7 +59,8 @@ export const observeBorderBox = (element, cb) => {
     }
 
     //
-    onBorderObserve.get(element)?.push(cb);
+    onBorderObserve.get(element)?.push?.(cb);
+    return { disconnect: ()=>(onBorderObserve.get(element)?.splice?.(onBorderObserve.get(element)?.indexOf(cb) || -1, 1)) };
 }
 
 //
