@@ -25,7 +25,7 @@ export function getOffsetParentChain(element: Element): Element[] {
 }
 
 //
-export function handleListeners(root, fn, handlers) { Object.entries(handlers).forEach(([name, cb]) => root?.[fn]?.call?.(root, name, cb)); }
+export function handleListeners(root, fn, handlers) { root = (root instanceof WeakRef ? root.deref() : root); Object.entries(handlers).forEach(([name, cb]) => root?.[fn]?.call?.(root, name, cb)); }
 export function isNearlyIdentity(matrix: DOMMatrix, epsilon: number = 1e-6): boolean {
     return (
         Math.abs(matrix.a - 1) < epsilon &&
@@ -49,8 +49,7 @@ export const getTransform = (el)=>{
 
 //
 export const getTransformOrigin = (el)=>{
-    const style = getComputedStyle(el);
-    const cssOrigin = style.getPropertyValue("transform-origin") || `50% 50%`;
+    const style = getComputedStyle(el), cssOrigin = style?.getPropertyValue?.("transform-origin") || `50% 50%`;
     return parseOrigin(cssOrigin, el);
 };
 
@@ -155,22 +154,6 @@ export const clamp  = (min, val, max) => Math.max(min, Math.min(val, max));
 export const UUIDv4 = () => { return crypto?.randomUUID ? crypto?.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)); };
 export const MOCElement  = (element: HTMLElement | null, selector: string): HTMLElement | null => { return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null; };
 export const includeSelf = (target, selector)=>{ return (target.querySelector(selector) ?? (target.matches(selector) ? target : null)); }
-export const setProperty = (target, name, value, importance = "")=>{
-    if ("attributeStyleMap" in target) {
-        const raw = target.attributeStyleMap.get(name);
-        const prop = raw?.[0] ?? raw?.value;
-        if (parseFloat(prop) != value && prop != value || prop == null) {
-            //if (raw?.[0] != null) { raw[0] = value; } else
-            if (raw?.value != null) { raw.value = value; } else
-            { target.attributeStyleMap.set(name, value); };
-        }
-    } else {
-        const prop = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(prop) != value && prop != value || prop == null) {
-            target?.style?.setProperty?.(name, value, importance);
-        }
-    }
-}
 
 //
 export const borderBoxWidth   = Symbol("@border-box-width") , borderBoxHeight  = Symbol("@border-box-height");

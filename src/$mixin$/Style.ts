@@ -161,13 +161,14 @@ export const setProperty = (target, name, value, importance = "")=>{
     if (!target) return;
     if ("attributeStyleMap" in target && typeof value != "string") {
         const raw = target.attributeStyleMap.get(name), oldv = raw?.[0] ?? raw?.value;
-        if (parseFloat(value) != parseFloat(oldv) || oldv != value || !value) {
+        if (parseFloat(value) != parseFloat(oldv) || oldv !== value || !oldv) {
             if (raw?.value != null) { raw.value = value; } else { target.attributeStyleMap.set(name, value); };
         }
     } else {
         const oldv = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(oldv) != value || oldv != value || !value) {
+        if (parseFloat(oldv) != value || oldv !== value || !oldv) {
             target?.style?.setProperty?.(name, value, importance);
         }
     }
 }
+
