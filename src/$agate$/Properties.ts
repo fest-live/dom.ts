@@ -1,4 +1,3 @@
-//
 [   // @ts-ignore
     { name: "--screen-width",  syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
     { name: "--screen-height", syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
@@ -23,6 +22,7 @@
     { name: "--shift-x",       syntax: "<number>",           inherits: true, initialValue: "0" },
     { name: "--shift-y",       syntax: "<number>",           inherits: true, initialValue: "0" }
 ].forEach((options: any) => {
-    try { CSS?.registerProperty?.(options); }
-    catch (e) { console.warn(e); }
+    try
+        { CSS?.registerProperty?.(options); } catch (e)
+        { console.warn(e); }
 });

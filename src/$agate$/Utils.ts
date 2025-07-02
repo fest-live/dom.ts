@@ -1,7 +1,3 @@
-/*
- * Made by o1-preview, with my rewriting, but who I am? I don't say...
- */
-
 //
 export type Point = DOMPoint;
 export const getPxValue = (element, name) => {
@@ -99,6 +95,15 @@ export const makeRAFCycle = () => {
     return control;
 };
 
+/**
+ * Produces a "rAF behavior" callback, which defers calls via requestAnimationFrame cycle
+ * @param {Function} cb function to call
+ * @param {ReturnType<typeof makeRAFCycle>} [shed]
+ * @returns {Function}
+ */
+export const RAFBehavior = (cb, shed = makeRAFCycle()) => {
+    return (...args) => { return shed.shedule(() => cb?.(...args)); }
+}
 
 //
 export interface InteractStatus { pointerId?: number; };
