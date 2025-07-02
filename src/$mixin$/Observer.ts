@@ -63,6 +63,16 @@ export const observeBorderBox = (element, cb) => {
     return { disconnect: ()=>(onBorderObserve.get(element)?.splice?.(onBorderObserve.get(element)?.indexOf(cb) || -1, 1)) };
 }
 
+/*
+    const config = {
+        attributeFilter: [attribute],
+        attributeOldValue: true,
+        attributes: true,
+        childList: false,
+        subtree: false,
+    };
+*/
+
 //
 export const observeAttribute = (element, attribute, cb) => {
     if (typeof element?.selector == "string") { return observeAttributeBySelector(element, element?.selector, attribute, cb); };
@@ -71,9 +81,8 @@ export const observeAttribute = (element, attribute, cb) => {
     const attributeList = new Set<string>((attribute.split(",") || [attribute]).map((s) => s.trim()));
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
-            if (mutation.attributeName && attributeList.has(mutation.attributeName)) {
-                cb(mutation, observer);
-            }
+            if (mutation.attributeName && attributeList.has(mutation.attributeName))
+                { cb(mutation, observer); }
         }
     });
 
