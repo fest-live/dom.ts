@@ -239,11 +239,3 @@ export const blockClickTrigger = (_: MouseEvent | PointerEvent | TouchEvent | nu
         ROOT.removeEventListener("contextmenu", blocker, options);
     }, 100);
 }
-
-//
-export const preloadStyle = (styles: string)=>{
-    const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
-    const loading = fetch(preInit, {priority: "high", keepalive: true, cache: "force-cache", mode: "same-origin"}); // @ts-ignore
-    const styled  = loadInlineStyle(preInit, null, "ux-layer");
-    return styled;
-}
