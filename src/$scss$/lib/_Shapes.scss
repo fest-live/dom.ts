@@ -24,13 +24,33 @@
 };
 
 // F(X):[x,y] where X:[0..1]
-@function WavyFx($step: 0) {
+@#{"function --wavy-step(--step <number>)"} {
+    $step: var(--step, 0);
     $angle: calc(($step * 2) * 1rad * #{"pi"});
     $variant: calc(cos(var(--clip-freq, 8) * #{$angle}) * 0.5 + 0.5);
     $adjust: calc($variant * var(--clip-amplitude, 0));
     $x: calc((0.5 + (cos(#{$angle}) * (0.5 - #{$adjust}))) * var(--icon-size, 100%));
     $y: calc((0.5 + (sin(#{$angle}) * (0.5 - #{$adjust}))) * var(--icon-size, 100%));
-    @return "#{$x} #{$y}";
+    result: #{$x} #{$y};
+}
+
+// F(X):[x,y] where X:[0..1]
+@function WavyFx($step: 0) {
+/*
+    $angle: calc(($step * 2) * 1rad * #{"pi"});
+    $variant: calc(cos(var(--clip-freq, 8) * #{$angle}) * 0.5 + 0.5);
+    $adjust: calc($variant * var(--clip-amplitude, 0));
+    $x: calc((0.5 + (cos(#{$angle}) * (0.5 - #{$adjust}))) * var(--icon-size, 100%));
+    $y: calc((0.5 + (sin(#{$angle}) * (0.5 - #{$adjust}))) * var(--icon-size, 100%));
+    @if $step == 0 {
+        @return "from #{$x} #{$y}";
+    } @else {
+        @return "smooth to #{$x} #{$y}";
+    }
+*/
+    @if $step == 0
+        { @return "from --wavy-step(#{$step})"; } @else
+        { @return "smooth to --wavy-step(#{$step})"; }
 }
 
 // space cadet or cheater-tale
@@ -40,7 +60,7 @@
     @for $i from 1 through $steps {
         $points: list.append($points, meta.call($fx, math.div($i, $steps)));
     }
-    @return polygon(#{fl.join($points, ", ")});
+    @return shape(#{fl.join($points, ", ")});
 }
 
 //
@@ -52,20 +72,4 @@
     //--icon-size: 100%;
     clip-path: var(--clip-path);
     border-radius: calc(var(--icon-size, 100%) * 0.5);
-}
-
-//
-:where(.tear-shaped) {
-    border-radius: calc(var(--icon-size, 100%) * 0.5);
-    border-end-end-radius: calc(var(--icon-size, 100%) * 0.125);
-}
-
-//
-:where(.circle-shaped) {
-    border-radius: calc(var(--icon-size, 100%) * 0.5);
-}
-
-//
-:where(.square-shaped) {
-    border-radius: calc(var(--icon-size, 100%) * 0.25);
 }
