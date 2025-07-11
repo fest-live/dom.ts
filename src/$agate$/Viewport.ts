@@ -51,26 +51,48 @@ export const getCorrectOrientation = () => {
 };
 
 //
-export const whenAnyScreenChanges = (cb)=>{
-    if ("virtualKeyboard" in navigator) {
-        // @ts-ignore
-        navigator?.virtualKeyboard?.addEventListener?.(
-            "geometrychange",
-            cb,
-            {passive: true}
+const passiveOpts = { passive: true };
+export const whenAnyScreenChanges = (cb) => {
+    const unsubscribers = [];
+
+    if ("virtualKeyboard" in navigator) { // @ts-ignore
+        navigator.virtualKeyboard.addEventListener?.("geometrychange", cb, passiveOpts); // @ts-ignore
+        unsubscribers.push(() =>
+            // @ts-ignore
+            navigator.virtualKeyboard.removeEventListener?.("geometrychange", cb, passiveOpts)
         );
     }
 
-    //
-    self?.addEventListener("resize", cb, { passive: true });
-    window?.visualViewport?.addEventListener?.("scroll", cb);
-    window?.visualViewport?.addEventListener?.("resize", cb);
-    screen?.orientation.addEventListener("change", cb, { passive: true });
-    document?.documentElement.addEventListener("DOMContentLoaded", cb, {passive: true });
-    document?.documentElement.addEventListener("fullscreenchange", cb, {passive: true });
-    matchMedia("(orientation: portrait)").addEventListener("change", cb, {passive: true });
-    requestIdleCallback(cb, {timeout: 100});
+    self?.addEventListener("resize", cb, passiveOpts); // @ts-ignore
+    unsubscribers.push(() => self?.removeEventListener("resize", cb, passiveOpts));
+
+    window?.visualViewport?.addEventListener?.("scroll", cb); // @ts-ignore
+    unsubscribers.push(() => window?.visualViewport?.removeEventListener?.("scroll", cb));
+
+    window?.visualViewport?.addEventListener?.("resize", cb); // @ts-ignore
+    unsubscribers.push(() => window?.visualViewport?.removeEventListener?.("resize", cb));
+
+    screen?.orientation.addEventListener("change", cb, passiveOpts); // @ts-ignore
+    unsubscribers.push(() => screen?.orientation.removeEventListener("change", cb, passiveOpts));
+
+    document?.documentElement.addEventListener("DOMContentLoaded", cb, passiveOpts); // @ts-ignore
+    unsubscribers.push(() => document?.documentElement.removeEventListener("DOMContentLoaded", cb, passiveOpts));
+
+    document?.documentElement.addEventListener("fullscreenchange", cb, passiveOpts); // @ts-ignore
+    unsubscribers.push(() => document?.documentElement.removeEventListener("fullscreenchange", cb, passiveOpts));
+
+    const mql = matchMedia("(orientation: portrait)");
+    mql.addEventListener("change", cb, passiveOpts); // @ts-ignore
+    unsubscribers.push(() => mql.removeEventListener("change", cb, passiveOpts));
+
+    // requestIdleCallback и requestAnimationFrame нельзя отписать стандартно, поэтому просто игнорируем их
+    requestIdleCallback(cb, { timeout: 100 });
     requestAnimationFrame(cb);
+
+    // Возвращаем функцию для отписки
+    return () => {
+        unsubscribers.forEach((unsub: any) => unsub?.());
+    };
 };
 
 //
