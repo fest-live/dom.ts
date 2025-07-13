@@ -173,3 +173,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
     <img src="https://img.shields.io/badge/View%20on-npm-cc3534?logo=npm&style=for-the-badge" alt="View on npm"/>
   </a>
 </p>
+
