@@ -413,7 +413,7 @@ export const orientationNumberMap = {
         };
 
         //
-        ui-orientbox {
+        .ui-orientbox {
             @include compute_os_conditions;
             @include compute_cs_size_to_os;
             @include compute_from_os_to_cs;

@@ -1,5 +1,5 @@
 {
-    "include": ["./src/**/*", "./test/**/*"],
+    "include": ["./src/**/*", "./test/**/*", "../fl.ui/src/ui/grid/OrientBox.ts"],
     "exclude": ["./dist/**/*", "./externals/**/*"],
     "compilerOptions": {
         "outDir": "./dist/",

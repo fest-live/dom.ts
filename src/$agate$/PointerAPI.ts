@@ -28,7 +28,7 @@ export const agWrapEvent = (cb)=>{
 
     //
     const wpb = (ev: any)=>{
-        const el = (ev?.target?.matches?.("ui-orientbox") ? ev.target : null) || ev?.target?.closest?.("ui-orientbox");
+        const el = (ev?.target?.matches?.(".ui-orientbox") ? ev.target : null) || ev?.target?.closest?.(".ui-orientbox");
         if (!el) { return cb(ev); }; //
 
         //

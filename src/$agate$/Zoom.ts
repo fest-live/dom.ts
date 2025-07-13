@@ -18,7 +18,7 @@ export const zoomOf = (element = document.documentElement) => {
     // @ts-ignore
     return zoomValues.getOrInsertComputed(element, ()=>{
         // getting zoom performance broken...
-        const container: any = ((element?.matches?.("ui-orientbox") ? element : null) || element?.closest?.("ui-orientbox") || document.body) as HTMLElement;
+        const container: any = ((element?.matches?.(".ui-orientbox") ? element : null) || element?.closest?.(".ui-orientbox") || document.body) as HTMLElement;
 
         // get software zoom value
         if (container?.zoom) {
@@ -56,7 +56,7 @@ export const unfixedClientZoom = (element = document.documentElement)=>{
 //
 export const orientOf = (element = document.documentElement) => {
     // legacy browser
-    const container: any = ((element?.matches?.("ui-orientbox") ? element : null) || element?.closest?.("ui-orientbox") || element);
+    const container: any = ((element?.matches?.(".ui-orientbox") ? element : null) || element?.closest?.(".ui-orientbox") || element);
     return container?.orient || 0;
     //if (container?.orient != null) return container?.orient;
     //const computed = element ? getComputedStyle(element) : null;
