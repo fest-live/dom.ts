@@ -85,11 +85,12 @@ export type WR<T> = {
 //
 export function WRef<T extends object>(target: T|WeakRef<T>): WR<T> {
     if (!(typeof target == "object" || typeof target == "function")) return target;
-    target = ((target instanceof WeakRef || typeof (target as any)?.deref == "function") ? (target as any)?.deref?.() : target) as unknown as T;
-    if (existsMap.has(target)) return existsMap.get(target) as WR<T>;
+    const isWeakRef = (target instanceof WeakRef || typeof (target as any)?.deref == "function");
+    target = (isWeakRef ? (target as any)?.deref?.() : target) as unknown as T;
+    if (target != null && existsMap.has(target)) { return existsMap.get(target) as WR<T>; }
 
     //
-    const handler = new WeakRefProxyHandler<T>();
-    const pm: WR<T> = new Proxy(new WeakRef(target), handler as ProxyHandler<WeakRef<T>>) as WR<T>;
+    const handler = new WeakRefProxyHandler<T>(); // !here may be dead WeakRef
+    const pm: WR<T> = new Proxy(isWeakRef ? target : new WeakRef(target), handler as ProxyHandler<WeakRef<T>>) as WR<T>;
     existsMap.set(target, pm); return pm;
 }
