@@ -139,7 +139,7 @@ export const hash = async (string: string|ArrayBuffer|Blob|File) => {
 //
 export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], layer: string = "", integrity?: string|Promise<string>)=>{ // @ts-ignore
     const url: string|null = URL.canParse(inline as string) ? (inline as string) : URL.createObjectURL((inline instanceof Blob || inline instanceof File) ? inline : new Blob([inline], {type: "text/css"}));
-    const load = fetch(url, {priority: "high"});
+    const load = fetch(url, {cache: "force-cache", mode: "same-origin"});
     if (base && url) setStyleURL(base, url, layer);
     if (base?.[0] && (!URL.canParse(inline as string) || integrity) && base?.[0] instanceof HTMLLinkElement) {
         const I: any = (integrity ?? (typeof inline == "string" ? hash(inline) : null));
@@ -174,8 +174,5 @@ export const setProperty = (target, name, value, importance = "")=>{
 
 //
 export const preloadStyle = (styles: string)=>{
-    const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
-    const loading = fetch(preInit, {priority: "high", keepalive: true, cache: "force-cache", mode: "same-origin"}); // @ts-ignore
-    const styled  = loadInlineStyle(preInit, null, "ux-layer");
-    return styled;
+    return loadInlineStyle(URL.createObjectURL(new Blob([styles], {type: "text/css"})), null, "ux-layer");
 }
