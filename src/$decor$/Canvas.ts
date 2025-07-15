@@ -59,8 +59,8 @@ export default class UICanvas extends HTMLCanvasElement {
     attributeChangedCallback(name, _, newValue) { if (name == "data-src") { this.#preload(newValue); }; }
     connectedCallback() {
         const parent: HTMLElement = this.parentNode as HTMLElement;
-        this.#size = [
-            Math.min(Math.min(Math.max(this.clientWidth  || parent?.clientWidth  || 1, 1), parent?.clientWidth  || 1) * (this.currentCSSZoom || 1), screen?.width  || 1) * (devicePixelRatio || 1),
+        this.#size = [ // @ts-ignore
+            Math.min(Math.min(Math.max(this.clientWidth  || parent?.clientWidth  || 1, 1), parent?.clientWidth  || 1) * (this.currentCSSZoom || 1), screen?.width  || 1) * (devicePixelRatio || 1), // @ts-ignore
             Math.min(Math.min(Math.max(this.clientHeight || parent?.clientHeight || 1, 1), parent?.clientHeight || 1) * (this.currentCSSZoom || 1), screen?.height || 1) * (devicePixelRatio || 1)
         ];
         this.#preload(this.#loading = this.dataset.src || this.#loading);
@@ -80,8 +80,8 @@ export default class UICanvas extends HTMLCanvasElement {
 
             //
             const old = this.#size;
-            this.#size = [
-                Math.min(Math.min(Math.max(this.clientWidth  || parent?.clientWidth  || 1, 1), parent?.clientWidth  || 1) * (this.currentCSSZoom || 1), screen?.width  || 1) * (devicePixelRatio || 1),
+            this.#size = [ // @ts-ignore
+                Math.min(Math.min(Math.max(this.clientWidth  || parent?.clientWidth  || 1, 1), parent?.clientWidth  || 1) * (this.currentCSSZoom || 1), screen?.width  || 1) * (devicePixelRatio || 1), // @ts-ignore
                 Math.min(Math.min(Math.max(this.clientHeight || parent?.clientHeight || 1, 1), parent?.clientHeight || 1) * (this.currentCSSZoom || 1), screen?.height || 1) * (devicePixelRatio || 1)
             ];
 
@@ -118,7 +118,7 @@ export default class UICanvas extends HTMLCanvasElement {
                     if (box) {
                         this.#orient = orientationNumberMap[getCorrectOrientation() || ""] || 0;
                         const old = this.#size;
-                        this.#size  = [
+                        this.#size  = [ // @ts-ignore
                             Math.max(/*contentBox.inlineSize * devicePixelRatio*/box.inlineSize || this.width, 1),
                             Math.max(/*contentBox.blockSize  * devicePixelRatio*/box.blockSize  || this.height, 1)
                         ];

@@ -64,27 +64,6 @@ export const doAnimate = async (newItem, val, axis = "x", animate = false, signa
     setProperty(newItem, drag, 0);
 }
 
-/*
-//
-export const setProperty = (target, name, value, importance = "")=>{
-    if (!target) return;
-    if ("attributeStyleMap" in target) {
-        const raw = target.attributeStyleMap.get(name);
-        const prop = raw?.[0] ?? raw?.value;
-        if (parseFloat(prop) != value && prop != value || prop == null) {
-            //if (raw?.[0] != null) { raw[0] = value; } else
-            if (raw?.value != null) { raw.value = value; } else
-            { target.attributeStyleMap.set(name, value); };
-        }
-    } else {
-        const prop = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(prop) != value && prop != value || prop == null) {
-            target?.style?.setProperty?.(name, value, importance);
-        }
-    }
-}
-*/
-
 //
 export const animateHide = async (target)=>{
     //
@@ -148,6 +127,7 @@ export const animateHide = async (target)=>{
             target.removeEventListener(...abth);
             target.removeEventListener(...abts);
         } else {
+            // @ts-ignore
             const {resolve, reject, promise} = Promise.withResolvers();
             const req = requestAnimationFrame(resolve);
             const fn  = ()=> {
@@ -234,6 +214,7 @@ export const animateShow = async (target)=>{
                 //rangeEnd: "cover 100%",
             });
 
+            //
             const fn   = ()=> { target.removeEventListener(...abth); target.removeEventListener(...abts); animate.currentTime = 1; animate.finish() };
             const abth = ["u2-before-hide", fn, {once: true, passive: true}];
             const abts = ["u2-before-show", fn, {once: true, passive: true}];
@@ -243,6 +224,7 @@ export const animateShow = async (target)=>{
             target.removeEventListener(...abth);
             target.removeEventListener(...abts);
         } else {
+            // @ts-ignore
             const {resolve, reject, promise} = Promise.withResolvers();
             const req = requestAnimationFrame(resolve);
             const fn  = ()=> {

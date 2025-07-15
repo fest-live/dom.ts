@@ -26,8 +26,10 @@ export const zoomOf = (element = document.documentElement) => {
         }
 
         // get and cache zoom value
+        // @ts-ignore
         if (element?.currentCSSZoom) {
-            return element?.currentCSSZoom || 1;;
+            // @ts-ignore
+            return element?.currentCSSZoom || 1;
         }
     });
 }
@@ -45,11 +47,13 @@ export const changeZoom = (scale = 1) => {
 
 //
 export const fixedClientZoom = (element = document.documentElement)=>{
+    // @ts-ignore
     return ((element?.currentCSSZoom != null ? 1 : zoomOf(element))) || 1;
 }
 
 //
 export const unfixedClientZoom = (element = document.documentElement)=>{
+    // @ts-ignore
     return ((element?.currentCSSZoom == null ? 1 : element?.currentCSSZoom)) || 1;
 }
 

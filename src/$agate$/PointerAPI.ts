@@ -247,7 +247,7 @@ export const grabForDrag = async (
         }
     }), {capture: true}];
 
-    //
+    // @ts-ignore
     const promised = Promise.withResolvers();
     const releaseEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {

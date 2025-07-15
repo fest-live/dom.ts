@@ -59,8 +59,8 @@ export const getElementZoom = (element: Element): number => {
         }
 
         //
-        const style = getComputedStyle(currentElement);
-        if  (style.zoom && style.zoom !== 'normal') { return (zoom *= parseFloat(style.zoom)); }
+        const style = getComputedStyle(currentElement); // @ts-ignore
+        if  (style.zoom && style.zoom !== 'normal') { return (zoom *= parseFloat(style.zoom)); } // @ts-ignore
         if ((style.zoom && style.zoom !== 'normal') || 'currentCSSZoom' in (currentElement as any)) { return zoom; }
         currentElement = (currentElement as HTMLElement)?.offsetParent ?? currentElement?.parentElement;
     }
