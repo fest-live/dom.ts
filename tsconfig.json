@@ -6,11 +6,7 @@
         "paths": {
             "fest/*": ["../shared/fest/*"],
             "fest/cdnImport": ["../cdnImport.mjs"],
-            "fest/dom": ["./src/index.ts"],
-            "fest/lure": ["../lur.e/src/index.ts"],
-            "fest/object": ["../object.ts/src/index.ts"],
-            "fest/uniform": ["../uniform.ts/src/index.ts"],
-            "fest/theme": ["../theme.core/src/index.ts"],
+            "fest/dom": ["./src/index.ts"]
         },
         "target": "ESNext",
         "module": "ESNext",
@@ -31,6 +27,6 @@
         "inlineSourceMap": true,
         "sourceMap": false,
         "typeRoots": ["plugins/global.d.ts"],
-        "experimentalDecorators": true,
-    },
+        "experimentalDecorators": true
+    }
 }
