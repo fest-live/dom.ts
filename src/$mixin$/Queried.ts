@@ -1,5 +1,5 @@
-import { observeAttribute, observeAttributeBySelector } from "./Observer";
 import { getStyleRule } from "./Style";
+import { observeAttribute, observeAttributeBySelector } from "./Observer";
 
 //
 export const queryExtensions = {
