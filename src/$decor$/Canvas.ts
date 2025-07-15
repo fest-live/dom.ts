@@ -38,7 +38,8 @@ export const createImageBitmapCache = (blob)=>{
 //
 const bindCache = new WeakMap();
 const bindCached = (cb, ctx)=>{
-    return bindCache.getOrInsert(cb, cb?.bind?.(ctx));
+    // @ts-ignore
+    return bindCache?.getOrInsertComputed?.(cb, ()=> cb?.bind?.(ctx));
 }
 
 
