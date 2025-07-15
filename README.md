@@ -1,4 +1,4 @@
-<h1 align="center">💎 DOM.ts</h1>
+<h1 align="center">🏠 DOM.ts 🏠</h1>
 
 <p align="center">
   <b>Powerful DOM management & manipulation library pack</b>
