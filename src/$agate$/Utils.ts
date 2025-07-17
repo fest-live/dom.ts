@@ -101,8 +101,8 @@ export const makeRAFCycle = () => {
  * @param {ReturnType<typeof makeRAFCycle>} [shed]
  * @returns {Function}
  */
-export const RAFBehavior = (cb, shed = makeRAFCycle()) => {
-    return (...args) => { return shed.shedule(() => cb?.(...args)); }
+export const RAFBehavior = (shed = makeRAFCycle()) => {
+    return (cb)=>shed.shedule(cb);
 }
 
 //

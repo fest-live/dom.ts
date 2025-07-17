@@ -176,3 +176,12 @@ export const setProperty = (target, name, value, importance = "")=>{
 export const preloadStyle = (styles: string)=>{
     return loadInlineStyle(URL.createObjectURL(new Blob([styles], {type: "text/css"})), null, "ux-layer");
 }
+
+//
+export const getPropertyValue = (src, name)=>{
+    if ("computedStyleMap" in src) {
+        const val = src?.computedStyleMap?.()?.get(name);
+        return val instanceof CSSUnitValue ? (val?.value || 0) : val?.toString?.();
+    }
+    return parseFloat(getComputedStyle(src)?.getPropertyValue?.(name) || "0") || 0;
+}
