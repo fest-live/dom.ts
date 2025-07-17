@@ -1,5 +1,5 @@
 // @ts-ignore
-import styles from "./$scss$/_Main.scss?inline&compress";
+import styles from "./index.scss?inline&compress";
 export const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
 
 //

@@ -29,7 +29,7 @@
 @layer u2-grid-box {
 
     //
-    .u2-grid-layout {
+    .ui-gridlayout {
 
         //
         & {
@@ -99,7 +99,8 @@
                         0px) !important;
 
                 //
-                inset: var(--cs-inset-y, 0px) auto auto var(--cs-inset-x, 0px);
+                inset-block-start: var(--cs-inset-y, 0px);
+                inset-inline-start: var(--cs-inset-x, 0px);
 
                 //
                 zoom: 1;

@@ -256,7 +256,7 @@ export const grabForDrag = async (
             em?.removeEventListener?.("pointercancel", ...releaseEvent);
             em?.removeEventListener?.("pointerup", ...releaseEvent);
             em?.removeEventListener?.("click", ...releaseEvent);
-            em?.releaseCapturePointer?.(evc?.pointerId); evc?.release?.(em);
+            em?.releaseCapturePointer?.(evc?.pointerId); //evc?.release?.(em);
 
             //
             if (evc.target != em && !hasParent(evc.target, em)) { return; };
@@ -275,7 +275,8 @@ export const grabForDrag = async (
 
     //
     if (em?.dispatchEvent?.(new CustomEvent("m-dragstart", { bubbles: true, detail: { event: last, holding: hm }}))) {
-        ex?.capture?.(em); em?.setPointerCapture?.(ex?.pointerId);
+        //ex?.capture?.(em);
+        em?.setPointerCapture?.(ex?.pointerId);
         em?.addEventListener?.("pointermove", ...moveEvent);
         em?.addEventListener?.("pointercancel", ...releaseEvent);
         em?.addEventListener?.("pointerup", ...releaseEvent);
