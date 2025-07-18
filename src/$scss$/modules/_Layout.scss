@@ -1,281 +1,8 @@
-/* // note about counter-clock-wise from portrait
-export const orientationNumberMap = {
-    "portrait-primary": 0, // as 0deg, aka. 360deg
-    "landscape-primary": 1, // as -90deg, aka. 270deg
-    "portrait-secondary": 2, // as -180deg, aka. 180deg
-    "landscape-secondary": 3 // as -270deg, aka. 90deg
-}
-*/
-
-/* // also from landscape basis (by counter-wise)
-export const orientationNumberMap = {
-    "landscape-primary": 0, // as 0deg, aka. -360deg
-    "portrait-primary": 1, // as 90deg, aka. -270deg
-    "landscape-secondary": 2, // as 180deg, aka. -180deg
-    "portrait-secondary": 3, // as 270deg, aka. -90deg
-}
-*/
-
-
-
-/* //orient coordinate swap (if counter-clock-size)
-    0: [ x,  y],
-    1: [ y, -x],
-    2: [-x, -y],
-    3: [-y,  x]
-*/
-
-/* //orient coordinate swap (if clock-size)
-    0: [ x,  y],
-    1: [-y,  x], // swapped
-    2: [-x, -y],
-    3: [ y, -x]  // swapped
-*/
-
-
-
-//
-@use "../lib/Logic" as lg;
-
-
-
-// in some cases, needs PostCSS polyfill
-/*@function --oriented(--portrait type(<length>), --landscape type(<length>))
-{
-    result: var(--portrait);
-    @media (orientation: portrait)  { result: var(--portrait); };
-    @media (orientation: landscape) { result: var(--landscape); };
-};
-*/
-
-
-//
-@mixin oriented($property, $portrait, $landscape) {
-    & { #{$property}: #{$portrait}; };
-    @media (orientation: portrait)  { #{$property}: #{$portrait}; };
-    @media (orientation: landscape) { #{$property}: #{$landscape}; };
-}
-
-
-//
-@mixin compute_os_conditions {
-    //
-    & { // reversion condition
-        --in-rev-cond-x: calc(1 - #{lg.lor(lg.eq(var(--orient, 0), 0), lg.eq(var(--orient, 0), 1))} );
-        --in-rev-cond-y: calc(1 - #{lg.lor(lg.eq(var(--orient, 0), 0), lg.eq(var(--orient, 0), 3))} );
-
-        // compute swap condition
-        --in-swap-cond: rem(var(--orient, 0), 2); // for coordinate swap condition
-
-        // compute as negate coefficient
-        --in-rev-vx: calc(var(--in-rev-cond-x, 1) * -2 + 1);
-        --in-rev-vy: calc(var(--in-rev-cond-y, 1) * -2 + 1);
-    }
-}
-
-//
-@mixin compute_os_size_to_cs {
-    // size swapping
-    & { //
-        --cs-size-x: #{lg.mix(var(--os-size-x, 100cqb), var(--os-size-y, 100cqi), var(--in-swap-cond, 0))};
-        --cs-size-y: #{lg.mix(var(--os-size-y, 100cqi), var(--os-size-x, 100cqb), var(--in-swap-cond, 0))};
-
-        //
-        --cs-self-size-x: #{lg.mix(var(--os-self-size-y, 100cqb), var(--os-self-size-x, 100cqi), var(--in-swap-cond, 0))};
-        --cs-self-size-y: #{lg.mix(var(--os-self-size-x, 100cqi), var(--os-self-size-y, 100cqb), var(--in-swap-cond, 0))};
-    }
-}
-
-//
-@mixin compute_cs_size_to_os {
-    // size swapping
-    & { //
-        --os-size-x: #{lg.mix(var(--cs-size-x, 100cqb), var(--cs-size-y, 100cqi), var(--in-swap-cond, 0))};
-        --os-size-y: #{lg.mix(var(--cs-size-y, 100cqi), var(--cs-size-x, 100cqb), var(--in-swap-cond, 0))};
-
-        //
-        --os-self-size-x: #{lg.mix(var(--cs-self-size-y, 100cqb), var(--cs-self-size-x, 100cqi), var(--in-swap-cond, 0))};
-        --os-self-size-y: #{lg.mix(var(--cs-self-size-x, 100cqi), var(--cs-self-size-y, 100cqb), var(--in-swap-cond, 0))};
-    }
-}
-
-
-
-// conversion from virtual space to client space by orientation
-@mixin compute_from_os_to_cs {
-
-    //
-    & { // component swap condition
-        --in-inset-x: #{lg.mix(var(--os-inset-x, 0px), var(--os-inset-y, 0px), var(--in-swap-cond, 0))};
-        --in-inset-y: #{lg.mix(var(--os-inset-y, 0px), var(--os-inset-x, 0px), var(--in-swap-cond, 0))};
-
-        //
-        --in-drag-x: #{lg.mix(var(--os-drag-x, 0px), var(--os-drag-y, 0px), var(--in-swap-cond, 0))};
-        --in-drag-y: #{lg.mix(var(--os-drag-y, 0px), var(--os-drag-x, 0px), var(--in-swap-cond, 0))};
-    }
-
-    // as alternative, you can swap before with os-size
-    & { // inset position with reverse
-        --cs-inset-x: #{lg.mix(var(--in-inset-x, 0px), calc(var(--cs-size-x, 100cqi) - var(--in-inset-x, 0px)), var(--in-rev-cond-x, 0))};
-        --cs-inset-y: #{lg.mix(var(--in-inset-y, 0px), calc(var(--cs-size-y, 100cqb) - var(--in-inset-y, 0px)), var(--in-rev-cond-y, 0))};
-
-        // drag offset with reversion
-        --cs-drag-x: calc(var(--in-drag-x, 0px) * var(--in-rev-vx, 1));
-        --cs-drag-y: calc(var(--in-drag-y, 0px) * var(--in-rev-vy, 1));
-    }
-
-}
-
-// conversion from client space to virtual space by orientation
-@mixin compute_from_cs_to_os {
-
-    // as alternative, you can swap with os-size after
-    & { // component swap condition
-        --in-inset-x: #{lg.mix(var(--cs-inset-x, 0px), calc(var(--cs-size-x, 100cqi) - var(--cs-inset-x, 0px)), var(--in-rev-cond-x, 0))};
-        --in-inset-y: #{lg.mix(var(--cs-inset-y, 0px), calc(var(--cs-size-y, 100cqi) - var(--cs-inset-y, 0px)), var(--in-rev-cond-y, 0))};
-
-        //
-        --in-drag-x: calc(var(--cs-drag-x, 0px) * var(--in-rev-vx, 1));
-        --in-drag-y: calc(var(--cs-drag-y, 0px) * var(--in-rev-vy, 1));
-    }
-
-    // reverse for orientation space
-    & {
-        --os-inset-x: #{lg.mix(var(--in-inset-x, 0px), var(--in-inset-y, 0px), var(--in-swap-cond, 0))};
-        --os-inset-y: #{lg.mix(var(--in-inset-y, 0px), var(--in-inset-x, 0px), var(--in-swap-cond, 0))};
-
-        //
-        --os-drag-x: #{lg.mix(var(--in-drag-y, 0px), var(--in-drag-x, 0px), var(--in-swap-cond, 0))};
-        --os-drag-y: #{lg.mix(var(--in-drag-x, 0px), var(--in-drag-y, 0px), var(--in-swap-cond, 0))};
-    }
-
-}
-
-
-
-// relative from main orientation
-// for inline/block layouts
-// rotate layout by clock-wise
-// also, only for LTR layouts
-@mixin prop-0deg   { --wm: horizontal-tb; --dir: ltr; --rot: 0deg; --i-rot: 0deg; } // default
-@mixin prop-90deg  { --wm: vertical-rl;   --dir: ltr; --rot: 0deg; --i-rot: 0deg; }
-@mixin prop-180deg { --wm: horizontal-tb; --dir: ltr; --rot: 180deg; --i-rot: 180deg; }
-@mixin prop-270deg {
-                                        & { --wm: vertical-lr; --dir: rtl; --rot: 0deg; --i-rot: 180deg; }
-    @supports(writing-mode: sideways-lr)  { --wm: sideways-lr; --dir: ltr; --rot: 0deg; --i-rot: 0deg; }
-}
-
-// in client-space, depends of writing-mode...
-@mixin portrait-size {
-    --cqi: 100cqmin; //@include oriented(--cqi, 100cqi, 100cqb);
-    --cqb: 100cqmax; //@include oriented(--cqb, 100cqb, 100cqi);
-}
-@mixin landscape-size {
-    --cqi: 100cqmax; //@include oriented(--cqi, 100cqb, 100cqi);
-    --cqb: 100cqmin; //@include oriented(--cqb, 100cqi, 100cqb);
-}
-
-//
-@mixin init-os-size-by-native {
-    --os-size-x: var(--cqi, 100cqi);
-    --os-size-y: var(--cqb, 100cqb);
-}
-
-// in client-space, without writing-mode...
-@mixin init-cs-size {
-    --cs-size-x: 100cqw; //100cqi
-    --cs-size-y: 100cqh; //100cqb
-}
-
-
-
-//
-@mixin centered-self($transforms: null) {
-    transform-origin: 0% 0%;
-    transform:
-        #{$transforms}
-        scale3d(var(--scale, 1), var(--scale, 1), var(--scale, 1))
-        perfect-translate(calc(var(--translate-x, 0px) - 50%), calc(var(--translate-y, 0px) - 50%));
-    place-self: center;
-}
-
-//
-@mixin centered-with-offset {
-    $translate: perfect-translate(var(--cs-drag-x, 0px), var(--cs-drag-y, 0px));
-    @include centered-self($translate);
-}
-
-//
-@mixin use-inset {
-    inset: var(--cs-inset-y, 0px) auto auto var(--cs-inset-x, 0px);
-}
-
-
-
-
-//
-@mixin use_dvp {
-    & { --avi: 100dvmin; --avb: 100dvmax; };
-    & {
-        --vp-i-size: var(--avi, 100dvmin);
-        --vp-b-size: var(--avb, 100dvmax);
-    }
-}
-
-//
-@mixin use_lvp {
-    & { --avi: 100lvmin; --avb: 100lvmax; };
-    & {
-        --vp-i-size: var(--avi, 100lvmin);
-        --vp-b-size: var(--avb, 100lvmax);
-    }
-}
-
-
-//
-@mixin when-fullscreen($selector: &) {
-    @media (display-mode: fullscreen) { @content; }
-    @at-root :fullscreen #{$selector} { @content; }
-}
-
-
-//
-@mixin vp-vars {
-    @include use_dvp();
-    @include when-fullscreen() {
-        @include use_lvp();
-        & {
-            --vp-i-size: min(var(--avail-width, 100dvmin), 100dvmin);
-            --vp-b-size: min(var(--avail-height, 100dvmax), 100dvmax);
-        }
-    }
-};
-
-
-//
-@mixin fit-viewport {
-    @include vp-vars;
-    & {
-        @include oriented(inline-size, var(--vp-i-size, 100lvi), var(--vp-b-size, 100lvb));
-        @include oriented(block-size, var(--vp-b-size, 100lvb), var(--vp-i-size, 100lvi));
-        @include oriented(max-inline-size, var(--vp-i-size, 100lvi), var(--vp-b-size, 100lvb));
-        @include oriented(max-block-size, var(--vp-b-size, 100lvb), var(--vp-i-size, 100lvi));
-    }
-};
-
-
-@function perfect-translate($x: 0px, $y: 0px) {
-    @return translate3d(round(nearest, #{$x}, calc(1px / var(--pixel-ratio, 1))), round(nearest, #{$y}, calc(1px / var(--pixel-ratio, 1))), 0)
-}
-
+@use "./Mixins" as mx;
 
 //
 @layer ux-agate {
-
-    //
     @media screen {
-
-        //
         :root, :host, :scope, :where(body) {
             pointer-events: auto;
 
@@ -313,8 +40,8 @@ export const orientationNumberMap = {
             min-block-size: 100dvb;
 
             //
-            inline-size: max-content;
-            block-size: max-content;
+            inline-size: 100%;
+            block-size: 100%;
 
             //
             max-inline-size: var(--screen-width, 100dvi) !important;
@@ -378,14 +105,21 @@ export const orientationNumberMap = {
 
             //
             & > :where(*) {
-                display: grid;
+                /*display: grid;
                 place-self: safe center;
                 grid-column: 1 / 1 span;
-                grid-row: 1 / 1 span;
+                grid-row: 1 / 1 span;*/
+
+                //
+                inline-size: 100%;
+                block-size: 100%;
 
                 //
                 max-inline-size: min(var(--screen-width, 100dvi), 100%) !important;
                 max-block-size: min(var(--screen-height, 100dvb), 100%) !important;
+
+                //
+                overflow: auto;
             }
         }
 
@@ -396,7 +130,7 @@ export const orientationNumberMap = {
                 content-visibility: auto;
                 transform-origin: 50% 50%;
                 transform:
-                    perfect-translate(var(--translate-x, 0%), var(--translate-y, 0%))
+                    mx.perfect-translate(var(--translate-x, 0%), var(--translate-y, 0%))
                     scale3d(var(--scale, 1), var(--scale, 1), var(--scale, 1));
                 translate: 0% 0% 0%;
                 opacity: var(--opacity, 1);
@@ -414,9 +148,9 @@ export const orientationNumberMap = {
 
         //
         .ui-orientbox {
-            @include compute_os_conditions;
-            @include compute_cs_size_to_os;
-            @include compute_from_os_to_cs;
+            @include mx.compute_os_conditions;
+            @include mx.compute_cs_size_to_os;
+            @include mx.compute_from_os_to_cs;
 
             //
             & {
@@ -477,20 +211,20 @@ export const orientationNumberMap = {
             & > :where(*),
             & :where(ui-frame, .u2-grid-item, ui-modal)
             {
-                @include compute_os_conditions;
-                @include compute_cs_size_to_os;
-                @include compute_from_os_to_cs;
+                @include mx.compute_os_conditions;
+                @include mx.compute_cs_size_to_os;
+                @include mx.compute_from_os_to_cs;
             }
 
             //
             .center-self {
-                @include use-inset;
-                @include centered-with-offset();
+                @include mx.use-inset;
+                @include mx.centered-with-offset();
             }
 
             //
-            .fixed { @include use-inset; position: fixed !important; }
-            .absolute { @include use-inset; position: absolute !important; }
+            .fixed { @include mx.use-inset; position: fixed !important; }
+            .absolute { @include mx.use-inset; position: absolute !important; }
         }
 
         //
@@ -507,7 +241,7 @@ export const orientationNumberMap = {
 
         //
         :where(body) {
-            @include fit-viewport();
+            @include mx.fit-viewport();
 
             //
             & {
@@ -526,7 +260,7 @@ export const orientationNumberMap = {
 
         //
         .native-portrait-optimized {
-            @include oriented(--in-swap-cond, 0, 1);
+            @include mx.oriented(--in-swap-cond, 0, 1);
         };
 
     };

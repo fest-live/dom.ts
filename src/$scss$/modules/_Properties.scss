@@ -1,142 +1,135 @@
-@scope(
-    :root,
-    :host,
-    :scope
-)
-{
-    @property --ppx { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; };
-    @property --zpx { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; };
+@property --ppx { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; };
+@property --zpx { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; };
 
-    //
-    @property --ox-orient { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --os-orient { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --in-orient { syntax: "<number>"; initial-value: 0; inherits: true; }
+//
+@property --ox-orient { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --os-orient { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --in-orient { syntax: "<number>"; initial-value: 0; inherits: true; }
 
-    //
-    @property --scaling { syntax: "<number>"; initial-value: 1; inherits: true; };
-    @property --resize-x { syntax: "<number>"; initial-value: 0; inherits: false; };
-    @property --resize-y { syntax: "<number>"; initial-value: 0; inherits: false; };
-    @property --drag-x { syntax: "<number>"; initial-value: 0; inherits: false; };
-    @property --drag-y { syntax: "<number>"; initial-value: 0; inherits: false; };
-    @property --orient { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --zoom { syntax: "<number>"; initial-value: 1; inherits: true; };
+//
+@property --scaling { syntax: "<number>"; initial-value: 1; inherits: true; };
+@property --resize-x { syntax: "<number>"; initial-value: 0; inherits: false; };
+@property --resize-y { syntax: "<number>"; initial-value: 0; inherits: false; };
+@property --drag-x { syntax: "<number>"; initial-value: 0; inherits: false; };
+@property --drag-y { syntax: "<number>"; initial-value: 0; inherits: false; };
+@property --orient { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --zoom { syntax: "<number>"; initial-value: 1; inherits: true; };
 
-    //
-    @property --secondary { syntax: "<integer>"; initial-value: 0; inherits: true; };
+//
+@property --secondary { syntax: "<integer>"; initial-value: 0; inherits: true; };
 
-    //
-    @property --avi { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --avb { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+//
+@property --avi { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --avb { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
 
-    //
-    @property --vp-i-size { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --vp-b-size { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+//
+@property --vp-i-size { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --vp-b-size { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
 
-    //
-    @property --border-width  { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
-    @property --border-height { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
+//
+@property --border-width  { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
+@property --border-height { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
 
-    //
-    @property --pixel-ratio { syntax: "<number>"; initial-value: 1; inherits: true; };
+//
+@property --pixel-ratio { syntax: "<number>"; initial-value: 1; inherits: true; };
 
-    //
-    @property --screen-width  { syntax: "<length-percentage>"; initial-value: 100dvi; inherits: true; };
-    @property --screen-height { syntax: "<length-percentage>"; initial-value: 100dvb; inherits: true; };
+//
+@property --screen-width  { syntax: "<length-percentage>"; initial-value: 100dvi; inherits: true; };
+@property --screen-height { syntax: "<length-percentage>"; initial-value: 100dvb; inherits: true; };
 
-    //
-    @property --avail-width  { syntax: "<length-percentage>"; initial-value: 100dvi; inherits: true; };
-    @property --avail-height { syntax: "<length-percentage>"; initial-value: 100dvb; inherits: true; };
+//
+@property --avail-width  { syntax: "<length-percentage>"; initial-value: 100dvi; inherits: true; };
+@property --avail-height { syntax: "<length-percentage>"; initial-value: 100dvb; inherits: true; };
 
-    //
-    @property --view-height  { syntax: "<length-percentage>"; initial-value: 100dvb; inherits: true; };
+//
+@property --view-height  { syntax: "<length-percentage>"; initial-value: 100dvb; inherits: true; };
 
-    //
-    @property --keyboard-inset-bottom { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --keyboard-inset-height { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+//
+@property --keyboard-inset-bottom { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --keyboard-inset-height { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
 
-    //
-    @property --translate-x { initial-value: 0px; syntax: "<length-percentage>"; inherits: false; };
-    @property --translate-y { initial-value: 0px; syntax: "<length-percentage>"; inherits: false; };
-    @property --opacity { initial-value: 1; syntax: "<number>"; inherits: false; };
-    @property --scale { initial-value: 1; syntax: "<number>"; inherits: false; };
-    @property --corrector { initial-value: 1; syntax: "<number>"; inherits: false; };
+//
+@property --translate-x { initial-value: 0px; syntax: "<length-percentage>"; inherits: false; };
+@property --translate-y { initial-value: 0px; syntax: "<length-percentage>"; inherits: false; };
+@property --opacity { initial-value: 1; syntax: "<number>"; inherits: false; };
+@property --scale { initial-value: 1; syntax: "<number>"; inherits: false; };
+@property --corrector { initial-value: 1; syntax: "<number>"; inherits: false; };
 
-    //
-    @property --in-rev-cond-x { syntax: "<number>"; initial-value: 0; inherits: true; };
-    @property --in-rev-cond-y { syntax: "<number>"; initial-value: 0; inherits: true; };
-    @property --in-swap-cond { syntax: "<number>"; initial-value: 0; inherits: true; };
-    @property --in-rev-vx { syntax: "<number>"; initial-value: 0; inherits: true; };
-    @property --in-rev-vy { syntax: "<number>"; initial-value: 0; inherits: true; };
+//
+@property --in-rev-cond-x { syntax: "<number>"; initial-value: 0; inherits: true; };
+@property --in-rev-cond-y { syntax: "<number>"; initial-value: 0; inherits: true; };
+@property --in-swap-cond { syntax: "<number>"; initial-value: 0; inherits: true; };
+@property --in-rev-vx { syntax: "<number>"; initial-value: 0; inherits: true; };
+@property --in-rev-vy { syntax: "<number>"; initial-value: 0; inherits: true; };
 
-    //
-    @property --cs-inset-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --cs-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --os-inset-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --os-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --in-inset-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --in-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+//
+@property --cs-inset-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --cs-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --os-inset-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --os-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --in-inset-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --in-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
 
-    //
-    @property --cs-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --cs-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --os-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --os-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --in-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-    @property --in-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+//
+@property --cs-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --cs-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --os-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --os-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --in-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --in-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
 
-    //
-    @property --cs-size-x { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
-    @property --cs-size-y { syntax: "<length-percentage>"; initial-value: 100cqb; inherits: true; };
-    @property --os-size-x { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
-    @property --os-size-y { syntax: "<length-percentage>"; initial-value: 100cqb; inherits: true; };
+//
+@property --cs-size-x { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
+@property --cs-size-y { syntax: "<length-percentage>"; initial-value: 100cqb; inherits: true; };
+@property --os-size-x { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
+@property --os-size-y { syntax: "<length-percentage>"; initial-value: 100cqb; inherits: true; };
 
-    //
-    @property --cs-self-size-x { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
-    @property --cs-self-size-y { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
-    @property --os-self-size-x { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
-    @property --os-self-size-y { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
+//
+@property --cs-self-size-x { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
+@property --cs-self-size-y { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
+@property --os-self-size-x { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
+@property --os-self-size-y { syntax: "<length-percentage>"; initial-value: 100%; inherits: true; };
 
-    //
-    @property --cqi { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
-    @property --cqb { syntax: "<length-percentage>"; initial-value: 100cqb; inherits: true; };
+//
+@property --cqi { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
+@property --cqb { syntax: "<length-percentage>"; initial-value: 100cqb; inherits: true; };
 
-    //
-    @property --rot   { syntax: "<angle>"; initial-value: 0deg; inherits: true; };
-    @property --i-rot { syntax: "<angle>"; initial-value: 0deg; inherits: true; };
+//
+@property --rot   { syntax: "<angle>"; initial-value: 0deg; inherits: true; };
+@property --i-rot { syntax: "<angle>"; initial-value: 0deg; inherits: true; };
 
-    //
-    @property --ox-c-span { syntax: "<number>"; initial-value: 1; inherits: true; }
-    @property --ox-r-span { syntax: "<number>"; initial-value: 1; inherits: true; }
-    @property --ox-c-unit { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; }
-    @property --ox-r-unit { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; }
+//
+@property --ox-c-span { syntax: "<number>"; initial-value: 1; inherits: true; }
+@property --ox-r-span { syntax: "<number>"; initial-value: 1; inherits: true; }
+@property --ox-c-unit { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; }
+@property --ox-r-unit { syntax: "<length-percentage>"; initial-value: 1px; inherits: true; }
 
-    //
-    @property --r-gap { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; }
-    @property --c-gap { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; }
-    @property --dir-x { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --dir-y { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --f-col { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --f-row { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --grid-c { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --grid-r { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+//
+@property --r-gap { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; }
+@property --c-gap { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; }
+@property --dir-x { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --dir-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --f-col { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --f-row { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --grid-c { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --grid-r { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
 
-    //
-    @property --p-drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --p-drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --layout-r { syntax: "<integer>"; initial-value: 1; inherits: true; }
-    @property --layout-c { syntax: "<integer>"; initial-value: 1; inherits: true; }
-    @property --p-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --p-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --fc-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --fc-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --fp-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
-    @property --fp-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+//
+@property --p-drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --p-drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --layout-r { syntax: "<integer>"; initial-value: 1; inherits: true; }
+@property --layout-c { syntax: "<integer>"; initial-value: 1; inherits: true; }
+@property --p-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --p-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --fc-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --fc-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --fp-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
+@property --fp-cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
 
-    //
-    @property --c-shift-mod { syntax: "<number>"; initial-value: 0; inherits: true; }
-    @property --r-shift-mod { syntax: "<number>"; initial-value: 0; inherits: true; }
-}
+//
+@property --c-shift-mod { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --r-shift-mod { syntax: "<number>"; initial-value: 0; inherits: true; }
