@@ -1,7 +1,6 @@
 import { observeAttributeBySelector } from "./Observer";
 import { getStoresOfElement, namedStoreMaps } from "./Store";
 import { boundBehaviors } from "./Behavior";
-import { WRef } from "./WRef";
 
 // mixin { connect: (element, { ... })=>{},  disconnect: (element, { ... }): ()=>{}}
 export const reflectMixins = (element, mixins)=>{
@@ -25,10 +24,10 @@ export const getElementRelated = (element)=>{
 
 //
 export const bindMixins = (element, mixin, mixSet?)=>{
-    const weak = WRef(element); mixSet ||= boundMixinSet.get(element);
-    if (!mixSet.has(mixin)) { mixSet.add(mixin); mixinElements.get(mixin)?.add?.(WRef(element));
+    const wel = new WeakRef(element); mixSet ||= boundMixinSet.get(element);
+    if (!mixSet.has(mixin)) { mixSet.add(mixin); mixinElements.get(mixin)?.add?.(wel);
         if (mixin.name) { element.dataset.mixin += " " + mixin.name; }
-        mixin?.connect?.(weak, WRef(mixin), getElementRelated(element));
+        mixin?.connect?.(wel, mixin, getElementRelated(element));
     }
     return element;
 }
@@ -53,16 +52,17 @@ export const updateMixinAttributes = (element, mixin)=>{
     if (!boundMixinSet.has(element)) { boundMixinSet.set(element, mixinSet); }
 
     //
+    const wel = new WeakRef(element);
     if (!mixinSet.has(mixin)) {
-        mixinElements.get(mixin)?.add?.(WRef(element));
-        if (!mixins.has(mixin)) { mixin?.disconnect?.(WRef(element), WRef(mixin), getElementRelated(element)); }
-        if ( mixins.has(mixin)) { mixin?.connect?.(WRef(element), WRef(mixin), getElementRelated(element));
+        mixinElements.get(mixin)?.add?.(wel);
+        if (!mixins.has(mixin)) { mixin?.disconnect?.(wel, mixin, getElementRelated(element)); }
+        if ( mixins.has(mixin)) { mixin?.connect?.(wel, mixin, getElementRelated(element));
             names.add(mixinNamespace.get(mixin)); mixinSet.add(mixin);
             element.dataset.mixin = [...names].filter((n)=>!!n).join(" ");
         }
     }
     if (mixinSet.has(mixin)) {
-        if (!mixins.has(mixin)) { mixinSet?.delete?.(mixin); mixin?.disconnect?.(WRef(element), WRef(mixin), getElementRelated(element)); }
+        if (!mixins.has(mixin)) { mixinSet?.delete?.(mixin); mixin?.disconnect?.(wel, mixin, getElementRelated(element)); }
     }
 }
 
@@ -96,7 +96,7 @@ export const registerMixin = (name, mixin) => {
         const key = name?.trim?.();
         if (key) {
             mixinNamespace.set(mixin, key);
-            mixinRegistry.set(key, WRef(mixin));
+            mixinRegistry.set(key, new WeakRef(mixin));
             nameRegistryF.register(mixin, key);
             updateMixinAttributesAllInRoots(mixin);
         }
