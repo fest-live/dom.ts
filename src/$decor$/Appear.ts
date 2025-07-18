@@ -2,8 +2,8 @@ import { observeAttributeBySelector } from "../$mixin$/Observer";
 import { animateShow, animateHide } from "./Animation";
 
 //
-export const initialize = async ()=>{
-    observeAttributeBySelector(document.body, "*", "data-hidden", (mutation)=>{
+export const initVisibility = async (ROOT: any = document.body)=>{
+    observeAttributeBySelector(ROOT, "*", "data-hidden", (mutation)=>{
         if (mutation.attributeName == 'data-hidden') {
             const target = mutation.target as HTMLElement;
 
@@ -17,4 +17,4 @@ export const initialize = async ()=>{
 }
 
 //
-export default initialize;
+export default initVisibility;

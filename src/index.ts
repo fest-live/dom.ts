@@ -1,20 +1,10 @@
 // @ts-ignore
 import styles from "./index.scss?inline&compress";
-export const preInit = URL.createObjectURL(new Blob([styles], {type: "text/css"}));
 
 //
-import run from "./$decor$/Appear";
+import { initVisibility } from "./$decor$/Appear";
+import { preloadStyle } from "./$mixin$/Style";
 import { updateVP, whenAnyScreenChanges } from "./$agate$/Viewport";
-import { loadBlobStyle } from "./$mixin$/Style";
-
-//
-const initialize = async ()=>{
-    loadBlobStyle(preInit); run();
-    whenAnyScreenChanges(updateVP);
-};
-
-//
-export default initialize;
 
 //
 export * from "./$agate$/Convert";
@@ -41,3 +31,20 @@ export * from "./$mixin$/Queried";
 
 //
 export * from "./$grid$/GridItemUtils";
+
+//
+const styled = preloadStyle(styles);
+
+//
+export const initialize = async (ROOT: any = document.body)=>{
+    initVisibility(ROOT);
+    const styleElement = styled?.cloneNode?.(true);
+    if (ROOT?.closest?.("html")) {
+        whenAnyScreenChanges(updateVP);
+        document?.head?.append(styleElement);
+    }
+    return styleElement;
+}
+
+//
+export default initialize;
