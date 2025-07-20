@@ -25,7 +25,7 @@ export class UniversalElementHandler {
     //
     _observeDOMChange(target, selector, cb) {
         // no possible to listen to DOM change for non-string selector
-        return (typeof this.selector == "string" ? observeBySelector(target, selector, cb) : null);
+        return (typeof selector == "string" ? observeBySelector(target, selector, cb) : null);
     }
 
     //
