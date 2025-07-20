@@ -179,7 +179,7 @@
             :where(input[type="text"], input[type="number"]) { user-select: auto; }
 
             //
-            .ui-icon { background-color: currentColor; }
+            .ui-icon { background-color: var(--ui-icon-color, currentColor); }
             input, button { accent-color: currentColor; };
         }
     };
