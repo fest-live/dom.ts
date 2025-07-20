@@ -121,7 +121,7 @@ export class UniversalElementHandler {
         if (name === "self") return target;
         if (name === "selector") return this.selector;;
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
-        if (name === "DOMChange") return (name, cb)=>this._observeDOMChange(target, this.selector, cb);
+        if (name === "DOMChange") return (cb)=>this._observeDOMChange(target, this.selector, cb);
         if (name === "addEventListener") return (name, cb, opt?)=>this._addEventListener(target, name, cb, opt);
         if (name === "removeEventListener") return (name, cb, opt?)=>this._removeEventListener(target, name, cb, opt);
 
