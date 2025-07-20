@@ -135,38 +135,131 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
 
 //
 export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) => {
+    const unwrapNodesBySelector = (nodes: NodeListOf<Element>): Element[]=>{
+        const $nodes = Array.from(nodes || []) || [];
+        $nodes.push(...Array.from(nodes || []).flatMap((el)=> Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
+        return [...Array.from((new Set($nodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector));
+    }
+
+    //
+    const handleMutation = (mutation)=>{
+        const observer      = obRef?.deref?.();
+        const addedNodes   = unwrapNodesBySelector(mutation.addedNodes);
+        const removedNodes = unwrapNodesBySelector(mutation.removedNodes);
+
+        //
+        if (addedNodes.length > 0 || removedNodes.length > 0) {
+            cb?.({
+                type: mutation.type,
+                target: mutation.target,
+                attributeName: mutation.attributeName,
+                attributeNamespace: mutation.attributeNamespace,
+                nextSibling: mutation.nextSibling,
+                oldValue: mutation.oldValue,
+                previousSibling: mutation.previousSibling,
+                addedNodes, removedNodes,
+            }, observer);
+        }
+    }
+
+    //
+    const handleCome = (ev)=>{
+        handleMutation({
+            addedNodes: [ev?.target].filter((el)=>!!el),
+            removedNodes: [ev?.relatedTarget].filter((el)=>!!el),
+            type: "childList",
+            target: ev?.currentTarget,
+        });
+    }
+
+    //
+    const handleOutCome = (ev)=>{
+        handleMutation({
+            addedNodes: [ev?.relatedTarget].filter((el)=>!!el),
+            removedNodes: [ev?.target].filter((el)=>!!el),
+            type: "childList",
+            target: ev?.currentTarget,
+        });
+    }
+
+    //
+    const handleFocusClick = (ev)=>{
+        handleMutation({
+            addedNodes: [ev?.target].filter((el)=>!!el),
+            removedNodes: [ev?.relatedTarget || document?.activeElement].filter((el)=>!!el),
+            type: "childList",
+            target: ev?.currentTarget,
+        });
+    }
+
+    // capture: false - from parents to children, true - from children to parents
+    // passive: true - optimal for selector events
+    const factors = {
+        passive: true,
+        capture: false,
+    };
+
+    //
+    if (selector?.includes?.(":hover") && selector?.includes?.(":active")) {
+        element.addEventListener("pointerover", handleCome, factors);
+        element.addEventListener("pointerout", handleOutCome, factors);
+        element.addEventListener("pointerdown", handleCome, factors);
+        element.addEventListener("pointerup", handleOutCome, factors);
+        element.addEventListener("pointercancel", handleOutCome, factors);
+        return { disconnect: ()=>{
+            element.removeEventListener("pointerover", handleCome, factors);
+            element.removeEventListener("pointerout", handleOutCome, factors);
+            element.removeEventListener("pointerdown", handleCome, factors);
+            element.removeEventListener("pointerup", handleOutCome, factors);
+            element.removeEventListener("pointercancel", handleOutCome, factors);
+        } };
+    }
+
+    //
+    if (selector?.includes?.(":hover")) {
+        element.addEventListener("pointerover", handleCome, factors);
+        element.addEventListener("pointerout", handleOutCome, factors);
+        return { disconnect: ()=>{
+            element.removeEventListener("pointerover", handleCome, factors);
+            element.removeEventListener("pointerout", handleOutCome, factors);
+        } };
+    }
+
+    //
+    if (selector?.includes?.(":active")) {
+        element.addEventListener("pointerdown", handleCome, factors);
+        element.addEventListener("pointerup", handleOutCome, factors);
+        element.addEventListener("pointercancel", handleOutCome, factors);
+        return { disconnect: ()=>{
+            element.removeEventListener("pointerdown", handleCome, factors);
+            element.removeEventListener("pointerup", handleOutCome, factors);
+            element.removeEventListener("pointercancel", handleOutCome, factors);
+        } };
+    }
+
+    //
+    if (selector?.includes?.(":focus") && selector?.includes?.(":focus-within") && selector?.includes?.(":focus-visible")) {
+        element.addEventListener("focusin", handleCome, factors);
+        element.addEventListener("focusout", handleOutCome, factors);
+        element.addEventListener("click", handleFocusClick, factors);
+        return { disconnect: ()=>{
+            element.removeEventListener("focusin", handleCome, factors);
+            element.removeEventListener("focusout", handleOutCome, factors);
+            element.removeEventListener("click", handleFocusClick, factors);
+        } };
+    }
+
+    //
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
             if (mutation.type == "childList") {
-                const $addedNodes   = Array.from(mutation.addedNodes)   || [];
-                const $removedNodes = Array.from(mutation.removedNodes) || [];
-
-                //
-                $addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=> Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
-                $removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=> Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
-
-                //
-                const addedNodes   = [...Array.from((new Set($addedNodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector));
-                const removedNodes = [...Array.from((new Set($removedNodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector));
-
-                //
-                if (addedNodes.length > 0 || removedNodes.length > 0) {
-                    cb?.({
-                        type: mutation.type,
-                        target: mutation.target,
-                        attributeName: mutation.attributeName,
-                        attributeNamespace: mutation.attributeNamespace,
-                        nextSibling: mutation.nextSibling,
-                        oldValue: mutation.oldValue,
-                        previousSibling: mutation.previousSibling,
-                        addedNodes, removedNodes,
-                    }, observer);
-                }
+                handleMutation(mutation);
             }
         }
     });
 
     //
+    const obRef = new WeakRef(observer);
     observer.observe(element = unwrapFromQuery(element), { childList: true, subtree : true });
     const selected = Array.from(element.querySelectorAll(selector));
     if (selected.length > 0) { cb?.({ addedNodes: selected }, observer); };

@@ -1,5 +1,5 @@
 import { getStyleRule } from "./Style";
-import { observeAttribute, observeAttributeBySelector } from "./Observer";
+import { observeAttribute, observeAttributeBySelector, observeBySelector } from "./Observer";
 
 //
 export const queryExtensions = {
@@ -20,6 +20,12 @@ export class UniversalElementHandler {
         this.index     = index;
         this.selector  = selector;
         this.direction = direction;
+    }
+
+    //
+    _observeDOMChange(target, selector, cb) {
+        // no possible to listen to DOM change for non-string selector
+        return (typeof this.selector == "string" ? observeBySelector(target, selector, cb) : null);
     }
 
     //
@@ -115,6 +121,7 @@ export class UniversalElementHandler {
         if (name === "self") return target;
         if (name === "selector") return this.selector;;
         if (name === "observeAttr") return (name, cb)=>this._observeAttributes(target, name, cb);
+        if (name === "DOMChange") return (name, cb)=>this._observeDOMChange(target, this.selector, cb);
         if (name === "addEventListener") return (name, cb, opt?)=>this._addEventListener(target, name, cb, opt);
         if (name === "removeEventListener") return (name, cb, opt?)=>this._removeEventListener(target, name, cb, opt);
 
@@ -150,6 +157,7 @@ export class UniversalElementHandler {
         return false;
     }
 
+    //
     has(target, name) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
@@ -160,6 +168,7 @@ export class UniversalElementHandler {
         );
     }
 
+    //
     deleteProperty(target, name) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
@@ -167,6 +176,7 @@ export class UniversalElementHandler {
         return false;
     }
 
+    //
     ownKeys(target) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
@@ -177,6 +187,7 @@ export class UniversalElementHandler {
         return Array.from(keys);
     }
 
+    //
     defineProperty(target, name, desc) {
         const array = this._getArray(target);
         const selected = array.length > 0 ? array[this.index] : this._getSelected(target);
@@ -184,6 +195,7 @@ export class UniversalElementHandler {
         return false;
     }
 
+    //
     apply(target, self, args) {
         args[0] ||= this.selector;
         const result = target?.apply?.(self, args);
@@ -194,17 +206,19 @@ export class UniversalElementHandler {
 
 //
 const alreadyUsed = new WeakMap();
-export const Q = (selector, host = document.documentElement, index = 0) => {
+export const Q = (selector, host = document.documentElement, index = 0, direction: "children" | "parent" = "children") => {
+    // is wrapped element or element itself
     if ((selector?.element ?? selector) instanceof HTMLElement) {
         const el = selector?.element ?? selector; // @ts-ignore
-        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
+        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index, direction) as ProxyHandler<any>));
     }
     // is "ref" hook!
     if (typeof selector == "function") {
         const el = selector; // @ts-ignore
-        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index) as ProxyHandler<any>));
+        return alreadyUsed.getOrInsert(el, new Proxy(el, new UniversalElementHandler("", index, direction) as ProxyHandler<any>));
     }
-    return new Proxy(host, new UniversalElementHandler(selector, index) as ProxyHandler<any>);
+    // is selector by host
+    return new Proxy(host, new UniversalElementHandler(selector, index, direction) as ProxyHandler<any>);
 }
 
 // syntax:
