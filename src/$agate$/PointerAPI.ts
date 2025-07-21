@@ -1,5 +1,5 @@
-import { cvt_cs_to_os } from "./Convert.js";
-import { getBoundingOrientRect, orientOf, zoomOf } from "./Zoom.js";
+import { cvt_cs_to_os } from "./Convert";
+import { getBoundingOrientRect, orientOf } from "./Zoom";
 
 //
 const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }

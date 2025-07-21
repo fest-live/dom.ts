@@ -1,9 +1,10 @@
+import { camelToKebab, kebabToCamel } from "../$agate$/Utils";
+
+//
 const OWNER = "DOM", styleElement = document.createElement("style"); document.querySelector("head")?.appendChild?.(styleElement); styleElement.dataset.owner = OWNER;
 export type  StyleTuple    = [selector: string, sheet: object];
 export const setStyleURL   = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
 export const setStyleRules = (classes: StyleTuple[]) => { return classes?.map?.((args) => setStyleRule(...args)); };
-export const camelToKebab  = (str) => { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
-export const kebabToCamel  = (str) => { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
 export const getStyleLayer = (layerName, sheet?)=>{
     sheet ||= styleElement.sheet;
 

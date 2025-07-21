@@ -1,4 +1,3 @@
-//
 export type Point = DOMPoint;
 export const getPxValue = (element, name) => {
     if ("computedStyleMap"  in element) { const cm = element?.computedStyleMap(); return cm.get(name)?.value || 0; } else
@@ -154,11 +153,13 @@ requestIdleCallback(async ()=>{
 }, {timeout: 1000});
 
 //
-export const MOC    = (element: HTMLElement | null, selector: string): boolean => { return (!!element?.matches?.(selector) || !!element?.closest?.(selector)); };
+export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => { return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null; };
+export const MOC  = (element: HTMLElement | null, selector: string): boolean => { return (!!element?.matches?.(selector) || !!element?.closest?.(selector)); };
+
+//
 export const clamp  = (min, val, max) => Math.max(min, Math.min(val, max));
 export const UUIDv4 = () => { return crypto?.randomUUID ? crypto?.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)); };
-export const MOCElement  = (element: HTMLElement | null, selector: string): HTMLElement | null => { return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null; };
-export const includeSelf = (target, selector)=>{ return (target.querySelector(selector) ?? (target.matches(selector) ? target : null)); }
+export const includeSelf = (target, selector)=>{ return (target.querySelector(selector) ?? (target.matches(selector) ? target : null)); };
 
 //
 export const borderBoxWidth   = Symbol("@border-box-width") , borderBoxHeight  = Symbol("@border-box-height");
@@ -239,3 +240,14 @@ export const blockClickTrigger = (_: MouseEvent | PointerEvent | TouchEvent | nu
         ROOT.removeEventListener("contextmenu", blocker, options);
     }, 100);
 }
+
+//
+export const camelToKebab = (str: string) => { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
+export const kebabToCamel = (str: string) => { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
+
+//
+export const url  = (type: string, ...source: any[]) => { return URL.createObjectURL(new Blob(source, {type})); };
+export const html = (source: string, type: DOMParserSupportedType = 'text/html') => {
+    const parsed  = (new DOMParser()).parseFromString(source, type);
+    return parsed.querySelector('template') ?? parsed.querySelector("*");
+};
