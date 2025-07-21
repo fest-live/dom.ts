@@ -291,14 +291,13 @@ export const grabForDrag = async (
 export const bindDraggable = (elementOrEventListener, onEnd:any = ()=>{}, draggable: any|null = [{value: 0}, {value: 0}], shifting: any = [0, 0])=>{
     if (!draggable) { return; }
     const process = (ev, el)=>grabForDrag(el ?? elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.() : shifting})?.then?.(onEnd);
-    const dispose = (()=>{
-        if (typeof elementOrEventListener?.addEventListener == "function") {
-            elementOrEventListener.addEventListener("pointerdown", process);
-            return () => elementOrEventListener.removeEventListener("pointerdown", process);
-        } else
-        if (typeof elementOrEventListener == "function")  {
-            return elementOrEventListener(process);
-        }
-    })();
+
+    //
+    if (typeof elementOrEventListener?.addEventListener == "function") { elementOrEventListener.addEventListener("pointerdown", process); } else
+    if (typeof elementOrEventListener == "function")  { elementOrEventListener(process); } else
+    { throw new Error("bindDraggable: elementOrEventListener is not a function or an object with addEventListener"); }
+
+    //
+    const dispose = ()=>{ if (typeof elementOrEventListener?.removeEventListener == "function") { elementOrEventListener.removeEventListener("pointerdown", process); } };
     return { draggable, dispose, process };
 }
