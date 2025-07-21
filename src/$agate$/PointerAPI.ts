@@ -214,10 +214,10 @@ export const grabForDrag = async (
     };
 
     //
-    const hasParent = (current, parent)=>{ while (current) { if (current === parent) return true; current = current.parentElement; } }
+    const hasParent = (current, parent)=>{ while (current) { if (current === parent) return true; current = current.parentElement ?? (current.parentNode == current.getRootNode() ? current.parentNode : null); } }
     const moveEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
-            if (evc.target != em && !hasParent(evc.target, em)) { return; };
+            if (evc.target != em && !hasParent(evc?.target?.element || evc?.target, em?.element || em)) { return; };
 
             //
             evc?.preventDefault?.();
@@ -259,7 +259,7 @@ export const grabForDrag = async (
             em?.releaseCapturePointer?.(evc?.pointerId); //evc?.release?.(em);
 
             //
-            if (evc.target != em && !hasParent(evc.target, em)) { return; };
+            if (evc.target != em && !hasParent(evc.target?.element || evc.target, em?.element || em)) { return; };
 
             //
             clickPrevention(em, evc?.pointerId);
