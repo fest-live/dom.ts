@@ -178,11 +178,55 @@ export const preloadStyle = (styles: string)=>{
     return loadInlineStyle(URL.createObjectURL(new Blob([styles], {type: "text/css"})), null, "ux-layer");
 }
 
+
+//
+export type Point = DOMPoint;
+export const parseOrigin = (origin: string, element: Element): Point => { const values = origin.split(' '); return new DOMPoint(parseLength(values[0], ()=>element.clientWidth), parseLength(values[1], ()=>element.clientHeight)); }
+export const parseLength = (value: string, size: ()=>number): number => { if (value.endsWith('%')) { return (parseFloat(value) / 100) * size(); }; return parseFloat(value); }
+
+//
+export const getTransform = (el)=>{
+    if (el?.computedStyleMap) {
+        const styleMap = el.computedStyleMap(), transform = styleMap.get("transform"), matrix = transform?.toMatrix?.();
+        if (matrix) return matrix;
+    } else
+    if (el) { const style = getComputedStyle(el); return new DOMMatrix(style?.getPropertyValue?.("transform")); }
+    return new DOMMatrix();
+}
+
+//
+export const getTransformOrigin = (el)=>{
+    const style = getComputedStyle(el), cssOrigin = style?.getPropertyValue?.("transform-origin") || `50% 50%`;
+    return parseOrigin(cssOrigin, el);
+}
+
 //
 export const getPropertyValue = (src, name)=>{
     if ("computedStyleMap" in src) {
         const val = src?.computedStyleMap?.()?.get(name);
         return val instanceof CSSUnitValue ? (val?.value || 0) : val?.toString?.();
     }
-    return parseFloat(getComputedStyle(src)?.getPropertyValue?.(name) || "0") || 0;
+    if (src instanceof HTMLElement) { const cs = getComputedStyle?.(src, ""); return (parseFloat(cs?.getPropertyValue?.(name)?.replace?.("px", "")) || 0); }
+    return (parseFloat((src?.style ?? src).getPropertyValue?.(name)?.replace?.("px", "")) || 0) || 0;
 }
+
+//
+export const getElementZoom = (element: Element): number => {
+    let zoom = 1, currentElement: Element | null = element;
+    while (currentElement) {
+        if ('currentCSSZoom' in (currentElement as any)) {
+            const currentCSSZoom = (currentElement as any).currentCSSZoom;
+            if (typeof currentCSSZoom === 'number') { return (zoom *= currentCSSZoom); }
+        }
+
+        //
+        const style = getComputedStyle(currentElement); // @ts-ignore
+        if  (style.zoom && style.zoom !== 'normal') { return (zoom *= parseFloat(style.zoom)); } // @ts-ignore
+        if ((style.zoom && style.zoom !== 'normal') || 'currentCSSZoom' in (currentElement as any)) { return zoom; }
+        currentElement = (currentElement as HTMLElement)?.offsetParent ?? currentElement?.parentElement;
+    }
+    return zoom;
+}
+
+//
+export const getPxValue = (element, name) => { return getPropertyValue?.(element, name); }
