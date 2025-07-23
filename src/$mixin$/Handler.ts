@@ -9,11 +9,11 @@ type DatasetValue = string | number | boolean | null | undefined | { value?: str
 export const deleteStyleProperty = (el: HTMLElement, name: string) => el.style.removeProperty(camelToKebab(name));
 
 //
-export const handleHidden = (element, hidden) => {
-    const isNotHidden = (!hidden && typeof hidden != "string") ? true : (hidden == "" ? false : true);
-    if (typeof hidden == "object" && hidden != null && ("value" in hidden || hidden?.value != null)) { hidden = hidden.value }; // @ts-ignore
-    if (element instanceof HTMLInputElement) { element.hidden = !isNotHidden; } else
-        { if (isNotHidden) { delete element.dataset?.hidden; } else { element.dataset.hidden = ""; } }
+export const handleHidden = (element, _, visible) => {
+    if (visible != null && typeof visible == "object" && ("value" in visible || visible?.value != null)) { visible = visible.value };
+    const isVisible = (typeof visible == "boolean") ? visible : (visible == null ? true : ((visible || visible == "" || visible == 0) ? true : false));
+    if (element instanceof HTMLInputElement) { element.hidden = !isVisible; } else
+        { if (isVisible) { element?.removeAttribute?.("data-hidden"); } else { element?.setAttribute?.("data-hidden", ""); } }
     return element;
 }
 
