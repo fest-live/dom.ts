@@ -8,9 +8,9 @@ export const initVisibility = async (ROOT: any = document.body)=>{
             const target = mutation.target as HTMLElement;
 
             // TODO? legacy "false" support
-            if (target.dataset.hidden !== mutation.oldValue) {
+            if (target.getAttribute("data-hidden") !== mutation.oldValue) {
                 // @ts-ignore
-                Promise?.try?.(target.dataset.hidden != null ? animateHide : animateShow, target)?.catch?.(console.warn.bind(console));
+                Promise?.try?.(target.getAttribute("data-hidden") != null ? animateHide : animateShow, target)?.catch?.(console.warn.bind(console));
             }
         }
     });
