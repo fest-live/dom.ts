@@ -5,10 +5,6 @@ import { getBoundingOrientRect, orientOf } from "./Zoom";
 const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }
 
 //
-export const elementPointerMap = new WeakMap<any>()
-export const pointerMap = new Map([]);
-
-//
 export class DecorWith {
     #addition: any;
 
@@ -23,38 +19,35 @@ export class DecorWith {
     }
 }
 
+
+
 //
+export const elementPointerMap = new WeakMap<any, any>();
 export const agWrapEvent = (cb)=>{
 
     //
     const wpb = (ev: any)=>{
-        const el = (ev?.target?.matches?.(".ui-orientbox") ? ev.target : null) || ev?.target?.closest?.(".ui-orientbox");
+        const el = (ev?.target?.matches?.(".ui-orientbox") ? ev?.target : null) || ev?.target?.closest?.(".ui-orientbox");
         if (!el) { return cb(ev); }; //
 
-        //
-        let {pointerCache, pointerMap} = elementPointerMap?.get?.(el) || { pointerCache: new Map<number, any>(), pointerMap: new Map<number, any>() };
+        // @ts-ignore
+        let {pointerCache, pointerMap} = elementPointerMap?.getOrInsert?.(el, { pointerCache: new Map<number, any>(), pointerMap: new Map<number, any>() });
 
         //const zoom: number = zoomOf(ev?.target || el) || 1;
         const coord: [number, number] = [(ev?.layerX || 0), (ev?.layerY || 0)];
-        const cache: any = pointerCache?.get?.(ev?.pointerId || 0) || {
+        const cache: any = pointerCache?.getOrInsert?.(ev?.pointerId || 0, {
             client: coord,
             orient: null,
             boundingBox: null,
             movement: [0, 0]
-        };
+        });
 
         //
-        if (!elementPointerMap?.get?.(el)) {
-            elementPointerMap?.set?.(el, { pointerMap, pointerCache });
-        }
+        cache.delta  = [coord[0] - cache.client[0], coord[1] - cache.client[1]];
+        cache.orient = null, cache.client = coord;
 
         //
-        cache.delta = [cache.client[0], cache.client[1]];
-        cache.orient = null;
-        cache.client = coord;
-
-        //
-        const pointer = pointerMap?.get?.(ev?.pointerId || 0) || {
+        const pointer = pointerMap?.getOrInsert?.(ev?.pointerId || 0, {
             type: (ev?.type||"pointer"),
             event: ev,
             target: ev?.target || el,
@@ -65,9 +58,8 @@ export const agWrapEvent = (cb)=>{
 
             //
             get client() { return cache.client; },
-            get orient() { return cache.orient ??= cvt_cs_to_os([...pointer.client] as [number, number], [el?.offsetWidth || 1, el?.offsetHeight || 1], orientOf(ev.target || el) || 0); },
-            //get movement() { return cvt_rel_cs_to_os([cache.client[0] - cache.delta[0], cache.client[1] - cache.delta[1]], orientOf(ev.target || el) || 0); },
-            get movement() { return [cache.client[0] - cache.delta[0], cache.client[1] - cache.delta[1]]; },
+            get orient() { return cache.orient ??= cvt_cs_to_os([...(pointer.client || cache.client)] as [number, number], [el?.offsetWidth || 1, el?.offsetHeight || 1], orientOf(ev.target || el) || 0); },
+            get movement() { return [cache.delta[0] || 0, cache.delta[1] || 0]; },
             get boundingBox() { return (cache.boundingBox ??= getBoundingOrientRect(ev?.target || el, orientOf(ev.target || el) || 0)); },
 
             //
@@ -76,7 +68,7 @@ export const agWrapEvent = (cb)=>{
                 (element || pointer.cap_element || ev?.target || el)?.releasePointerCapture?.(ev?.pointerId || 0);
                 pointer.cap_element = null;
             },
-        };
+        });
 
         //
         Object.assign(pointer, {
@@ -86,12 +78,6 @@ export const agWrapEvent = (cb)=>{
             cs_box: [el?.offsetWidth || 1, el?.offsetHeight || 1],
             pointerId: ev?.pointerId || 0
         });
-
-        //
-        if (!pointerMap?.has?.(ev?.pointerId || 0)) {
-            pointerMap?.set?.(ev?.pointerId || 0, pointer);
-            pointerCache?.set?.(ev?.pointerId || 0, cache);
-        };
 
         //
         if (ev?.type == "contextmenu" || ev?.type == "click" || ev?.type == "pointerup" || ev?.type == "pointercancel") {
@@ -182,7 +168,10 @@ const clickPrevention = (element, pointerId = 0)=>{
     setTimeout(removeEvents, 100);
 }
 
+
+
 //
+export const draggingPointerMap = new WeakMap<any, any>();
 export const grabForDrag = async (
     em,
     ex: any = {pointerId: 0},
