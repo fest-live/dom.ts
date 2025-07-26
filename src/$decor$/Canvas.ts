@@ -1,22 +1,7 @@
 import { makeRAFCycle } from "../$agate$/Utils";
-import { getCorrectOrientation, whenAnyScreenChanges } from "../$agate$/Viewport";
+
+//
 const blobImageMap = new WeakMap(), delayed = new Map<number, Function | null>([]);
-const orientationNumberMap = {
-    "landscape-primary": 0, // as 0deg, aka. 360deg
-    "portrait-primary": 1, // as -90deg, aka. 270deg
-    "landscape-secondary": 2, // as -180deg, aka. 180deg
-    "portrait-secondary": 3, // as -270deg, aka. 90deg
-}
-
-//
-/*const orientationNumberMap = {
-    "portrait-primary": 0, // as 0deg, aka. 360deg
-    "landscape-primary": 1, // as -90deg, aka. 270deg
-    "portrait-secondary": 2, // as -180deg, aka. 180deg
-    "landscape-secondary": 3 // as -270deg, aka. 90deg
-}*/
-
-//
 const sheduler = makeRAFCycle();
 export const callByFrame = (pointerId, cb)=>{ delayed.set(pointerId, cb); }
 export const cover = (ctx, img, scale = 1, port, orient = 0) => {
@@ -42,21 +27,28 @@ const bindCached = (cb, ctx)=>{
     return bindCache?.getOrInsertComputed?.(cb, ()=> cb?.bind?.(ctx));
 }
 
-
 //
 export default class UICanvas extends HTMLCanvasElement {
-    static observedAttributes = ["data-src"];
+    static observedAttributes = ["data-src", "data-orient"];
 
     //
     ctx: CanvasRenderingContext2D | null = null;
     image: ImageBitmap | null = null;
     #size: [number, number] = [1, 1];
-    #orient: number = 0;
     #loading: string|Blob|File = "";
     #ready: string|Blob|File = "";
 
     //
-    attributeChangedCallback(name, _, newValue) { if (name == "data-src") { this.#preload(newValue); }; }
+    get #orient() { return parseInt(this.getAttribute("data-orient") || "0") || 0; }
+    set #orient(value: number) { this.setAttribute("data-orient", value.toString()); }
+
+    //
+    attributeChangedCallback(name, _, newValue) {
+        if (name == "data-src") { this.#preload(newValue); };
+        if (name == "data-orient") { this.#render(this.#ready); };
+    }
+
+    //
     connectedCallback() {
         const parent: HTMLElement = this.parentNode as HTMLElement;
         this.#size = [ // @ts-ignore
@@ -76,9 +68,6 @@ export default class UICanvas extends HTMLCanvasElement {
 
         //
         const fixSize = () => {
-            this.#orient = orientationNumberMap[getCorrectOrientation() || ""] || 0;
-
-            //
             const old = this.#size;
             this.#size = [ // @ts-ignore
                 Math.min(Math.min(Math.max(this.clientWidth  || parent?.clientWidth  || 1, 1), parent?.clientWidth  || 1) * (this.currentCSSZoom || 1), screen?.width  || 1) * (devicePixelRatio || 1), // @ts-ignore
@@ -109,14 +98,13 @@ export default class UICanvas extends HTMLCanvasElement {
             this.classList.add("ui-canvas");
 
             //
-            fixSize(); whenAnyScreenChanges(()=>this.#render(this.#ready));
+            fixSize();
 
             //
             new ResizeObserver((entries) => {
                 for (const entry of entries) {
                     const box = entry?.devicePixelContentBoxSize?.[0];
                     if (box) {
-                        this.#orient = orientationNumberMap[getCorrectOrientation() || ""] || 0;
                         const old = this.#size;
                         this.#size  = [ // @ts-ignore
                             Math.max(/*contentBox.inlineSize * devicePixelRatio*/box.inlineSize || this.width, 1),
