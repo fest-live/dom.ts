@@ -45,7 +45,7 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
 
     // Если не указан слой — работаем как раньше
     if (!layerName) {
-        let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText === selector);
+        let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText?.trim?.()?.endsWith?.(selector?.trim?.() ?? ""));
         if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${atid ? `[data-query-id="${atid}"]` : ""} ${selector} {}`); }
         return sheet?.cssRules?.[ruleId];
     }
