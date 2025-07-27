@@ -34,7 +34,7 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
     if (root instanceof ShadowRoot) {
         // Ищем style внутри ShadowRoot
         if (!($styleElement = root.querySelector('style'))) {
-            $styleElement = document.createElement('style');
+            $styleElement = document.createElement('style[data-ux-query]');
             $styleElement.setAttribute('data-ux-query', '');
             root.appendChild($styleElement);
         }
