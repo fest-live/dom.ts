@@ -1,4 +1,4 @@
-import { camelToKebab, kebabToCamel } from "../$agate$/Utils";
+import { UUIDv4, camelToKebab, kebabToCamel } from "../$agate$/Utils";
 
 //
 const OWNER = "DOM", styleElement = document.createElement("style"); document.querySelector("head")?.appendChild?.(styleElement); styleElement.dataset.owner = OWNER;
@@ -22,16 +22,18 @@ export const getStyleLayer = (layerName, sheet?)=>{
 }
 
 //
-export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis = null) => {
+export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis: any = null) => {
     // Определяем корень (ShadowRoot или document)
     // @ts-ignore
     const root = basis?.getRootNode ? basis.getRootNode() : document;
+    basis?.setAttribute?.("data-query-id", basis?.getAttribute?.("data-query-id") || UUIDv4());
+    const atid = basis?.getAttribute?.("data-query-id");
 
     //
     let $styleElement: any;// = styleElement;
     if (root instanceof ShadowRoot) {
         // Ищем style внутри ShadowRoot
-        if (!($styleElement = root.querySelector('style[data-ux-query]'))) {
+        if (!($styleElement = root.querySelector('style'))) {
             $styleElement = document.createElement('style');
             $styleElement.setAttribute('data-ux-query', '');
             root.appendChild($styleElement);
@@ -44,7 +46,7 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
     // Если не указан слой — работаем как раньше
     if (!layerName) {
         let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText === selector);
-        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${selector} {}`); }
+        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${atid ? `[data-query-id="${atid}"]` : ""} ${selector} {}`); }
         return sheet?.cssRules?.[ruleId];
     }
 
