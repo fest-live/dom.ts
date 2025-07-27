@@ -23,16 +23,17 @@ export const getStyleLayer = (layerName, sheet?)=>{
 
 //
 export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis: any = null) => {
-    // Определяем корень (ShadowRoot или document)
     // @ts-ignore
     const root = basis?.getRootNode ? basis.getRootNode() : document;
-    basis?.setAttribute?.("data-query-id", basis?.getAttribute?.("data-query-id") || UUIDv4());
-    const atid = basis?.getAttribute?.("data-query-id");
+
+    // Making element defined for CSS query
+    const uqid = (root instanceof ShadowRoot || root instanceof Document) ? "" : (basis?.getAttribute?.("data-style-id") || UUIDv4());
+    const usel = root instanceof Document ? ":root" : (root instanceof ShadowRoot ? ":host" : `[data-style-id="${uqid}"]`);
+    basis?.setAttribute?.("data-style-id", uqid);
 
     //
     let $styleElement: any;// = styleElement;
     if (root instanceof ShadowRoot) {
-        // Ищем style внутри ShadowRoot
         if (!($styleElement = root.querySelector('style'))) {
             $styleElement = document.createElement('style[data-ux-query]');
             $styleElement.setAttribute('data-ux-query', '');
@@ -43,10 +44,10 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
     //
     sheet ||= $styleElement?.sheet || sheet;
 
-    // Если не указан слой — работаем как раньше
+    //
     if (!layerName) {
         let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText?.trim?.()?.endsWith?.(selector?.trim?.() ?? ""));
-        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${atid ? `[data-query-id="${atid}"]` : ""} ${selector} {}`); }
+        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${usel || ""} ${selector}`?.trim?.() + " {}"); }
         return sheet?.cssRules?.[ruleId];
     }
 
