@@ -22,13 +22,17 @@ export const animationSequence = (DragCoord = 0, ValStart: any = null, ValEnd: a
 
 //
 export const doAnimate = async (newItem, val, axis = "x", animate = false, signal?: AbortSignal)=>{
-    const oldValue = parseInt(newItem.style.getPropertyValue("--cell-" + axis)) || 0;
-    setProperty(newItem, "--p-cell-" + axis, oldValue);
+    const oldValue = parseInt(newItem.style.getPropertyValue("--cell-" + axis)) || 0,
+          dragName = "--drag-" + swapped(axis),
+          oldDrag  = parseFloat(newItem.style.getPropertyValue(dragName)) || 0;
 
     //
-    const drag = "--drag-" + swapped(axis);
+    setProperty(newItem, "--p-cell-" + axis, oldValue);
+    await new Promise((r)=>requestAnimationFrame(r));
+
+    //
     const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(
-        parseFloat(newItem.style.getPropertyValue(drag)) || 0,
+        oldDrag,
         oldValue,
         val,
         axis
@@ -62,7 +66,7 @@ export const doAnimate = async (newItem, val, axis = "x", animate = false, signa
     //
     if (!shifted) { onShift?.[0]?.(); } // commit dragging result
     setProperty(newItem, "--p-cell-" + axis, val);
-    setProperty(newItem, drag, 0);
+    setProperty(newItem, dragName, 0);
 }
 
 //
