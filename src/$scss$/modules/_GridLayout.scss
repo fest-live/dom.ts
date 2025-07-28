@@ -5,6 +5,7 @@
 
     //
     .ui-gridlayout {
+        @include mx.compute_orient_grid_layout();
 
         //
         & {
@@ -14,7 +15,8 @@
 
         //
         & {
-            display: block flow;
+            //display: block flow;
+            display: block grid;
             position: relative;
 
             //
@@ -33,11 +35,17 @@
             //
             inline-size: 100%;
             block-size: 100%;
+
+            //
+            grid-template-columns: repeat(var(--cs-layout-c, 4), minmax(0px, 1fr));
+            grid-template-rows: repeat(var(--cs-layout-r, 8), minmax(0px, 1fr));
+            grid-column-gap: var(--c-gap, 1rem);
+            grid-row-gap: var(--r-gap, 1rem);
         }
 
         //
         & > :where(*) {
-            @include mx.compute_grid();
+            @include mx.compute_grid_item_cell();
 
             // calculate visible size
             & { --icon-size: min((100cqmin / min(calc(var(--layout-c, 4) / var(--ox-c-span, 1)), calc(var(--layout-r, 8) / var(--ox-r-span, 1)))) - 0.5 * min(var(--c-gap, 1rem), var(--r-gap, 1rem)), 6rem); }
@@ -49,33 +57,34 @@
                 --drag-y: 0; --cs-drag-y: calc(var(--drag-y, 0) * 1px);
             }
 
-            // compute grid insets
-            // TODO: use native grid (needs Agate.UX grid system)
-            & {
-                --ox-c-unit: calc(var(--os-size-x, 100cqi) / var(--layout-c, 0));
-                --ox-r-unit: calc(var(--os-size-y, 100cqb) / var(--layout-r, 0));
-                --os-inset-x: calc((var(--grid-c) - 0.5) * var(--ox-c-unit));
-                --os-inset-y: calc((var(--grid-r) - 0.5) * var(--ox-r-unit));
-            }
-
             //
             & {
-                position: absolute;
+                position: relative;
+                //position: absolute;
                 transform-origin: 0% 0%;
                 transform:
                     translate3d(
-                        round(nearest, var(--cs-drag-x, 0px), calc(1px / var(--pixel-ratio, 1))),
-                        round(nearest, var(--cs-drag-y, 0px), calc(1px / var(--pixel-ratio, 1))),
+                        round(nearest, calc(var(--cs-drag-x, 0px) + var(--cs-transition-c, 0px)), calc(1px / var(--pixel-ratio, 1))),
+                        round(nearest, calc(var(--cs-drag-y, 0px) + var(--cs-transition-r, 0px)), calc(1px / var(--pixel-ratio, 1))),
                         0px)
                     scale3d(var(--scale, 1), var(--scale, 1), var(--scale, 1))
                     translate3d(
+                        round(nearest, var(--translate-x, 0px), calc(1px / var(--pixel-ratio, 1))),
+                        round(nearest, var(--translate-y, 0px), calc(1px / var(--pixel-ratio, 1))),
+                        0px)
+                    /*translate3d(
                         round(nearest, calc(var(--translate-x, 0px) - 50%), calc(1px / var(--pixel-ratio, 1))),
                         round(nearest, calc(var(--translate-y, 0px) - 50%), calc(1px / var(--pixel-ratio, 1))),
-                        0px) !important;
+                        0px)*/ !important;
 
                 //
-                inset-block-start: var(--cs-inset-y, 0px);
-                inset-inline-start: var(--cs-inset-x, 0px);
+                inset: 0px;
+                inset-block-start: 0px;
+                inset-inline-start: 0px;
+
+                //
+                grid-column: round(nearest, var(--cs-grid-c, 1), 1);
+                grid-row: round(nearest, var(--cs-grid-r, 1), 1);
 
                 //
                 zoom: 1;
@@ -124,12 +133,6 @@
                 inline-size: 100%;
                 block-size: 100%;
             }
-        }
-
-        //
-        & > :where(*[data-dragging]) {
-            --grid-c: var(--fp-cell-x);
-            --grid-r: var(--fp-cell-y);
         }
     }
 }

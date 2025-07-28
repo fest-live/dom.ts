@@ -264,32 +264,86 @@ export const orientationNumberMap = {
 };
 
 
+//
 @function perfect-translate($x: 0px, $y: 0px) {
-    @return translate3d(round(nearest, #{$x}, calc(1px / var(--pixel-ratio, 1))), round(nearest, #{$y}, calc(1px / var(--pixel-ratio, 1))), 0)
+    @return translate3d(round(nearest, #{$x}, calc(1px / var(--pixel-ratio, 1))), round(nearest, #{$y}, calc(1px / var(--pixel-ratio, 1))), 0);
 }
 
+//
+@mixin compute_grid_item_cell() {
+    & {
+        --p-cell-x: var(--cell-x);
+        --p-cell-y: var(--cell-y);
 
-@mixin compute_grid() {
-    --p-cell-x: var(--cell-x);
-    --p-cell-y: var(--cell-y);
+        // CLAMPED GRID
+        --f-col: clamp(4, var(--layout-c, 4), 6);
+        --f-row: clamp(8, var(--layout-r, 8), 12);
 
-    // CLAMPED GRID
-    --f-col: clamp(4, var(--layout-c, 4), 6);
-    --f-row: clamp(8, var(--layout-r, 8), 12);
+        //
+        --fc-cell-x: calc(clamp(0, var(--cell-x), calc(var(--f-col) - 1)) + 1);
+        --fc-cell-y: calc(clamp(0, var(--cell-y), calc(var(--f-row) - 1)) + 1);
+
+        //
+        --fp-cell-x: calc(clamp(0, var(--p-cell-x), calc(var(--f-col) - 1)) + 1);
+        --fp-cell-y: calc(clamp(0, var(--p-cell-y), calc(var(--f-row) - 1)) + 1);
+
+        //
+        --dir-x: calc(var(--fc-cell-x) - var(--fp-cell-x));
+        --dir-y: calc(var(--fc-cell-y) - var(--fp-cell-y));
+
+        //
+        --grid-c: var(--fc-cell-x);
+        --grid-r: var(--fc-cell-y);
+    }
+
+    & {
+        --ox-c-unit:  calc(var(--os-size-x, 100cqi) / var(--os-layout-c, 1));
+        --ox-r-unit:  calc(var(--os-size-y, 100cqb) / var(--os-layout-r, 1));
+        --os-inset-x: calc((var(--grid-c, 1) - 0.5) * var(--ox-c-unit, 1px));
+        --os-inset-y: calc((var(--grid-r, 1) - 0.5) * var(--ox-r-unit, 1px));
+    }
 
     //
-    --fc-cell-x: calc(clamp(0, var(--cell-x), calc(var(--f-col) - 1)) + 1);
-    --fc-cell-y: calc(clamp(0, var(--cell-y), calc(var(--f-row) - 1)) + 1);
+    &[data-dragging] {
+        --grid-c: var(--fp-cell-x, 1);
+        --grid-r: var(--fp-cell-y, 1);
+    }
+}
 
-    //
-    --fp-cell-x: calc(clamp(0, var(--p-cell-x), calc(var(--f-col) - 1)) + 1);
-    --fp-cell-y: calc(clamp(0, var(--p-cell-y), calc(var(--f-row) - 1)) + 1);
+//
+@mixin compute_orient_grid_layout() {
+    & {
+        --os-layout-c: var(--layout-c, 4);
+        --os-layout-r: var(--layout-r, 8);
 
-    //
-    --dir-x: calc(var(--fc-cell-x) - var(--fp-cell-x));
-    --dir-y: calc(var(--fc-cell-y) - var(--fp-cell-y));
+        //
+        --cs-layout-c: #{lg.mix(var(--os-layout-c, 4), var(--os-layout-r, 8), var(--in-swap-cond, 0))};
+        --cs-layout-r: #{lg.mix(var(--os-layout-r, 8), var(--os-layout-c, 4), var(--in-swap-cond, 0))};
+    }
 
-    //
-    --grid-c: var(--fc-cell-x);
-    --grid-r: var(--fc-cell-y);
+    & > :where(*) {
+        // hack: use translate diff shifting for correct animation for CSS Grid Layout
+        & { // currently, I have no viable solution for correct animation for CSS Grid Layout
+            --cs-sw-unit-x: #{lg.mix(var(--ox-c-unit, 1px), var(--ox-r-unit, 1px), var(--in-swap-cond, 0))};
+            --cs-sw-unit-y: #{lg.mix(var(--ox-r-unit, 1px), var(--ox-c-unit, 1px), var(--in-swap-cond, 0))};
+
+            //
+            --cs-transition-c: calc((var(--cs-inset-x, 0px) - (round(nearest, var(--cs-grid-c, 1), 1) - 0.5) * var(--cs-sw-unit-x, 1px)));
+            --cs-transition-r: calc((var(--cs-inset-y, 0px) - (round(nearest, var(--cs-grid-r, 1), 1) - 0.5) * var(--cs-sw-unit-y, 1px)));
+        }
+
+        //
+        & { // compute oriented grid cell to client-space coordinates
+            --os-grid-c: var(--grid-c, 1);
+            --os-grid-r: var(--grid-r, 1);
+
+            // needs re-orient by...
+            --in-grid-c: #{lg.mix(var(--os-grid-c, 1), var(--os-grid-r, 1), var(--in-swap-cond, 0))};
+            --in-grid-r: #{lg.mix(var(--os-grid-r, 1), var(--os-grid-c, 1), var(--in-swap-cond, 0))};
+
+            //
+            --cs-grid-c: #{lg.mix(var(--in-grid-c, 1), calc(var(--cs-layout-c, 4) - (var(--in-grid-c, 1) - 1)), var(--in-rev-cond-x, 0))};
+            --cs-grid-r: #{lg.mix(var(--in-grid-r, 1), calc(var(--cs-layout-r, 8) - (var(--in-grid-r, 1) - 1)), var(--in-rev-cond-y, 0))};
+        }
+    }
 }
