@@ -21,14 +21,18 @@ export const animationSequence = (DragCoord = 0, ValStart: any = null, ValEnd: a
 };
 
 //
-export const doAnimate = async (newItem, val, axis = "x", animate = false, signal?: AbortSignal)=>{
+export const doAnimate = async (newItem, val: number, axis: any = "x", animate = false, signal?: AbortSignal)=>{
+    const swp = swapped(axis);
     const oldValue = parseInt(newItem.style.getPropertyValue("--cell-" + axis)) || 0,
           dragName = "--drag-" + swapped(axis),
           oldDrag  = parseFloat(newItem.style.getPropertyValue(dragName)) || 0;
 
     //
-    setProperty(newItem, "--p-cell-" + axis, oldValue);
+    //setProperty(newItem, "--cs-p-offset-" + swp, `${newItem?.[{"x": "offsetLeft", "y": "offsetTop"}[swp as any]] || 0}px`);
+    //const oldOffset = `${newItem?.[{"x": "offsetLeft", "y": "offsetTop"}[swp as any]] || 0}px`;
+    setProperty(newItem, "--p-cell-" + swp, oldValue);
     await new Promise((r)=>requestAnimationFrame(r));
+    //setProperty(newItem, "--cs-p-offset-" + swp, oldOffset);
 
     //
     const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(
@@ -66,6 +70,7 @@ export const doAnimate = async (newItem, val, axis = "x", animate = false, signa
     //
     if (!shifted) { onShift?.[0]?.(); } // commit dragging result
     setProperty(newItem, "--p-cell-" + axis, val);
+    //setProperty(newItem, "--cs-p-offset-" + swp, `${newItem?.[{"x": "offsetLeft", "y": "offsetTop"}[swp as any]] || 0}px`);
     setProperty(newItem, dragName, 0);
 }
 

@@ -35,12 +35,18 @@
             //
             inline-size: 100%;
             block-size: 100%;
+            padding: 0px;
+            overflow: visible;
 
             //
             grid-template-columns: repeat(var(--cs-layout-c, 4), minmax(0px, 1fr));
             grid-template-rows: repeat(var(--cs-layout-r, 8), minmax(0px, 1fr));
-            grid-column-gap: var(--c-gap, 1rem);
-            grid-row-gap: var(--r-gap, 1rem);
+            //grid-column-gap: var(--c-gap, 1rem);
+            //grid-row-gap: var(--r-gap, 1rem);
+
+            //
+            place-content: start;
+            place-items: start;
         }
 
         //
@@ -69,18 +75,14 @@
                         0px)
                     scale3d(var(--scale, 1), var(--scale, 1), var(--scale, 1))
                     translate3d(
-                        round(nearest, var(--translate-x, 0px), calc(1px / var(--pixel-ratio, 1))),
-                        round(nearest, var(--translate-y, 0px), calc(1px / var(--pixel-ratio, 1))),
-                        0px)
-                    /*translate3d(
                         round(nearest, calc(var(--translate-x, 0px) - 50%), calc(1px / var(--pixel-ratio, 1))),
                         round(nearest, calc(var(--translate-y, 0px) - 50%), calc(1px / var(--pixel-ratio, 1))),
-                        0px)*/ !important;
+                        0px) !important;
 
                 //
                 inset: 0px;
-                inset-block-start: 0px;
-                inset-inline-start: 0px;
+                inset-block-start: calc(var(--cs-sw-unit-y, 1px) * 0.5);
+                inset-inline-start: calc(var(--cs-sw-unit-x, 1px) * 0.5);
 
                 //
                 grid-column: round(nearest, var(--cs-grid-c, 1), 1);
@@ -88,7 +90,7 @@
 
                 //
                 zoom: 1;
-                place-self: center;
+                place-self: start;
 
                 //
                 min-inline-size: 1px;
