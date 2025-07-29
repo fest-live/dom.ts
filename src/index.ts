@@ -3,7 +3,7 @@ import styles from "./index.scss?inline&compress";
 
 //
 import { initVisibility } from "./$decor$/Appear";
-import { preloadStyle } from "./$mixin$/Style";
+import { loadInlineStyle, preloadStyle } from "./$mixin$/Style";
 import { updateVP, whenAnyScreenChanges } from "./$agate$/Viewport";
 
 //
@@ -31,6 +31,10 @@ export * from "./$mixin$/Handler";
 
 //
 export * from "./$grid$/GridItemUtils";
+
+//@ts-ignore
+import $fonts from "fonts/inter.css?inline";
+loadInlineStyle($fonts);
 
 //
 const styled = preloadStyle(styles);
