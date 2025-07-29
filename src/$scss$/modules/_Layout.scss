@@ -176,13 +176,11 @@
                 block-size: 100%;
                 max-inline-size: 100%;
                 max-block-size: 100%;
+                pointer-events: none;
 
                 //
                 zoom: max(var(--zoom, 1), 0.125);
                 font-size: 16px;
-
-                //
-                pointer-events: none;
 
                 //
                 writing-mode: horizontal-tb !important;
@@ -209,7 +207,7 @@
 
             //
             & > :where(*),
-            & :where(ui-frame, .u2-grid-item, ui-modal)
+            & :where(ui-frame, .u2-grid-item, ui-modal, [is="ui-orientbox"], [is="ui-gridbox"], [is="ui-orientbox"] > :where(*), [is="ui-gridbox"] > :where(*), .ui-gridlayout, .ui-gridlayout > :where(*))
             {
                 @include mx.compute_os_conditions;
                 @include mx.compute_cs_size_to_os;

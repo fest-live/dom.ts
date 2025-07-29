@@ -21,8 +21,9 @@
 
             //
             container-name: u2-grid;
-            container-type: size;
-            contain: size layout;
+            container-type: normal;
+            //container-type: size;
+            contain: none;
 
             //
             zoom: 1;
@@ -45,8 +46,10 @@
             //grid-row-gap: var(--r-gap, 1rem);
 
             //
-            place-content: start;
-            place-items: start;
+            justify-content: safe start !important;
+            align-content: safe start !important;
+            justify-items: safe start !important;
+            align-items: safe start !important;
         }
 
         //
@@ -65,8 +68,9 @@
 
             //
             & {
-                position: relative;
-                //position: absolute;
+                position: relative !important;
+                z-index: 1;
+                //position: absolute;;
                 transform-origin: 0% 0%;
                 transform:
                     translate3d(
@@ -78,6 +82,7 @@
                         round(nearest, calc(var(--translate-x, 0px) - 50%), calc(1px / var(--pixel-ratio, 1))),
                         round(nearest, calc(var(--translate-y, 0px) - 50%), calc(1px / var(--pixel-ratio, 1))),
                         0px) !important;
+                translate: 0px 0px 0px;
 
                 //
                 inset: 0px;
