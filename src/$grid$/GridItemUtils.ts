@@ -6,18 +6,17 @@ const get = (items, id)=>{ if (typeof items?.get == "function") { const item = i
 
 //
 export const getSpan = (el, ax)=>{ const prop = el.style.getPropertyValue(["--ox-c-span", "--ox-r-span"][ax]), factor = ((parseFloat(prop || "1") || 1) - 1); return Math.min(Math.max(factor-1, 0), 1); }
-export const redirectCell = ($preCell: [number, number], gridArgs: GridArgsType, orient: number = 0): [number, number] => {
-    const preCell: [number, number] = [...$preCell]; // make non-conflict copy
-    const list = Array.from(gridArgs?.list||[]);
-    const icons: GridItemType[] = list?.length > 0 ? (list?.map((id) => get(gridArgs?.items, id)).filter((m) => !!m)) : Array.from(gridArgs?.items?.values?.() || []);
+export const redirectCell = ($preCell: [number, number], gridArgs: GridArgsType): [number, number] => {
+    const icons: any = (gridArgs?.items || []);
     const item = gridArgs?.item || {};
     const checkBusy = (cell): boolean => {
         return icons
-            .filter((e: GridItemType) => (!(e == item || e?.id == item?.id) && (e?.pointerId == null || e?.pointerId < 0)))
-            .some((one) => ((one?.cell?.[0]||0) == (cell[0]||0) && (one?.cell?.[1]||0) == (cell[1]||0)));
+            ?.filter?.((e: GridItemType) => !(e == item || e?.id == item?.id))
+            ?.some?.((one) => ((one?.cell?.[0]||0) == (cell[0]||0) && (one?.cell?.[1]||0) == (cell[1]||0)));
     };
 
     //
+    const preCell: [number, number] = [...$preCell]; // make non-conflict copy
     if (!checkBusy(preCell)) { return [...preCell]; }
     const layout  = [...gridArgs?.layout];
     const columns = layout[0] || 4;
