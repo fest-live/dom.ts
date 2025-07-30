@@ -3,13 +3,25 @@ import { makeRAFCycle } from "../$agate$/Utils";
 //
 const blobImageMap = new WeakMap(), delayed = new Map<number, Function | null>([]);
 const sheduler = makeRAFCycle();
+
+//
+const getImgWidth = (img)=>{
+    return img?.naturalWidth || img?.width || 1;
+}
+
+//
+const getImgHeight = (img)=>{
+    return img?.naturalHeight || img?.height || 1;
+}
+
+//
 export const callByFrame = (pointerId, cb)=>{ delayed.set(pointerId, cb); }
 export const cover = (ctx, img, scale = 1, port, orient = 0) => {
     const canvas = ctx.canvas;
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate((orient || 0) * (Math.PI * 0.5));
-    ctx.rotate(port * -(Math.PI / 2));
-    ctx.translate(-(img.width / 2) * scale, -(img.height / 2) * scale);
+    ctx.rotate((1 - port) * -(Math.PI / 2));
+    ctx.translate(-(getImgWidth(img) / 2) * scale, -(getImgHeight(img) / 2) * scale);
 };
 
 //
@@ -143,10 +155,10 @@ export default class UICanvas extends HTMLCanvasElement {
 
             //
             const ox = (this.#orient%2) || 0;
-            const port = img.width < img.height ? 1 : 0;
+            const port = getImgWidth(img) < getImgHeight(img) ? 1 : 0;
             const scale = Math.max(
-                canvas[["width", "height"][ox]] / img[["width", "height"][port]],
-                canvas[["height", "width"][ox]] / img[["height", "width"][port]]);
+                canvas[["height", "width"][ox]] / getImgWidth(img),
+                canvas[["width", "height"][ox]] / getImgHeight(img));
 
             //
             ctx.save();
