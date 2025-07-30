@@ -233,3 +233,7 @@ export const getElementZoom = (element: Element): number => {
 
 //
 export const getPxValue = (element, name) => { return getPropertyValue?.(element, name); }
+export const getPadding = (src, axis)=>{
+    if (axis == "inline") { return (getPropertyValue(src, "padding-inline-start") + getPropertyValue(src, "padding-inline-end")); };
+    return (getPropertyValue(src, "padding-block-start") + getPropertyValue(src, "padding-block-end"));
+}
