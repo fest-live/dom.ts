@@ -1,4 +1,5 @@
 import type { StyleTuple } from "../$mixin$/Style";
+import { addEvent } from "./EventManager";
 
 //
 export const getAvailSize = () => {
@@ -54,19 +55,13 @@ export const getCorrectOrientation = () => {
 const passiveOpts = { passive: true };
 
 //
-function addEvent(target, type, cb, opts = passiveOpts): any {
-    target?.addEventListener?.(type, cb, opts);
-    return () => target?.removeEventListener?.(type, cb, opts);
-}
-
-//
 export const whenAnyScreenChanges = (cb) => {
     const unsubscribers: any[] = [];
 
     // @ts-ignore
-    unsubscribers.push(addEvent(navigator?.virtualKeyboard, "geometrychange", cb));
-    unsubscribers.push(addEvent(window?.visualViewport, "scroll", cb, undefined));
-    unsubscribers.push(addEvent(window?.visualViewport, "resize", cb, undefined));
+    unsubscribers.push(addEvent(navigator?.virtualKeyboard, "geometrychange", cb, passiveOpts));
+    unsubscribers.push(addEvent(window?.visualViewport, "scroll", cb, passiveOpts));
+    unsubscribers.push(addEvent(window?.visualViewport, "resize", cb, passiveOpts));
     unsubscribers.push(addEvent(screen?.orientation, "change", cb));
     unsubscribers.push(addEvent(window, "resize", cb));
     unsubscribers.push(addEvent(document?.documentElement, "fullscreenchange", cb));

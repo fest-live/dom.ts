@@ -1,5 +1,5 @@
 import { observeAttributeBySelector, observeBySelector } from "../$mixin$/Observer";
-import { MOCElement } from "../$mixin$/Utils";
+import { MOCElement } from "../$agate$/Utils";
 
 //
 export const $$ = (selector = "*", rootElement = document.documentElement)=>{ return new AxQuery2(selector, rootElement); }

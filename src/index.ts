@@ -14,6 +14,7 @@ export * from "./$agate$/Utils";
 export * from "./$agate$/Viewport";
 export * from "./$agate$/Measure";
 export * from "./$agate$/PointerAPI";
+export * from "./$agate$/EventManager";
 
 //
 export * from "./$decor$/Animation";

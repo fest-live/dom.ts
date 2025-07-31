@@ -1,5 +1,6 @@
 import { cvt_cs_to_os } from "./Convert";
 import { getBoundingOrientRect, orientOf } from "./Zoom";
+import { addEvent, addEvents, removeEvent, removeEvents } from "./EventManager";
 
 //
 const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }
@@ -136,15 +137,19 @@ interface PointerObject {
 
 //
 const clickPrevention = (element, pointerId = 0)=>{
-    const removeEvents = ()=>{
-        document.documentElement.removeEventListener("click", ...doc);
-        document.documentElement.removeEventListener("pointerdown", ...doc);
-        document.documentElement.removeEventListener("contextmenu", ...doc);
+    const rmev = ()=>{
+        removeEvents(document.documentElement, {
+            "click": doc,
+            "pointerdown": doc,
+            "contextmenu": doc
+        });
 
         //
-        element?.removeEventListener?.("click", ...emt);
-        element?.removeEventListener?.("contextmenu", ...emt);
-        element?.removeEventListener?.("pointerdown", ...emt);
+        removeEvents(element, {
+            "click": emt,
+            "contextmenu": emt,
+            "pointerdown": emt
+        });
     }
 
     //
@@ -153,7 +158,7 @@ const clickPrevention = (element, pointerId = 0)=>{
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
-            removeEvents();
+            rmev();
         }
     };
 
@@ -162,10 +167,17 @@ const clickPrevention = (element, pointerId = 0)=>{
     const doc: [(e: PointerEvent | MouseEvent | CustomEvent | any) => any, AddEventListenerOptions] = [preventClick, {once: true, capture: true}];
 
     //
-    document.documentElement.addEventListener("click"      , ...doc); element?.addEventListener?.("click"      , ...emt);
-    document.documentElement.addEventListener("pointerdown", ...doc); element?.addEventListener?.("pointerdown", ...emt);
-    document.documentElement.addEventListener("contextmenu", ...doc); element?.addEventListener?.("contextmenu", ...emt);
-    setTimeout(removeEvents, 100);
+    addEvents(document.documentElement, {
+        "click": doc,
+        "pointerdown": doc,
+        "contextmenu": doc
+    });
+    addEvents(element, {
+        "click": emt,
+        "pointerdown": emt,
+        "contextmenu": emt
+    });
+    setTimeout(rmev, 100);
 }
 
 
@@ -241,10 +253,16 @@ export const grabForDrag = async (
     const releaseEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             if (hm.canceled) return; hm.canceled = true;
-            em?.removeEventListener?.("pointermove", ...moveEvent);
-            em?.removeEventListener?.("pointercancel", ...releaseEvent);
-            em?.removeEventListener?.("pointerup", ...releaseEvent);
-            em?.removeEventListener?.("click", ...releaseEvent);
+
+            //
+            removeEvents(em, {
+                "pointermove": moveEvent,
+                "pointercancel": releaseEvent,
+                "pointerup": releaseEvent,
+                "click": releaseEvent
+            });
+
+            //
             em?.releaseCapturePointer?.(evc?.pointerId); //evc?.release?.(em);
 
             //
@@ -266,10 +284,13 @@ export const grabForDrag = async (
     if (em?.dispatchEvent?.(new CustomEvent("m-dragstart", { bubbles: true, detail: { event: last, holding: hm }}))) {
         //ex?.capture?.(em);
         em?.setPointerCapture?.(ex?.pointerId);
-        em?.addEventListener?.("pointermove", ...moveEvent);
-        em?.addEventListener?.("pointercancel", ...releaseEvent);
-        em?.addEventListener?.("pointerup", ...releaseEvent);
-        em?.addEventListener?.("click", ...releaseEvent);
+        addEvents(em, {
+            "pointermove": moveEvent,
+            "pointercancel": releaseEvent,
+            "pointerup": releaseEvent,
+            "click": releaseEvent
+        });
+
     } else { hm.canceled = true; }
 
     //
@@ -282,11 +303,11 @@ export const bindDraggable = (elementOrEventListener, onEnd:any = ()=>{}, dragga
     const process = (ev, el)=>grabForDrag(el ?? elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.() : shifting})?.then?.(onEnd);
 
     //
-    if (typeof elementOrEventListener?.addEventListener == "function") { elementOrEventListener.addEventListener("pointerdown", process); } else
+    if (typeof elementOrEventListener?.addEventListener == "function") { addEvent(elementOrEventListener, "pointerdown", process); } else
     if (typeof elementOrEventListener == "function")  { elementOrEventListener(process); } else
     { throw new Error("bindDraggable: elementOrEventListener is not a function or an object with addEventListener"); }
 
     //
-    const dispose = ()=>{ if (typeof elementOrEventListener?.removeEventListener == "function") { elementOrEventListener.removeEventListener("pointerdown", process); } };
+    const dispose = ()=>{ if (typeof elementOrEventListener?.removeEventListener == "function") { removeEvent(elementOrEventListener, "pointerdown", process); } };
     return { draggable, dispose, process };
 }

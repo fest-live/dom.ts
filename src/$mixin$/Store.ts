@@ -1,4 +1,4 @@
-export const namedStoreMaps = new Map(); // Map<name, WeakMap<element, obj>>
+export const namedStoreMaps = new Map<string, WeakMap<any, any>>(); // Map<name, WeakMap<element, obj>>
 
 //
 export const getStoresOfElement = ( map: Map<any, WeakMap<any, any>>, element: any): Map<any, any> => {

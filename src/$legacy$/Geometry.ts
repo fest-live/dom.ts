@@ -1,4 +1,9 @@
-import { isNearlyIdentity, getOffsetParentChain, type Point, getTransform, getTransformOrigin, getElementZoom } from "../$agate$/Utils";
+import { isNearlyIdentity, getOffsetParentChain, getTransform, getTransformOrigin, getElementZoom } from "../$agate$/Utils";
+
+//
+export type Point = { x: number; y: number; };
+
+//
 export const transformationMatrixCache = new WeakMap<Element, DOMMatrix>();
 export function convertPointFromPageToNode(element: Element, pageX: number, pageY: number): Point { return (getNodeFullTransform(element).inverse()).transformPoint(new DOMPoint(pageX, pageY)); }
 export function convertPointFromNodeToPage(element: Element, nodeX: number, nodeY: number): Point { return getNodeFullTransform(element).transformPoint(new DOMPoint(nodeX, nodeY)); }
