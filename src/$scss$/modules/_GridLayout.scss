@@ -57,7 +57,7 @@
             @include mx.compute_grid_item_cell();
 
             // calculate visible size
-            & { --icon-size: min((100cqmin / min(calc(var(--layout-c, 4) / var(--ox-c-span, 1)), calc(var(--layout-r, 8) / var(--ox-r-span, 1)))) - 0.5 * min(var(--c-gap, 1rem), var(--r-gap, 1rem)), 6rem); }
+            & { --item-size: min((100cqmin / min(calc(var(--layout-c, 4) / var(--ox-c-span, 1)), calc(var(--layout-r, 8) / var(--ox-r-span, 1)))) - 0.5 * min(var(--c-gap, 1rem), var(--r-gap, 1rem)), 6rem); }
             & * {--drag-x: 0; --drag-y: 0; }
 
             // dragging coordinate
@@ -106,8 +106,8 @@
                 block-size: 100%;//max-content;
 
                 //
-                max-inline-size: var(--icon-size, 1px);
-                max-block-size: var(--icon-size, 1px);
+                max-inline-size: var(--item-size, 1px);
+                max-block-size: var(--item-size, 1px);
 
                 //
                 pointer-events: none;
