@@ -95,7 +95,7 @@ export const getBoundingOrientRect = (element, orient: number|null|undefined = n
 }
 
 //
-export const bbw    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[borderBoxHeight]  : el[borderBoxWidth]);
-export const bbh    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[borderBoxWidth]   : el[borderBoxHeight]);
-export const cbw    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[contentBoxHeight] : el[contentBoxWidth]);
-export const cbh    = (el, orient = null)=> ((orient??orientOf(el))%2 ? el[contentBoxWidth]  : el[contentBoxHeight]);
+export const bbw    = (el, orient = null)=> ((orient??orientOf(el))%2 ? (el[borderBoxHeight] ?? el?.clientHeight) : (el[borderBoxWidth] ?? el?.clientWidth));
+export const bbh    = (el, orient = null)=> ((orient??orientOf(el))%2 ? (el[borderBoxWidth] ?? el?.clientWidth) : (el[borderBoxHeight] ?? el?.clientHeight));
+export const cbw    = (el, orient = null)=> ((orient??orientOf(el))%2 ? (el[contentBoxHeight] ?? el?.clientHeight) : (el[contentBoxWidth] ?? el?.clientWidth));
+export const cbh    = (el, orient = null)=> ((orient??orientOf(el))%2 ? (el[contentBoxWidth] ?? el?.clientWidth) : (el[contentBoxHeight] ?? el?.clientHeight));
