@@ -56,71 +56,57 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
 };
 
 //
-export const setStyleProperty = (element, name, value: any)=>{
-    if (!element) return element;
-    // custom properties currently doesn't supports Typed OM
-    if (name?.trim?.()?.startsWith?.("--")) {
-        const old = element.style?.getPropertyValue?.(name);
-        const val = (value?.value ?? value);
-        value = (value instanceof CSSStyleValue ? value.toString() : val);
-        if (old !== value) { element.style?.setProperty?.(name, value, ""); };
-    } else
+export const setStyleProperty = (element?: any|null, name?: string, value?: any)=>{
+    if (!element || !name) return element;
+
+    //
+    const kebab = camelToKebab(name || "");
     if (value instanceof CSSStyleValue) {
-        const kebab = camelToKebab(name);
         if (element.attributeStyleMap != null) {
             const old = element.attributeStyleMap?.get?.(kebab);
             if (old !== value) {
-                // CSSStyleValue is internally reactive itself!
-                element.attributeStyleMap?.set?.(kebab, value);
-
-                // bred, changing `.value` in CSSStyleValue isn't change value again
-                /*if (value instanceof CSSUnitValue) {
+                if (value instanceof CSSUnitValue) {
                     if (old != null && value.unit && value.unit !== old?.unit) {
-                        element.attributeStyleMap.set(kebab, value);
-                    } else { old.value = value.value; }
+                        if (old.value != value.value) { old.value = value.value; }
+                    } else { element.attributeStyleMap.set(kebab, value); }
                 } else {
                     element.attributeStyleMap.set(kebab, value);
-                }*/
+                }
             }
         } else {
             element?.style?.setProperty(kebab, value.toString(), "");
         }
-    } else // very specific case if number and unit value can be changed directly
-    if (!Number.isNaN(value?.value ?? value) && element.attributeStyleMap != null) {
+    } else
+    if (name?.trim?.()?.startsWith?.("--") || !element?.attributeStyleMap) {
+        const old = element?.style?.getPropertyValue?.(kebab);
+        const val = (value?.value ?? value);
+        value = (value instanceof CSSStyleValue ? value.toString() : val);
+        if (old !== value) { element.style?.setProperty?.(kebab, value, ""); };
+    } else
+    if (!Number.isNaN(value?.value ?? value) && element?.attributeStyleMap) {
         const numeric = value?.value ?? value;
-        const kebab = camelToKebab(name);
         const old = element.attributeStyleMap?.get?.(kebab);
-        if (old instanceof CSSUnitValue) { old.value = numeric; } else
+        if (old instanceof CSSUnitValue) {
+            if (old?.unit) {
+                if (old?.value != numeric) { old.value = numeric; }
+            } else {
+                element.attributeStyleMap?.set?.(kebab, numeric);
+            }
+        } else
         {   // hard-case
             const computed = element?.computedStyleMap?.();
             const oldCmVal = computed?.get?.(kebab);
-            if (oldCmVal instanceof CSSUnitValue) {
-                if (oldCmVal.value != numeric) {
-                    oldCmVal.value = numeric;
-                    element.attributeStyleMap?.set?.(kebab, oldCmVal);
-                }
+            if (oldCmVal instanceof CSSUnitValue && oldCmVal?.unit) {
+                if (oldCmVal.value != numeric) { oldCmVal.value = numeric; }
+                if (oldCmVal.unit == "number") { element.attributeStyleMap?.set?.(kebab, oldCmVal?.value); } else
+                { try { element.attributeStyleMap?.set?.(kebab, oldCmVal); } catch (e) { element.attributeStyleMap?.set?.(kebab, oldCmVal?.toString?.()); } }
             } else {
                 element.style?.setProperty?.(kebab, numeric);
             }
         }
-    } else
-    if (element.style) {
-        const camel = kebabToCamel(name), val = value?.value ?? value;
-        if (element.style[camel] != val || !element.style[camel]) {
-            element.style[camel] = val;
-        }
     }
     return element;
 }
-
-//
-/*
-export const getStyleRule = (selector: string) => {
-    const styleRules = styleElement.sheet;
-    let ruleId = Array.from(styleRules?.cssRules || []).findIndex((rule) => (rule instanceof CSSStyleRule ? (selector == rule?.selectorText) : false));
-    if (ruleId <= -1) {ruleId = styleRules?.insertRule(`${selector} {}`) as number;}
-    return styleElement?.sheet?.cssRules[ruleId];
-};*/
 
 //
 export const setStyleInRule = (selector: string, name: string, value: any) => {
