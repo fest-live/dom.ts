@@ -64,7 +64,7 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any)
     if (value instanceof CSSStyleValue) {
         if (element.attributeStyleMap != null) {
             const old = element.attributeStyleMap?.get?.(kebab);
-            if (old !== value) {
+            if (old != value) {
                 if (value instanceof CSSUnitValue) {
                     if (old != null && value.unit && value.unit !== old?.unit) {
                         if (old.value != value.value) { old.value = value.value; }
@@ -77,20 +77,14 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any)
             element?.style?.setProperty(kebab, value.toString(), "");
         }
     } else
-    if (name?.trim?.()?.startsWith?.("--") || !element?.attributeStyleMap) {
-        const old = element?.style?.getPropertyValue?.(kebab);
-        const val = (value?.value ?? value);
-        value = (value instanceof CSSStyleValue ? value.toString() : val);
-        if (old !== value) { element.style?.setProperty?.(kebab, value, ""); };
-    } else
     if (!Number.isNaN(value?.value ?? value) && element?.attributeStyleMap) {
         const numeric = value?.value ?? value;
         const old = element.attributeStyleMap?.get?.(kebab);
-        if (old instanceof CSSUnitValue) {
-            if (old?.unit) {
+        if (old) {
+            if (old instanceof CSSUnitValue && old?.unit) {
                 if (old?.value != numeric) { old.value = numeric; }
             } else {
-                element.attributeStyleMap?.set?.(kebab, numeric);
+                element.style?.setProperty?.(kebab, numeric);
             }
         } else
         {   // hard-case
@@ -104,6 +98,12 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any)
                 element.style?.setProperty?.(kebab, numeric);
             }
         }
+    } else
+    if (name?.trim?.()?.startsWith?.("--") || !element?.attributeStyleMap) {
+        const old = element?.style?.getPropertyValue?.(kebab);
+        const val = (value?.value ?? value);
+        value = (value instanceof CSSStyleValue ? value.toString() : val);
+        if (old !== value) { element.style?.setProperty?.(kebab, value, ""); };
     }
     return element;
 }
