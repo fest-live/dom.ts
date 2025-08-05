@@ -56,11 +56,16 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
 };
 
 //
-export const setStyleProperty = (element?: any|null, name?: string, value?: any)=>{
+export const setStyleProperty = (element?: any|null, name?: string, value?: any, importance = "")=>{
     if (!element || !name) return element;
 
     //
     const kebab = camelToKebab(name || "");
+    const val = value?.value ?? value;
+    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1) { value = parseFloat(val); }// else
+    //if (typeof val == "string" && val?.split?.(" ").length > 1) { value = val?.split?.(" ").map((v)=>parseFloat(v)).filter((v)=>!Number.isNaN(v)); }
+
+    //
     if (value instanceof CSSStyleValue) {
         if (element.attributeStyleMap != null) {
             const old = element.attributeStyleMap?.get?.(kebab);
@@ -74,17 +79,17 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any)
                 }
             }
         } else {
-            element?.style?.setProperty(kebab, value.toString(), "");
+            element?.style?.setProperty(kebab, value.toString(), importance);
         }
     } else
-    if (!Number.isNaN(value?.value ?? value) && element?.attributeStyleMap) {
-        const numeric = value?.value ?? value;
+    if (element?.attributeStyleMap && !Number.isNaN(value?.value ?? value)) {
+        const numeric = (typeof value == "string" && [...value?.matchAll(/^\d+(\.\d+)?$/g)]?.length == 1) ? parseFloat(value) : value;
         const old = element.attributeStyleMap?.get?.(kebab);
         if (old) {
             if (old instanceof CSSUnitValue && old?.unit) {
                 if (old?.value != numeric) { old.value = numeric; }
             } else {
-                element.style?.setProperty?.(kebab, numeric);
+                element.style?.setProperty?.(kebab, numeric, importance);
             }
         } else
         {   // hard-case
@@ -95,7 +100,7 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any)
                 if (oldCmVal.unit == "number") { element.attributeStyleMap?.set?.(kebab, oldCmVal?.value); } else
                 { try { element.attributeStyleMap?.set?.(kebab, oldCmVal); } catch (e) { element.attributeStyleMap?.set?.(kebab, oldCmVal?.toString?.()); } }
             } else {
-                element.style?.setProperty?.(kebab, numeric);
+                element.style?.setProperty?.(kebab, numeric, importance);
             }
         }
     } else
@@ -103,7 +108,7 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any)
         const old = element?.style?.getPropertyValue?.(kebab);
         const val = (value?.value ?? value);
         value = (value instanceof CSSStyleValue ? value.toString() : val);
-        if (old !== value) { element.style?.setProperty?.(kebab, value, ""); };
+        if (old !== value) { element.style?.setProperty?.(kebab, value, importance); };
     }
     return element;
 }
@@ -148,7 +153,8 @@ export const loadInlineStyle = (inline: string, rootElement: any = document.head
 
 //
 export const setProperty = (target, name, value, importance = "")=>{
-    if (!target) return;
+    return setStyleProperty(target, name, value, importance);
+    /*if (!target) return;
     if ("attributeStyleMap" in target && typeof value != "string") {
         const raw = target.attributeStyleMap.get(name), oldv = raw?.[0] ?? raw?.value;
         if (parseFloat(value) != parseFloat(oldv) || oldv !== value || !oldv) {
@@ -159,7 +165,7 @@ export const setProperty = (target, name, value, importance = "")=>{
         if (parseFloat(oldv) != value || oldv !== value || !oldv) {
             target?.style?.setProperty?.(name, value, importance);
         }
-    }
+    }*/
 }
 
 //
