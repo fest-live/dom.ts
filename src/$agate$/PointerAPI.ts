@@ -184,7 +184,7 @@ const clickPrevention = (element, pointerId = 0)=>{
 
 //
 export const draggingPointerMap = new WeakMap<any, any>();
-export const grabForDrag = async (
+export const grabForDrag = (
     em,
     ex: any = {pointerId: 0},
     {
@@ -218,9 +218,6 @@ export const grabForDrag = async (
     const hasParent = (current, parent)=>{ while (current) { if (current === parent) return true; current = current.parentElement ?? (current.parentNode == current.getRootNode() ? current.parentNode : null); } }
     const moveEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
-            if (evc.target != em && !hasParent(evc?.target?.element || evc?.target, em?.element || em)) { return; };
-
-            //
             evc?.preventDefault?.();
             evc?.stopPropagation?.();
             evc?.stopImmediatePropagation?.();
@@ -263,10 +260,7 @@ export const grabForDrag = async (
             });
 
             //
-            em?.releaseCapturePointer?.(evc?.pointerId); //evc?.release?.(em);
-
-            //
-            if (evc.target != em && !hasParent(evc.target?.element || evc.target, em?.element || em)) { return; };
+            em?.releaseCapturePointer?.(evc?.pointerId);
 
             //
             clickPrevention(em, evc?.pointerId);
@@ -287,10 +281,8 @@ export const grabForDrag = async (
         addEvents(em, {
             "pointermove": moveEvent,
             "pointercancel": releaseEvent,
-            "pointerup": releaseEvent,
-            "click": releaseEvent
+            "pointerup": releaseEvent
         });
-
     } else { hm.canceled = true; }
 
     //
@@ -300,7 +292,7 @@ export const grabForDrag = async (
 //
 export const bindDraggable = (elementOrEventListener, onEnd:any = ()=>{}, draggable: any|null = [{value: 0}, {value: 0}], shifting: any = [0, 0])=>{
     if (!draggable) { return; }
-    const process = (ev, el)=>grabForDrag(el ?? elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.() : shifting})?.then?.(onEnd);
+    const process = (ev, el)=>grabForDrag(el ?? elementOrEventListener, ev, {result: draggable, shifting: typeof shifting == "function" ? shifting?.(draggable) : shifting})?.then?.(onEnd);
 
     //
     if (typeof elementOrEventListener?.addEventListener == "function") { addEvent(elementOrEventListener, "pointerdown", process); } else
