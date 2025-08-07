@@ -53,7 +53,7 @@
 
             // optimize effects
             [data-hidden] { content-visibility: hidden; filter: none !important; backdrop-filter: none !important; };
-            [data-dragging] * { backdrop-filter: none !important; user-select: none !important; pointer-events: none !important; };
+            [data-dragging] * { backdrop-filter: none !important; user-select: none !important; /*pointer-events: none !important;*/ };
             [data-dragging], [data-hidden] { backdrop-filter: none !important; user-select: none !important; };
             //:has([data-dragging]) * { user-select: none !important; };
             //content-visibility: auto;

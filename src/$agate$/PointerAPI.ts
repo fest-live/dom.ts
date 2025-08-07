@@ -35,7 +35,7 @@ export const agWrapEvent = (cb)=>{
         let {pointerCache, pointerMap} = elementPointerMap?.getOrInsert?.(el, { pointerCache: new Map<number, any>(), pointerMap: new Map<number, any>() });
 
         //const zoom: number = zoomOf(ev?.target || el) || 1;
-        const coord: [number, number] = [(ev?.layerX || 0), (ev?.layerY || 0)];
+        const coord: [number, number] = [(ev?.clientX || 0), (ev?.clientY || 0)];
         const cache: any = pointerCache?.getOrInsert?.(ev?.pointerId || 0, {
             client: coord,
             orient: null,
@@ -215,7 +215,7 @@ export const grabForDrag = (
     };
 
     //
-    const hasParent = (current, parent)=>{ while (current) { if (current === parent) return true; current = current.parentElement ?? (current.parentNode == current.getRootNode() ? current.parentNode : null); } }
+    const hasParent = (current, parent)=>{ while (current) { if (!(current?.element ?? current)) { return false; }; if ((current?.element ?? current) === (parent?.element ?? parent)) return true; current = current.parentElement ?? (current.parentNode == current?.getRootNode?.() ? current?.getRootNode?.()?.host : current?.parentNode); } }
     const moveEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             evc?.preventDefault?.();
@@ -223,25 +223,27 @@ export const grabForDrag = (
             evc?.stopImmediatePropagation?.();
 
             //
-            const client = [...(evc?.client  || [evc?.layerX || 0, evc?.layerY || 0] || [0, 0])]; hm.duration = computeDuration();
-            hm.movement  = [...(hm.client ? [client?.[0] - (hm.client?.[0] || 0), client?.[1] - (hm.client?.[1] || 0)] : [0, 0])];
-            hm.client    = client;
-            hm.shifting[0] +=  hm.movement[0] || 0                   , hm.shifting[1] +=  hm.movement[1] || 0;
-            hm.modified[0]  = (hm.shifting[0] ?? hm.modified[0]) || 0, hm.modified[1]  = (hm.shifting[1] ?? hm.modified[1]) | 0;
+            if (hasParent(evc?.target, em)) {
+                const client = [...(evc?.client  || [evc?.clientX || 0, evc?.clientY || 0] || [0, 0])]; hm.duration = computeDuration();
+                hm.movement  = [...(hm.client ? [client?.[0] - (hm.client?.[0] || 0), client?.[1] - (hm.client?.[1] || 0)] : [0, 0])];
+                hm.client    = client;
+                hm.shifting[0] +=  hm.movement[0] || 0                   , hm.shifting[1] +=  hm.movement[1] || 0;
+                hm.modified[0]  = (hm.shifting[0] ?? hm.modified[0]) || 0, hm.modified[1]  = (hm.shifting[1] ?? hm.modified[1]) | 0;
 
-            //
-            em?.dispatchEvent?.(new CustomEvent("m-dragging", {
-                bubbles: true,
-                detail: {
-                    event: (last = evc),
-                    holding: hm,
-                },
-            }));
+                //
+                em?.dispatchEvent?.(new CustomEvent("m-dragging", {
+                    bubbles: true,
+                    detail: {
+                        event: (last = evc),
+                        holding: hm,
+                    },
+                }));
 
-            //
-            if (hm?.result?.[0] != null) hm.result[0].value = hm.modified[0] || 0;
-            if (hm?.result?.[1] != null) hm.result[1].value = hm.modified[1] || 0;
-            if (hm?.result?.[2] != null) hm.result[2].value = 0;
+                //
+                if (hm?.result?.[0] != null) hm.result[0].value = hm.modified[0] || 0;
+                if (hm?.result?.[1] != null) hm.result[1].value = hm.modified[1] || 0;
+                if (hm?.result?.[2] != null) hm.result[2].value = 0;
+            }
         }
     }), {capture: true}];
 
@@ -250,27 +252,27 @@ export const grabForDrag = (
     const releaseEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             if (hm.canceled) return; hm.canceled = true;
+            if (hasParent(evc?.target, em)) {
+                removeEvents(em, {
+                    "pointermove": moveEvent,
+                    "pointercancel": releaseEvent,
+                    "pointerup": releaseEvent,
+                    "click": releaseEvent
+                });
 
-            //
-            removeEvents(em, {
-                "pointermove": moveEvent,
-                "pointercancel": releaseEvent,
-                "pointerup": releaseEvent,
-                "click": releaseEvent
-            });
+                //
+                em?.releaseCapturePointer?.(evc?.pointerId);
 
-            //
-            em?.releaseCapturePointer?.(evc?.pointerId);
+                //
+                clickPrevention(em, evc?.pointerId);
+                em?.dispatchEvent?.(new CustomEvent("m-dragend", {
+                    bubbles: true,
+                    detail: { event: (last = evc), holding: hm },
+                }));
 
-            //
-            clickPrevention(em, evc?.pointerId);
-            em?.dispatchEvent?.(new CustomEvent("m-dragend", {
-                bubbles: true,
-                detail: { event: (last = evc), holding: hm },
-            }));
-
-            //
-            promised.resolve(result);
+                //
+                promised.resolve(result);
+            }
         }
     }), {capture: true}];
 
