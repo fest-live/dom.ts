@@ -119,18 +119,18 @@ addRoot(document);
 
 //
 export class DOMMixin {
-    constructor(name) { if (name) { registerMixin(name, this); } }
+    constructor(name: string|null = null) { if (name) { registerMixin(name, this); } }
 
     //
     public connect(wElement, wSelf, related) { return this; }
     public disconnect(wElement, wSelf, related) { return this; }
 
     //
-    public storeForElement(element) { return namedStoreMaps.get(this.name)?.get?.(element); };
+    public storeForElement(element) { return namedStoreMaps.get(this.name || "")?.get?.(element); };
     public relatedForElement(element) { return getElementRelated(element); }
 
     //
     get elements() { return mixinElements?.get?.(this); }
-    get storage() { return namedStoreMaps?.get?.(this.name); }
+    get storage() { return namedStoreMaps?.get?.(this.name || ""); }
     get name() { return mixinNamespace?.get?.(this); }
 }
