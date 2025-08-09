@@ -11,13 +11,23 @@ export class DecorWith {
 
     // needs prototype extends with Reflect
     constructor(addition) { this.#addition = addition; }
-    get(target, name, rec) { return withCtx(target, target?.[name]) ?? withCtx(this.#addition, this.#addition?.[name]); }
+    get(target, name, rec) { return withCtx(this.#addition, this.#addition?.[name]) ?? withCtx(target, target?.[name]); }
     set(target, name, val) {
         if (!Reflect.set(target, name, val)) {
             this.#addition[name] = val;
         }
         return true;
     }
+
+    ownKeys(target) { return [...(Reflect.ownKeys(target) ?? []), ...(Reflect.ownKeys(this.#addition) ?? [])]; }
+    getOwnPropertyDescriptor(target, name) { return Reflect.getOwnPropertyDescriptor(target, name) ?? Reflect.getOwnPropertyDescriptor(this.#addition, name); }
+    getPrototypeOf(target) { return Reflect.getPrototypeOf(target) ?? Reflect.getPrototypeOf(this.#addition); }
+    setPrototypeOf(target, proto) { return Reflect.setPrototypeOf(target, proto) ?? Reflect.setPrototypeOf(this.#addition, proto); }
+    isExtensible(target) { return Reflect.isExtensible(target) ?? Reflect.isExtensible(this.#addition); }
+    preventExtensions(target) { return Reflect.preventExtensions(target) ?? Reflect.preventExtensions(this.#addition); }
+    defineProperty(target, name, desc) { return Reflect.defineProperty(this.#addition, name, desc) ?? Reflect.defineProperty(target, name, desc); }
+    deleteProperty(target, name) { return Reflect.deleteProperty(this.#addition, name) ?? Reflect.deleteProperty(target, name); }
+    //construct(target, args, newTarget) { return Reflect.construct(this.#addition, args, newTarget) ?? Reflect.construct(target, args, newTarget); }
 }
 
 
@@ -54,8 +64,6 @@ export const agWrapEvent = (cb)=>{
             target: ev?.target || el,
             cs_box: [el?.offsetWidth || 1, el?.offsetHeight || 1],
             cap_element: null,
-            pointerType: ev?.pointerType || "mouse",
-            pointerId: ev?.pointerId || 0,
 
             //
             get client() { return cache.client; },
@@ -122,6 +130,7 @@ interface HoldingElement {
     modified?: [number, number];
     element?: WeakRef<HTMLElement>;
     result?: [any, any];
+    propertyName?: string;
 }
 
 //
@@ -181,18 +190,32 @@ const clickPrevention = (element, pointerId = 0)=>{
 }
 
 
+//
+class PointerEventDrag extends PointerEvent {
+    #holding: any;
+    constructor(type, eventInitDict) { super(type, eventInitDict); this.#holding = eventInitDict?.holding; }
+    get holding() { return this.#holding; }
+    get event() { return this.#holding?.event; }
+    get result() { return this.#holding?.result; }
+    get shifting() { return this.#holding?.shifting; }
+    get modified() { return this.#holding?.modified; }
+    get canceled() { return this.#holding?.canceled; }
+    get duration() { return this.#holding?.duration; }
+    get element() { return this.#holding?.element?.deref?.() ?? null; }
+    get propertyName() { return this.#holding?.propertyName ?? "drag"; }
+}
 
 //
 export const draggingPointerMap = new WeakMap<any, any>();
 export const grabForDrag = (
     em,
-    ex: any = {pointerId: 0},
+    ex: PointerEvent|any = { pointerId: 0, pointerType: "mouse" },
     {
         shifting = [0, 0],
         result   = [{value: 0}, {value: 0}]
     } = {}
 ) => {
-    let last: any = ex?.detail || ex;
+    let last: any = ex;
     let frameTime = 0.01, lastLoop = performance.now(), thisLoop;
     const filterStrength  = 100;
     const computeDuration = () => {
@@ -221,25 +244,18 @@ export const grabForDrag = (
             evc?.preventDefault?.();
             evc?.stopPropagation?.();
             evc?.stopImmediatePropagation?.();
-
-            //
             if (hasParent(evc?.target, em)) {
                 const client = [...(evc?.client  || [evc?.clientX || 0, evc?.clientY || 0] || [0, 0])]; hm.duration = computeDuration();
                 hm.movement  = [...(hm.client ? [client?.[0] - (hm.client?.[0] || 0), client?.[1] - (hm.client?.[1] || 0)] : [0, 0])];
                 hm.client    = client;
                 hm.shifting[0] +=  hm.movement[0] || 0                   , hm.shifting[1] +=  hm.movement[1] || 0;
                 hm.modified[0]  = (hm.shifting[0] ?? hm.modified[0]) || 0, hm.modified[1]  = (hm.shifting[1] ?? hm.modified[1]) | 0;
-
-                //
-                em?.dispatchEvent?.(new CustomEvent("m-dragging", {
+                em?.dispatchEvent?.(new PointerEventDrag("m-dragging", {
+                    ...evc,
                     bubbles: true,
-                    detail: {
-                        event: (last = evc),
-                        holding: hm,
-                    },
+                    holding: hm,
+                    event: evc,
                 }));
-
-                //
                 if (hm?.result?.[0] != null) hm.result[0].value = hm.modified[0] || 0;
                 if (hm?.result?.[1] != null) hm.result[1].value = hm.modified[1] || 0;
                 if (hm?.result?.[2] != null) hm.result[2].value = 0;
@@ -259,25 +275,18 @@ export const grabForDrag = (
                     "pointerup": releaseEvent,
                     "click": releaseEvent
                 });
-
-                //
                 em?.releaseCapturePointer?.(evc?.pointerId);
 
                 //
                 clickPrevention(em, evc?.pointerId);
-                em?.dispatchEvent?.(new CustomEvent("m-dragend", {
-                    bubbles: true,
-                    detail: { event: (last = evc), holding: hm },
-                }));
-
-                //
+                em?.dispatchEvent?.(new PointerEventDrag("m-dragend", { ...evc, bubbles: true, holding: hm, event: evc }));
                 promised.resolve(result);
             }
         }
     }), {capture: true}];
 
     //
-    if (em?.dispatchEvent?.(new CustomEvent("m-dragstart", { bubbles: true, detail: { event: last, holding: hm }}))) {
+    if (em?.dispatchEvent?.(new PointerEventDrag("m-dragstart", { ...ex, bubbles: true, holding: hm, event: ex }))) {
         //ex?.capture?.(em);
         em?.setPointerCapture?.(ex?.pointerId);
         addEvents(em, {
