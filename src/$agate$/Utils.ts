@@ -23,17 +23,6 @@ export const isNearlyIdentity = (matrix: DOMMatrix, epsilon: number = 1e-6): boo
     );
 }
 
-/**
- * Starts/stops a requestAnimationFrame async scheduler loop.
- * All scheduled cbs will be run after each rAF.
- * @returns {{
- *     canceled: boolean,
- *     rAFs: Set<Function>,
- *     last: any,
- *     cancel: () => any,
- *     shedule: (cb: Function) => any
- * }}
- */
 export const makeRAFCycle = () => {
     const control: any = {
         canceled: false,
@@ -51,12 +40,6 @@ export const makeRAFCycle = () => {
     return control;
 };
 
-/**
- * Produces a "rAF behavior" callback, which defers calls via requestAnimationFrame cycle
- * @param {Function} cb function to call
- * @param {ReturnType<typeof makeRAFCycle>} [shed]
- * @returns {Function}
- */
 export const RAFBehavior = (shed = makeRAFCycle()) => {
     return (cb)=>shed.shedule(cb);
 }
