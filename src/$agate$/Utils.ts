@@ -72,16 +72,24 @@ export const setAttributes = (element, attrs = {})=>{
 //
 export const throttleMap = new Map<string, any>();
 export const setIdleInterval = (cb, timeout = 1000, ...args)=>{
+    const status = { running: true, cancel: ()=>{ status.running = false; } };
     requestIdleCallback(async ()=>{
         if (!cb || (typeof cb != "function")) return;
-        while (true) {
-            // @ts-ignore
-            await Promise.try(cb, ...args);
-            await new Promise((r)=>setTimeout(r, timeout));
-            await new Promise((r)=>requestIdleCallback(r, {timeout: 100}));
-            await new Promise((r)=>requestAnimationFrame(r));
+        while (status.running) {
+            await Promise.all([ // @ts-ignore
+                Promise.try(cb, ...args),
+                new Promise((r)=>setTimeout(r, timeout))
+            ]).catch?.(console.warn.bind(console));
+
+            //
+            await Promise.any([
+                new Promise((r)=>requestIdleCallback(r, {timeout: 100})),
+                new Promise((r)=>requestAnimationFrame(r))
+            ]);
         }
+        status.cancel = ()=>{};
     }, {timeout: 1000});
+    return status?.cancel;
 }
 
 //

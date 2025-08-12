@@ -1,5 +1,6 @@
 // @ts-ignore
-import styles from "./index.scss?inline&compress";
+//import styles from "./index.scss";
+import styles from "./index.scss?inline"; //with { type: "css" };
 
 //
 import { initVisibility } from "./$decor$/Appear";
@@ -38,10 +39,12 @@ import $fonts from "fonts/inter.css?inline";
 loadInlineStyle($fonts);
 
 //
-const styled = preloadStyle(styles);
+//console.log(styles);
+//
 
 //
 export const initialize = async (ROOT: any = document.body)=>{
+    const styled = preloadStyle(styles);
     initVisibility(ROOT);
     const styleElement = styled?.cloneNode?.(true);
     if (ROOT?.closest?.("html")) {
