@@ -44,7 +44,7 @@
             :where(ui-icon, label, form),
             [data-dragging], [data-hidden] {
                 will-change: transform;
-                transform: translateZ(0px);
+                //transform: translateZ(0px);
                 @include ps.LQRendering();
             };
 
@@ -52,7 +52,7 @@
             :where(head, script, link, style, meta) { display: none !important; user-select: none !important; pointer-events: none !important; }
 
             // optimize effects
-            [data-hidden] { content-visibility: hidden; filter: none !important; backdrop-filter: none !important; };
+            [data-hidden] { content-visibility: auto; filter: none !important; backdrop-filter: none !important; };
             [data-dragging] * { backdrop-filter: none !important; user-select: none !important; /*pointer-events: none !important;*/ };
             [data-dragging], [data-hidden] { backdrop-filter: none !important; user-select: none !important; };
             //:has([data-dragging]) * { user-select: none !important; };
@@ -181,6 +181,9 @@
             //
             .ui-icon { background-color: var(--ui-icon-color, currentColor); }
             input, button { accent-color: currentColor; };
+
+            //
+            *:not(:defined) { display: none; }
         }
     };
 };

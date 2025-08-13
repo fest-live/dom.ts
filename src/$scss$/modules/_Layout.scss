@@ -124,14 +124,16 @@
         }
 
         //
-        ui-frame, ui-modal, .ui-grid-item {
+        ui-window-frame, ui-modal, .ui-grid-item {
             & {
                 isolation: isolate;
                 content-visibility: auto;
                 transform-origin: 50% 50%;
+                transform-style: flat;
+                transform-box: fill-box;
                 transform:
                     mx.perfect-translate(var(--translate-x, 0%), var(--translate-y, 0%))
-                    scale3d(var(--scale, 1), var(--scale, 1), var(--scale, 1));
+                    scale3d(var(--scale, 1), var(--scale, 1), 1);
                 translate: 0% 0% 0%;
                 opacity: var(--opacity, 1);
                 rotate: 0deg;

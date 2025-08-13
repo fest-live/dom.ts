@@ -1,21 +1,37 @@
 @layer u2-existence {
     //
-    *[data-hidden]:not([data-hidden="false"], .u2-while-animation) {
+    *[data-hidden]:not([data-hidden="false"]):not(.u2-while-animation) {
         &, * {
             display: none !important;
             pointer-events: none !important;
             touch-action: none !important;
-            content-visibility: hidden !important;
+            content-visibility: auto !important;
         }
     }
 
     //
-    :host([data-hidden]:not([data-hidden="false"], .u2-while-animation)) {
+    :host([data-hidden]:not([data-hidden="false"]:not(.u2-while-animation))) {
         &, *, ::slotted(*) {
             display: none !important;
             pointer-events: none !important;
             touch-action: none !important;
-            content-visibility: hidden !important;
+            content-visibility: auto !important;
+        }
+    }
+
+    //
+    :host([data-hidden]:not([data-hidden="false"])) {
+        &, *, ::slotted(*) {
+            pointer-events: none !important;
+            touch-action: none !important;
+        }
+    }
+
+    //
+    *[data-hidden]:not([data-hidden="false"]) {
+        &, * {
+            pointer-events: none !important;
+            touch-action: none !important;
         }
     }
 }
