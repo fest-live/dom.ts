@@ -41,6 +41,7 @@ export const makeRAFCycle = () => {
     return control;
 };
 
+//
 export const RAFBehavior = (shed = makeRAFCycle()) => {
     return (cb)=>shed.shedule(cb);
 }
@@ -84,22 +85,23 @@ export const setIdleInterval = (cb, timeout = 1000, ...args)=>{
 
             //
             await Promise.any([
-                new Promise((r)=>requestIdleCallback(r, {timeout: 100})),
-                new Promise((r)=>requestAnimationFrame(r))
+                new Promise((r)=>requestIdleCallback(r, { timeout })),
+                new Promise((r)=>setTimeout(r, timeout))
+                //new Promise((r)=>requestAnimationFrame(r))
             ]);
         }
         status.cancel = ()=>{};
-    }, {timeout: 1000});
+    }, {timeout});
     return status?.cancel;
 }
 
 //
-requestIdleCallback(async ()=>{
+requestAnimationFrame(async ()=>{
     while (true) {
         throttleMap.forEach((cb)=>cb?.());
-        await new Promise((r)=>requestIdleCallback(r));
+        await new Promise((r)=>requestAnimationFrame(r));
     }
-}, {timeout: 1000});
+});
 
 //
 export const hasParent = (current, parent)=>{ while (current) { if (!(current?.element ?? current)) { return false; }; if ((current?.element ?? current) === (parent?.element ?? parent)) return true; current = current.parentElement ?? (current.parentNode == current?.getRootNode?.({ composed: true }) ? current?.getRootNode?.({ composed: true })?.host : current?.parentNode); } }

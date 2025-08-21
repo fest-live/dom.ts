@@ -24,11 +24,11 @@ export const getStyleLayer = (layerName, sheet?)=>{
 //
 export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis: any = null) => {
     // @ts-ignore
-    const root = basis?.getRootNode ? basis.getRootNode({ composed: true }) : document;
+    const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : document.documentElement);
 
     // Making element defined for CSS query
-    const uqid = (root instanceof ShadowRoot || root instanceof Document) ? "" : (basis?.getAttribute?.("data-style-id") || UUIDv4());
-    const usel = root instanceof Document ? ":root" : (root instanceof ShadowRoot ? ":host" : `[data-style-id="${uqid}"]`);
+    const uqid = (root instanceof ShadowRoot || root instanceof HTMLDocument) ? "" : (basis?.getAttribute?.("data-style-id") || UUIDv4());
+    const usel = root instanceof HTMLDocument ? ":root" : (root instanceof ShadowRoot ? ":host" : `[data-style-id="${uqid}"]`);
     basis?.setAttribute?.("data-style-id", uqid);
 
     //

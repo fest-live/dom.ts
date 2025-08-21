@@ -19,11 +19,13 @@ export const handleHidden = (element, _, visible) => {
 
 //
 export const handleProperty = (el?: HTMLElement|null, prop?: string, val?: any)=>{
-    if (!prop || !el) return; prop = kebabToCamel(prop)!; // @ts-ignore
-    if (el?.[prop] === val) return; // @ts-ignore
-    if (typeof val == "object" && val != null && ("value" in val || val?.value != null)) val = val.value; // @ts-ignore
-    if (el && el?.[prop] !== val)
-        { if (typeof val == "undefined") { delete el[prop]; } else { el[prop] = val; } }
+    if (!prop || !el) return; prop = kebabToCamel(prop)!;
+    if ((typeof val == "object" && val != null) && ("value" in val || val?.value != null)) val = val.value;
+
+    //
+    if (el?.[prop] === val) return el;
+    if (el && el?.[prop] !== val) { if (val != null) { el[prop] = val; }; if (val == undefined) { delete el[prop];}; }
+    return el;
 }
 
 //
