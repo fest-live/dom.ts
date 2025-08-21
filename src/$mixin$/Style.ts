@@ -24,7 +24,7 @@ export const getStyleLayer = (layerName, sheet?)=>{
 //
 export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis: any = null) => {
     // @ts-ignore
-    const root = basis?.getRootNode ? basis.getRootNode() : document;
+    const root = basis?.getRootNode ? basis.getRootNode({ composed: true }) : document;
 
     // Making element defined for CSS query
     const uqid = (root instanceof ShadowRoot || root instanceof Document) ? "" : (basis?.getAttribute?.("data-style-id") || UUIDv4());

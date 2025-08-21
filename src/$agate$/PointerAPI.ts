@@ -1,9 +1,7 @@
 import { cvt_cs_to_os } from "./Convert";
 import { getBoundingOrientRect, orientOf } from "./Zoom";
 import { addEvent, addEvents, removeEvent, removeEvents } from "./EventManager";
-
-//
-const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }
+import { hasParent, withCtx } from "./Utils";
 
 //
 export class DecorWith {
@@ -29,8 +27,6 @@ export class DecorWith {
     deleteProperty(target, name) { return Reflect.deleteProperty(this.#addition, name) ?? Reflect.deleteProperty(target, name); }
     //construct(target, args, newTarget) { return Reflect.construct(this.#addition, args, newTarget) ?? Reflect.construct(target, args, newTarget); }
 }
-
-
 
 //
 export const elementPointerMap = new WeakMap<any, any>();
@@ -238,7 +234,6 @@ export const grabForDrag = (
     };
 
     //
-    const hasParent = (current, parent)=>{ while (current) { if (!(current?.element ?? current)) { return false; }; if ((current?.element ?? current) === (parent?.element ?? parent)) return true; current = current.parentElement ?? (current.parentNode == current?.getRootNode?.() ? current?.getRootNode?.()?.host : current?.parentNode); } }
     const moveEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             evc?.preventDefault?.();

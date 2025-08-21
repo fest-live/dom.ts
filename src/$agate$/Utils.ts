@@ -11,7 +11,7 @@ export const getOffsetParentChain = (element: Element): Element[] => {
 }
 
 //
-export const handleListeners = (root, fn, handlers) => { root = (root instanceof WeakRef ? root.deref() : root); Object.entries(handlers).forEach(([name, cb]) => root?.[fn]?.call?.(root, name, cb)); }
+export const handleListeners = (root, fn, handlers) => { root = (root instanceof WeakRef ? root.deref() : root); const usubs = [...Object.entries(handlers)]?.map?.(([name, cb]) => root?.[fn]?.call?.(root, name, cb)); return ()=>{ usubs?.forEach?.((unsub)=>unsub?.()); }; }
 export const isNearlyIdentity = (matrix: DOMMatrix, epsilon: number = 1e-6): boolean => {
     return (
         Math.abs(matrix.a - 1) < epsilon &&
@@ -23,6 +23,7 @@ export const isNearlyIdentity = (matrix: DOMMatrix, epsilon: number = 1e-6): boo
     );
 }
 
+//
 export const makeRAFCycle = () => {
     const control: any = {
         canceled: false,
@@ -101,8 +102,26 @@ requestIdleCallback(async ()=>{
 }, {timeout: 1000});
 
 //
-export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => { return ((!!element?.matches?.(selector) ? element : null) || element?.closest?.(selector)) as HTMLElement | null; };
-export const MOC  = (element: HTMLElement | null, selector: string): boolean => { return (!!element?.matches?.(selector) || !!element?.closest?.(selector)); };
+export const hasParent = (current, parent)=>{ while (current) { if (!(current?.element ?? current)) { return false; }; if ((current?.element ?? current) === (parent?.element ?? parent)) return true; current = current.parentElement ?? (current.parentNode == current?.getRootNode?.({ composed: true }) ? current?.getRootNode?.({ composed: true })?.host : current?.parentNode); } }
+
+//
+export const containsOrSelf = (a: any, b: any)=>{
+    if (a == b) return true;
+    if (a?.contains?.(b) || a?.getRootNode({ composed: true })?.host == b) return true;
+    return false;
+}
+
+// get by selector self or parent, matches by selector, include shadow DOM host
+export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => {
+    const self = (element?.matches?.(selector) && element);
+    const host = (element?.getRootNode({ composed: true }) as any ?? element?.parentElement?.getRootNode({ composed: true}) as any)?.host;
+    const hostMatched = host?.matches?.(selector) && host;
+    const closest = (self as any)?.closest?.(selector) ?? (hostMatched as any)?.closest?.(selector) ?? null;
+    return (self ?? hostMatched ?? closest);
+};
+
+//
+export const MOC = (element: HTMLElement | null, selector: string): boolean => { return !!MOCElement(element, selector); };
 
 //
 export const getRandomValues = (array: Uint8Array) => { return crypto?.getRandomValues ? crypto?.getRandomValues?.(array) : (()=>{
@@ -117,6 +136,7 @@ export const getRandomValues = (array: Uint8Array) => { return crypto?.getRandom
 export const clamp  = (min, val, max) => Math.max(min, Math.min(val, max));
 export const UUIDv4 = () => { return crypto?.randomUUID ? crypto?.randomUUID?.() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (+c ^ (getRandomValues?.(new Uint8Array(1))?.[0] & (15 >> (+c / 4)))).toString(16)); };
 export const includeSelf = (target, selector)=>{ return (target.querySelector(selector) ?? (target.matches(selector) ? target : null)); };
+export const withCtx = (target, got)=>{ if (typeof got == "function") { return got?.bind?.(target) ?? got; }; return got; }
 
 //
 export const borderBoxWidth   = Symbol("@border-box-width") , borderBoxHeight  = Symbol("@border-box-height");
