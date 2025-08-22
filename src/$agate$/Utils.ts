@@ -108,8 +108,9 @@ export const hasParent = (current, parent)=>{ while (current) { if (!(current?.e
 
 //
 export const containsOrSelf = (a: any, b: any)=>{
-    if (a == b) return true;
-    if (a?.contains?.(b) || a?.getRootNode({ composed: true })?.host == b) return true;
+    if (b == null || !(b instanceof Node) && b?.element == null) return false; // if isn't node with element or just null
+    if ((a == b)  || (a?.element ?? a) == (b?.element ?? b)) return true; // wrapper or element is same
+    if (a?.contains?.(b?.element ?? b) || a?.getRootNode({ composed: true })?.host == (b?.element ?? b)) return true; // a contains b element
     return false;
 }
 
