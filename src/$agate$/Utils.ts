@@ -50,11 +50,13 @@ export const RAFBehavior = (shed = makeRAFCycle()) => {
 export interface InteractStatus { pointerId?: number; };
 export const ROOT = document.documentElement;
 export const setAttributesIfNull = (element, attrs = {})=>{
+    if (!attrs || (typeof attrs != "object") || !element) return;
     return Array.from(Object.entries(attrs)).map(([name, value])=>{
         const old = element.getAttribute(name);
         if (value == null) {
             element.removeAttribute(name);
-        } else {
+        } else
+        if (value != old) {
             element.setAttribute(name, old == "" ? (value ?? old) : (old ?? value));
         }
     });
