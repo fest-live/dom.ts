@@ -11,7 +11,7 @@ export const deleteStyleProperty = (el: HTMLElement, name: string) => el.style.r
 //
 export const handleHidden = (element, _, visible) => {
     if (visible != null && typeof visible == "object" && ("value" in visible || visible?.value != null)) { visible = visible.value };
-    const isVisible = (typeof visible == "boolean") ? visible : (visible == null ? true : ((visible || visible == "" || visible == 0) ? true : false));
+    const isVisible = (typeof visible == "boolean") ? visible : (visible == null ? false : ((visible || visible == "" || visible == 0) ? true : false));
     if (element instanceof HTMLInputElement) { element.hidden = !isVisible; } else
         { if (isVisible) { element?.removeAttribute?.("data-hidden"); } else { element?.setAttribute?.("data-hidden", ""); } }
     return element;
