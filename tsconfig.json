@@ -4,9 +4,9 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "paths": {
-            "fonts/*": ["../shared/fonts/*"],
-            "fest/*": ["../shared/fest/*"],
-            "fest/cdnImport": ["../cdnImport.mjs"],
+            "fonts/*": ["../../shared/assets/fonts/*"],
+            "fest/*": ["../../shared/fest/*"],
+            "fest/cdnImport": ["../../cdnImport.mjs"],
             "fest/dom": ["./src/index.ts"]
         },
         "target": "ESNext",
