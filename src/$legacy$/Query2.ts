@@ -25,7 +25,6 @@ export default class AxQuery2 {
     // pointer events, mouse events, some touch events
     directly(name, cb: (ev: MouseEvent | PointerEvent | TouchEvent) => any, options) {
         this.#rootElement.addEventListener(name, (ev)=>{
-            ev.stopPropagation();
             const element = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement;
             const treeElement = MOCElement(element, this.#selector);
             if (treeElement && Array.from(document.elementsFromPoint(ev.clientX, ev.clientY)).indexOf(treeElement) >= 0) { return cb(ev); }

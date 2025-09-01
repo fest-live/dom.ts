@@ -2,7 +2,7 @@ import { setProperty } from "../$mixin$/Style";
 import { addEvents, removeEvents } from "../$agate$/EventManager";
 
 //
-const computed = Symbol("@computed");
+//const computed = Symbol("@computed");
 const depAxis  = (axis: string = "x")=>{ const m = /*matchMedia("(orientation: portrait)").matches*/true; return {["x"]: m?"c":"r", ["y"]: m?"r":"c"}[axis]; }
 const swapped  = (axis: string = "x")=>{ const m = matchMedia("(orientation: portrait)").matches; return {["x"]: m?"x":"y", ["y"]: m?"y":"x"}[axis]; }
 const isMobile = () => {
@@ -78,27 +78,38 @@ export const doAnimate = async (newItem, val: number, axis: any = "x", animate =
 //
 export const animateHide = async (target)=>{
     //
-    if (target?.dispatchEvent?.(new CustomEvent("u2-before-hide", {
+    const animationDone = ()=>{
+        if (target?.hasAttribute?.("data-hidden")) {
+            target?.removeAttribute?.("data-opacity-animation");
+            target?.dispatchEvent?.(new CustomEvent("u2-hidden", {
+                detail: {},
+                bubbles: true,
+                cancelable: true
+            }));
+        }
+    }
+
+    //
+    if (target?.hasAttribute?.("data-hidden") && target?.dispatchEvent?.(new CustomEvent("u2-before-hide", {
         detail: {},
         bubbles: true,
         cancelable: true
     }))) {
-        if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !target.classList.contains("u2-while-animation") && !target.hasAttribute("data-instant") && target.dataset.hidden != null) {
-            target.classList.add("u2-while-animation");
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !target.hasAttribute("data-opacity-animation") && !target.hasAttribute("data-instant")) {
+            target.setAttribute("data-opacity-animation", "");
         }
 
         //
-        if (target.classList.contains("u2-while-animation") && target.dataset.hidden != null) {
-            target[computed] = getComputedStyle(target, "");
+        if (target.hasAttribute("data-opacity-animation")) {
             const animate = target.animate([
                 {
                     easing: "linear",
                     offset: 0,
 
                     //
-                    "--opacity": target[computed]?.getPropertyValue("--opacity") || target[computed]?.getPropertyValue("opacity") || "revert-layer",
-                    "--scale": target[computed]?.getPropertyValue("--scale") || 1,
-                    display: target[computed]?.display || "revert-layer",
+                    //"--opacity": 1,
+                    //"--scale": 1,
+                    //display: "revert-layer",
                     pointerEvents: "none"
                 },
                 {
@@ -108,7 +119,7 @@ export const animateHide = async (target)=>{
                     //
                     "--opacity": 0,
                     "--scale": 0.8,
-                    display: target[computed]?.display || "revert-layer",
+                    //display: "revert-layer",
                     pointerEvents: "none"
                 },
                 {
@@ -123,81 +134,88 @@ export const animateHide = async (target)=>{
                 }
             ],  {
                 //fill: "forwards",
-                duration: isMobile() ? 100 : 80,
+                duration: 120,
                 easing: "linear",
                 delay: 0
                 //rangeStart: "cover 0%",
                 //rangeEnd: "cover 100%",
             });
-            const fn   = ()=> { removeEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            }); animate.currentTime = 1; animate.finish() };
-            const abth = [fn, {once: true, passive: true}];
-            const abts = [fn, {once: true, passive: true}];
-            addEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
+
+            //
+            let done = false;
+            const endAnimation = ()=> {
+                if (done) { return; }; done = true;
+                events?.forEach?.((event)=>event?.());
+                animate.currentTime = 1;
+                animate.finish();
+                animationDone?.();
+            };
+
+            //
+            const abth = [endAnimation, {once: true, passive: true}];
+            const abts = [endAnimation, {once: true, passive: true}];
+            const events = addEvents(target, {
+                "u2-before-show": abts,
+                //"u2-before-hide": abth
             });
+
+            //
             await animate.finished;
-            removeEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            });
+            endAnimation?.();
         } else {
             // @ts-ignore
             const {resolve, reject, promise} = Promise.withResolvers();
             const req = requestAnimationFrame(resolve);
-            const fn  = ()=> {
-                removeEvents(target, {
-                    "u2-before-hide": abth,
-                    "u2-before-show": abts
-                });
+
+            //
+            let done = false;
+            const endAnimation = ()=> {
+                if (done) { return; }; done = true;
+                events?.forEach?.((event)=>event?.());
                 cancelAnimationFrame(req);
                 resolve(performance.now());
+                animationDone?.();
             };
-            const abth = [fn, {once: true, passive: true}];
-            const abts = [fn, {once: true, passive: true}];
-            addEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            });
+
+            //
+            const abth = [endAnimation, {once: true, passive: true}];
+            const abts = [endAnimation, {once: true, passive: true}];
+            const events = addEvents(target, { "u2-before-hide": abth, "u2-before-show": abts });
+
+            //
             await promise;
-            removeEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            });
+            endAnimation?.();
         }
-
-        //
-        target.classList.remove("u2-while-animation");
-    }
-
-    //
-    if (target.dataset.hidden != null) {
-        target?.dispatchEvent?.(new CustomEvent("u2-hidden", {
-            detail: {},
-            bubbles: true,
-            cancelable: true
-        }));
     }
 }
 
 //
 export const animateShow = async (target)=>{
     //
-    if (target?.dispatchEvent?.(new CustomEvent("u2-before-show", {
+    const animationDone = ()=>{
+        if (!target?.hasAttribute?.("data-hidden")) {
+            target?.removeAttribute?.("data-opacity-animation");
+            target?.dispatchEvent?.(new CustomEvent("u2-appear", {
+                detail: {},
+                bubbles: true,
+                cancelable: true
+            }));
+        }
+    }
+
+    //
+    if (!target?.hasAttribute?.("data-hidden") && target?.dispatchEvent?.(new CustomEvent("u2-before-show", {
         detail: {},
         bubbles: true,
         cancelable: true
     }))) {
         //
-        if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !target.classList.contains("u2-while-animation") && !target.hasAttribute("data-instant") && target.dataset.hidden == null) {
-            target.classList.add("u2-while-animation");
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !target.hasAttribute("data-opacity-animation") && !target.hasAttribute("data-instant") && target?.getAttribute?.("data-hidden") == null) {
+            target.setAttribute("data-opacity-animation", "");
         }
 
         //
-        if (target.classList.contains("u2-while-animation") && target.dataset.hidden == null) {
+        if (target.hasAttribute("data-opacity-animation") && target?.getAttribute?.("data-hidden") == null) {
             const animate = target.animate([
                 {
                     easing: "linear",
@@ -216,7 +234,7 @@ export const animateShow = async (target)=>{
                     //
                     "--opacity": 0,
                     "--scale": 0.8,
-                    display: target[computed]?.display || "none",
+                    display: "none",
                     pointerEvents: "none"
                 },
                 {
@@ -224,10 +242,10 @@ export const animateShow = async (target)=>{
                     offset: 1,
 
                     //
-                    "--opacity": target[computed]?.getPropertyValue("--opacity") || target[computed]?.getPropertyValue("opacity") || 1,
-                    "--scale": target[computed]?.getPropertyValue("--scale") || 1,
-                    display: target[computed]?.display || "revert-layer",
-                    pointerEvents: target[computed]?.pointerEvents || "revert-layer"
+                    "--opacity": 1,
+                    "--scale": 1,
+                    display: "revert-layer",
+                    pointerEvents: "revert-layer"
                 }
             ], {
                 //fill: "forwards",
@@ -239,57 +257,54 @@ export const animateShow = async (target)=>{
             });
 
             //
-            const fn   = ()=> { removeEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            }); animate.currentTime = 1; animate.finish() };
-            const abth = [fn, {once: true, passive: true}];
-            const abts = [fn, {once: true, passive: true}];
-            addEvents(target, {
+            let done = false;
+            const endAnimation = ()=> {
+                if (done) { return; }; done = true;
+                events?.forEach?.((event)=>event?.());
+                animate.currentTime = 1;
+                animate.finish();
+                animationDone?.();
+            };
+
+            //
+            const abth = [endAnimation, {once: true, passive: true}];
+            const abts = [endAnimation, {once: true, passive: true}];
+
+            //
+            const events = addEvents(target, {
                 "u2-before-hide": abth,
                 "u2-before-show": abts
             });
+
+            //
             await animate.finished;
-            removeEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            });
+            endAnimation?.();
         } else {
             // @ts-ignore
             const {resolve, reject, promise} = Promise.withResolvers();
             const req = requestAnimationFrame(resolve);
-            const fn  = ()=> {
-                removeEvents(target, {
-                    "u2-before-hide": abth,
-                    "u2-before-show": abts
-                });
+
+            //
+            let done = false;
+            const endAnimation = ()=> {
+                if (done) { return; }; done = true;
+                events?.forEach?.((event)=>event?.());
                 cancelAnimationFrame(req);
                 resolve(performance.now());
-            };
-            const abth = [fn, {once: true, passive: true}];
-            const abts = [fn, {once: true, passive: true}];
-            addEvents(target, {
+                animationDone?.();
+            }
+
+            //
+            const abth = [endAnimation, {once: true, passive: true}];
+            const abts = [endAnimation, {once: true, passive: true}];
+            const events = addEvents(target, {
                 "u2-before-hide": abth,
                 "u2-before-show": abts
             });
+
+            //
             await promise;
-            removeEvents(target, {
-                "u2-before-hide": abth,
-                "u2-before-show": abts
-            });
+            endAnimation?.();
         }
-
-        //
-        target.classList.remove("u2-while-animation");
-        target[computed] = getComputedStyle(target, "");
-    }
-
-    //
-    if (target.dataset.hidden == null) {
-        target?.dispatchEvent?.(new CustomEvent("u2-appear", {
-            detail: {},
-            bubbles: true,
-            cancelable: true
-        }));
     }
 }

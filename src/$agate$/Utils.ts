@@ -200,30 +200,6 @@ export const doBorderObserve = (element, cb: any = ()=>{}) => {
 }
 
 //
-export const blockClickTrigger = (_: MouseEvent | PointerEvent | TouchEvent | null = null)=>{
-    const blocker = (ev)=>{
-        ev.preventDefault();
-        ev.stopPropagation();
-        ev.stopImmediatePropagation();
-
-        //
-        ROOT.removeEventListener("click", blocker, options);
-        ROOT.removeEventListener("contextmenu", blocker, options);
-    };
-
-    //
-    const options = { once: true, capture: true };
-    ROOT.addEventListener("click", blocker, options);
-    ROOT.addEventListener("contextmenu", blocker, options);
-
-    //
-    setTimeout(()=>{
-        ROOT.removeEventListener("click", blocker, options);
-        ROOT.removeEventListener("contextmenu", blocker, options);
-    }, 100);
-}
-
-//
 export const camelToKebab = (str: string) => { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
 export const kebabToCamel = (str: string) => { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
 

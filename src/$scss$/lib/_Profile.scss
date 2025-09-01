@@ -272,7 +272,7 @@
 
 //
 @function pixel-perfect-translate($vx: unquote("var(--translate-x)"), $vy: unquote("var(--translate-y)"), $importance: null) {
-    @return translate(
+    @return translate3d(
         #{unquote("round(nearest, calc(#{$vx} + 0.0001px), var(--ppx))")},
         #{unquote("round(nearest, calc(#{$vy} + 0.0001px), var(--ppx))")},
         0px

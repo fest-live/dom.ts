@@ -67,40 +67,43 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
 
     //
     if (value instanceof CSSStyleValue) {
-        if ((element.attributeStyleMap ?? element.styleMap) != null) {
-            const old = (element.attributeStyleMap ?? element.styleMap)?.get?.(kebab);
+        if ((element?.attributeStyleMap ?? element?.styleMap) != null) {
+            const old = (element?.attributeStyleMap ?? element?.styleMap)?.get?.(kebab);
             if (old != value) {
                 if (value instanceof CSSUnitValue) {
                     if (old != null && value.unit && value.unit !== old?.unit) {
                         if (old.value != value.value) { old.value = value.value; }
-                    } else { (element.attributeStyleMap ?? element.styleMap).set(kebab, value); }
+                    } else { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, value); }
                 } else {
-                    (element.attributeStyleMap ?? element.styleMap).set(kebab, value);
+                    (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, value);
                 }
             }
-        } else {
-            element?.style?.setProperty(kebab, value.toString(), importance);
+        } else
+        if (element?.style?.getPropertyValue?.(kebab) != value.toString()) {
+            element?.style?.setProperty?.(kebab, value.toString(), importance);
         }
     } else
     if ((element?.attributeStyleMap ?? element?.styleMap) && (typeof (value?.value ?? value) === "number" || typeof value === "number") && !Number.isNaN(value?.value ?? value)) {
         const numeric = value?.value ?? value;
-        const old = (element.attributeStyleMap ?? element.styleMap)?.get?.(kebab);
+        const old = (element?.attributeStyleMap ?? element?.styleMap)?.get?.(kebab);
         if (old) {
             if (old instanceof CSSUnitValue && old?.unit) {
                 if (old?.value != numeric) { old.value = numeric; }
-            } else {
-                element.style?.setProperty?.(kebab, numeric, importance);
+            } else
+            if (element?.style?.getPropertyValue?.(kebab) != numeric) {
+                element?.style?.setProperty?.(kebab, numeric, importance);
             }
         } else
         {   // hard-case
-            const computed = element?.computedStyleMap?.();
+            const computed = (!kebab?.trim?.()?.startsWith?.("--")) ? element?.computedStyleMap?.() : (element?.attributeStyleMap ?? element?.styleMap);
             const oldCmVal = computed?.get?.(kebab);
             if (oldCmVal instanceof CSSUnitValue && oldCmVal?.unit) {
                 if (oldCmVal.value != numeric) { oldCmVal.value = numeric; }
-                if (oldCmVal.unit == "number") { (element.attributeStyleMap ?? element.styleMap)?.set?.(kebab, oldCmVal?.value); } else
-                { try { (element.attributeStyleMap ?? element.styleMap)?.set?.(kebab, oldCmVal); } catch (e) { (element.attributeStyleMap ?? element.styleMap)?.set?.(kebab, oldCmVal?.toString?.()); } }
-            } else {
-                element.style?.setProperty?.(kebab, numeric, importance);
+                if (oldCmVal.unit == "number") { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, oldCmVal?.value); } else
+                { try { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, oldCmVal); } catch (e) { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, oldCmVal?.toString?.()); } }
+            } else
+            if (element?.style?.getPropertyValue?.(kebab) != numeric) {
+                element?.style?.setProperty?.(kebab, numeric, importance);
             }
         }
     } else
@@ -109,7 +112,7 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
         const old = element?.style?.getPropertyValue?.(kebab);
         const val = (value?.value ?? value);
         value = (value instanceof CSSStyleValue ? value.toString() : val);
-        if (old !== value) { element.style?.setProperty?.(kebab, value, importance); };
+        if (old !== value) { element?.style?.setProperty?.(kebab, value, importance); };
     }
     return element;
 }

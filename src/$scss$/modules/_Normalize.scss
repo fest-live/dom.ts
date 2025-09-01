@@ -39,16 +39,24 @@
             :where(h1, h2, h3, h4, h5, h6, p, form, label, button) { content-visibility: auto; }
             :where(div, span, a, h1, h2, h3, h4, h5, h6, p, label, form):empty { content-visibility: hidden; }
 
-
-            :where(ui-frame, ui-modal, .ui-grid-item):active,
-            :where(ui-icon, label, form),
-            [data-dragging], [data-hidden] {
-                will-change: transform;
+            //
+            :where(ui-window-frame, ui-modal, .ui-grid-item):active,
+            :where(ui-icon, label, form)
+            [data-dragging], [data-hidden]
+            {
+                will-change: inset, translate, transform, opacity, z-index;
                 //transform: translateZ(0px);
-                @include ps.LQRendering();
+
+                // browsers support died... huge lag when transition state.
+                //@include ps.LQRendering();
             };
 
+            //
+            :where(ui-icon) {
+                @include ps.LQRendering();
+            }
 
+            //
             :where(head, script, link, style, meta) { display: none !important; user-select: none !important; pointer-events: none !important; }
 
             // optimize effects
@@ -57,6 +65,11 @@
             [data-dragging], [data-hidden] { backdrop-filter: none !important; user-select: none !important; };
             //:has([data-dragging]) * { user-select: none !important; };
             //content-visibility: auto;
+
+            //
+            [data-hidden] {
+                opacity: var(--opacity, 0);
+            }
 
             //
             :where([inert], *[inert]) {

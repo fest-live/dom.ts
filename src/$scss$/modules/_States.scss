@@ -1,6 +1,6 @@
 @layer u2-existence {
     //
-    *[data-hidden]:not([data-hidden="false"]):not(.u2-while-animation) {
+    *[data-hidden]:not([data-hidden="false"]):not([data-opacity-animation]) {
         &, * {
             display: none !important;
             pointer-events: none !important;
@@ -10,7 +10,7 @@
     }
 
     //
-    :host([data-hidden]:not([data-hidden="false"]:not(.u2-while-animation))) {
+    :host([data-hidden]:not([data-hidden="false"]:not([data-opacity-animation]))) {
         &, *, ::slotted(*) {
             display: none !important;
             pointer-events: none !important;

@@ -1,6 +1,6 @@
 import { cvt_cs_to_os } from "./Convert";
 import { getBoundingOrientRect, orientOf } from "./Zoom";
-import { addEvent, addEvents, removeEvent, removeEvents } from "./EventManager";
+import { addEvent, addEvents, removeEvent } from "./EventManager";
 import { hasParent, withCtx } from "./Utils";
 
 //
@@ -141,29 +141,26 @@ interface PointerObject {
 };
 
 //
-const clickPrevention = (element, pointerId = 0)=>{
-    const rmev = ()=>{
-        removeEvents(document.documentElement, {
-            "click": doc,
-            "pointerdown": doc,
-            "contextmenu": doc
-        });
+const preventedPointers = new Map<number, any>();
+export const clickPrevention = (element, pointerId = 0)=>{
+    if (preventedPointers.has(pointerId)) { return; }
 
-        //
-        removeEvents(element, {
-            "click": emt,
-            "contextmenu": emt,
-            "pointerdown": emt
-        });
+    //
+    const rmev = ()=>{
+        preventedPointers.delete(pointerId);
+        dce?.forEach?.(e => e?.[0]?.());
+        ece?.forEach?.(e => e?.[0]?.());
     }
 
     //
     const preventClick = (e: PointerEvent | MouseEvent | CustomEvent | any) => {
         if (e?.pointerId == pointerId || e?.pointerId == null || pointerId == null || pointerId < 0) {
-            e.stopImmediatePropagation();
-            e.stopPropagation();
+            //e.stopPropagation();
             e.preventDefault();
+            preventedPointers.set(pointerId, true);
             rmev();
+        } else {
+            preventedPointers.delete(pointerId);
         }
     };
 
@@ -172,17 +169,17 @@ const clickPrevention = (element, pointerId = 0)=>{
     const doc: [(e: PointerEvent | MouseEvent | CustomEvent | any) => any, AddEventListenerOptions] = [preventClick, {once: true, capture: true}];
 
     //
-    addEvents(document.documentElement, {
+    const dce = addEvents(document.documentElement, {
         "click": doc,
         "pointerdown": doc,
         "contextmenu": doc
     });
-    addEvents(element, {
+    const ece = addEvents(element, {
         "click": emt,
         "pointerdown": emt,
         "contextmenu": emt
     });
-    setTimeout(rmev, 100);
+    setTimeout(rmev, 10);
 }
 
 
@@ -237,8 +234,6 @@ export const grabForDrag = (
     const moveEvent = [agWrapEvent((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             evc?.preventDefault?.();
-            evc?.stopPropagation?.();
-            evc?.stopImmediatePropagation?.();
             if (hasParent(evc?.target, em)) {
                 const client = [...(evc?.client  || [evc?.clientX || 0, evc?.clientY || 0] || [0, 0])]; hm.duration = computeDuration();
                 hm.movement  = [...(hm.client ? [client?.[0] - (hm.client?.[0] || 0), client?.[1] - (hm.client?.[1] || 0)] : [0, 0])];
@@ -264,16 +259,11 @@ export const grabForDrag = (
         if (ex?.pointerId == evc?.pointerId) {
             if (hm.canceled) return; hm.canceled = true;
             if (hasParent(evc?.target, em)) {
-                removeEvents(em, {
-                    "pointermove": moveEvent,
-                    "pointercancel": releaseEvent,
-                    "pointerup": releaseEvent,
-                    "click": releaseEvent
-                });
+                bindings?.forEach?.(binding => binding?.());
                 em?.releaseCapturePointer?.(evc?.pointerId);
 
                 //
-                clickPrevention(em, evc?.pointerId);
+                if (evc?.type == "pointerup") { clickPrevention(em, evc?.pointerId); };
                 em?.dispatchEvent?.(new PointerEventDrag("m-dragend", { ...evc, bubbles: true, holding: hm, event: evc }));
                 promised.resolve(result);
             }
@@ -281,10 +271,11 @@ export const grabForDrag = (
     }), {capture: true}];
 
     //
+    let bindings: any = null;
     if (em?.dispatchEvent?.(new PointerEventDrag("m-dragstart", { ...ex, bubbles: true, holding: hm, event: ex }))) {
         //ex?.capture?.(em);
         em?.setPointerCapture?.(ex?.pointerId);
-        addEvents(em, {
+        bindings = addEvents(em, {
             "pointermove": moveEvent,
             "pointercancel": releaseEvent,
             "pointerup": releaseEvent
