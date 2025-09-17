@@ -35,7 +35,11 @@ export const makeRAFCycle = () => {
     (async () => {
         while (!control?.canceled) { // @ts-ignore
             await Promise.all((control?.rAFs?.values?.() ?? [])?.map?.((rAF) => Promise.try(rAF)?.catch?.(console.warn.bind(console)))); control.rAFs?.clear?.();
-            await new Promise((res) => { control.last = requestAnimationFrame(res); });
+            if (typeof requestAnimationFrame != "undefined") {
+                await new Promise((res) => { control.last = requestAnimationFrame(res); });
+            } else {
+                await new Promise((res) => { setTimeout(res, 16); });
+            }
         }
     })();
     return control;
@@ -48,7 +52,7 @@ export const RAFBehavior = (shed = makeRAFCycle()) => {
 
 //
 export interface InteractStatus { pointerId?: number; };
-export const ROOT = document.documentElement;
+export const ROOT = typeof document != "undefined" ? document?.documentElement : null;
 export const setAttributesIfNull = (element, attrs = {})=>{
     if (!attrs || (typeof attrs != "object") || !element) return;
     return Array.from(Object.entries(attrs)).map(([name, value])=>{
@@ -98,12 +102,14 @@ export const setIdleInterval = (cb, timeout = 1000, ...args)=>{
 }
 
 //
-requestAnimationFrame(async ()=>{
-    while (true) {
-        throttleMap.forEach((cb)=>cb?.());
-        await new Promise((r)=>requestAnimationFrame(r));
-    }
-});
+if (typeof requestAnimationFrame != "undefined") {
+    requestAnimationFrame(async () => {
+        while (true) {
+            throttleMap.forEach((cb) => cb?.());
+            await new Promise((r) => requestAnimationFrame(r));
+        }
+    });
+}
 
 //
 export const hasParent = (current, parent)=>{ while (current) { if (!(current?.element ?? current)) { return false; }; if ((current?.element ?? current) === (parent?.element ?? parent)) return true; current = current.parentElement ?? (current.parentNode == current?.getRootNode?.({ composed: true }) ? current?.getRootNode?.({ composed: true })?.host : current?.parentNode); } }

@@ -182,20 +182,28 @@ export const clickPrevention = (element, pointerId = 0)=>{
     setTimeout(rmev, 10);
 }
 
-
 //
-class PointerEventDrag extends PointerEvent {
-    #holding: any;
-    constructor(type, eventInitDict) { super(type, eventInitDict); this.#holding = eventInitDict?.holding; }
-    get holding() { return this.#holding; }
-    get event() { return this.#holding?.event; }
-    get result() { return this.#holding?.result; }
-    get shifting() { return this.#holding?.shifting; }
-    get modified() { return this.#holding?.modified; }
-    get canceled() { return this.#holding?.canceled; }
-    get duration() { return this.#holding?.duration; }
-    get element() { return this.#holding?.element?.deref?.() ?? null; }
-    get propertyName() { return this.#holding?.propertyName ?? "drag"; }
+let PointerEventDrag: any = null;
+if (typeof PointerEvent != "undefined") {
+    PointerEventDrag = class PointerEventDrag extends PointerEvent {
+        #holding: any;
+        constructor(type, eventInitDict) { super(type, eventInitDict); this.#holding = eventInitDict?.holding; }
+        get holding() { return this.#holding; }
+        get event() { return this.#holding?.event; }
+        get result() { return this.#holding?.result; }
+        get shifting() { return this.#holding?.shifting; }
+        get modified() { return this.#holding?.modified; }
+        get canceled() { return this.#holding?.canceled; }
+        get duration() { return this.#holding?.duration; }
+        get element() { return this.#holding?.element?.deref?.() ?? null; }
+        get propertyName() { return this.#holding?.propertyName ?? "drag"; }
+    }
+} else {
+    PointerEventDrag = class PointerEventDrag {
+        #holding: any;
+        constructor(type, eventInitDict) { this.#holding = eventInitDict?.holding; }
+        get holding() { return this.#holding; }
+    }
 }
 
 //

@@ -3,16 +3,26 @@ import { addEvent } from "./EventManager";
 
 //
 export const getAvailSize = () => {
-    const l = matchMedia("(orientation: landscape)")?.matches;
-    const aw = screen.availWidth  + "px";
-    const ah = screen.availHeight + "px";
+    const l = typeof matchMedia != "undefined" ? matchMedia("(orientation: landscape)")?.matches : false;
+    if (typeof screen != "undefined") {
+        const aw = screen?.availWidth + "px";
+        const ah = screen?.availHeight + "px";
+        return {
+            "--screen-width": Math.min(screen?.width, screen?.availWidth) + "px",
+            "--screen-height": Math.min(screen?.height, screen?.availHeight) + "px",
+            "--avail-width": l ? ah : aw,
+            "--avail-height": l ? aw : ah,
+            "--view-height": (Math.min(screen?.availHeight, window?.innerHeight) + "px"),
+            "--pixel-ratio": devicePixelRatio || 1,
+        };
+    };
     return {
-        "--screen-width": Math.min(screen.width, screen.availWidth) + "px",
-        "--screen-height": Math.min(screen.height, screen.availHeight) + "px",
-        "--avail-width" : l ? ah : aw,
-        "--avail-height": l ? aw : ah,
-        "--view-height": (Math.min(screen.availHeight, window.innerHeight) + "px"),
-        "--pixel-ratio": devicePixelRatio || 1,
+        "--screen-width": 0 + "px",
+        "--screen-height": 0 + "px",
+        "--avail-width": 0 + "px",
+        "--avail-height": 0 + "px",
+        "--view-height": 0 + "px",
+        "--pixel-ratio": 1,
     };
 }
 

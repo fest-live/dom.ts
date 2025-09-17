@@ -1,12 +1,20 @@
 import { UUIDv4, camelToKebab, kebabToCamel } from "../$agate$/Utils";
 
 //
-const OWNER = "DOM", styleElement = document.createElement("style"); document.querySelector("head")?.appendChild?.(styleElement); styleElement.dataset.owner = OWNER;
+const OWNER = "DOM",
+    styleElement = typeof document != "undefined" ? document.createElement("style") : null;
+
+//
+if (styleElement) {
+    typeof document != "undefined" ? document.querySelector("head")?.appendChild?.(styleElement) : null; styleElement.dataset.owner = OWNER;
+}
+
+//
 export type  StyleTuple    = [selector: string, sheet: object];
 export const setStyleURL   = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
 export const setStyleRules = (classes: StyleTuple[]) => { return classes?.map?.((args) => setStyleRule(...args)); };
 export const getStyleLayer = (layerName, sheet?)=>{
-    sheet ||= styleElement.sheet;
+    sheet ||= styleElement?.sheet;
 
     // Ищем или создаём @layer
     let layerRuleIndex = Array.from(sheet?.cssRules || []).findIndex((rule) => (rule instanceof CSSLayerBlockRule) && rule?.name === layerName);
@@ -23,8 +31,7 @@ export const getStyleLayer = (layerName, sheet?)=>{
 
 //
 export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis: any = null) => {
-    // @ts-ignore
-    const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : document.documentElement);
+    const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : typeof document != "undefined" ? document.documentElement : null);
 
     // Making element defined for CSS query
     const uqid = (root instanceof ShadowRoot || root instanceof HTMLDocument) ? "" : (basis?.getAttribute?.("data-style-id") || UUIDv4());
@@ -35,7 +42,7 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
     let $styleElement: any;// = styleElement;
     if (root instanceof ShadowRoot) {
         if (!($styleElement = root.querySelector('style'))) {
-            $styleElement = document.createElement('style[data-ux-query]');
+            $styleElement = typeof document != "undefined" ? document.createElement('style[data-ux-query]') : null;
             $styleElement.setAttribute('data-ux-query', '');
             root.appendChild($styleElement);
         }
@@ -131,28 +138,38 @@ export const setStyleRule = (selector: string, sheet: object) => {
 
 //
 export const hash = async (string: string|ArrayBuffer|Blob|File) => {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', typeof string == "string" ? new TextEncoder().encode(string) : (string instanceof ArrayBuffer ? string : (await ((string as any)?.arrayBuffer?.()))));
+    const hashBuffer = await crypto?.subtle?.digest('SHA-256', typeof string == "string" ? new TextEncoder().encode(string) : (string instanceof ArrayBuffer ? string : (await ((string as any)?.arrayBuffer?.()))));
     return "sha256-" + btoa(String.fromCharCode.apply(null, new Uint8Array(hashBuffer) as unknown as number[]));
 };
 
 //
 export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], layer: string = "", integrity?: string|Promise<string>)=>{ // @ts-ignore
-    const url: string|null = URL.canParse(inline as string) ? (inline as string) : URL.createObjectURL((inline instanceof Blob || inline instanceof File) ? inline : new Blob([inline], {type: "text/css"}));
-    const load = fetch(url, {cache: "force-cache", mode: "same-origin"});
+    const url: string | null = URL.canParse(inline as string) ? (inline as string) : typeof URL != "undefined" ? URL.createObjectURL((inline instanceof Blob || inline instanceof File) ? inline : new Blob([inline], { type: "text/css" })) : null;
+    const load = url ? fetch(url, { cache: "force-cache", mode: "same-origin" }) : null;
     if (base && url) setStyleURL(base, url, layer);
     if (base?.[0] && (!URL.canParse(inline as string) || integrity) && base?.[0] instanceof HTMLLinkElement) {
         const I: any = null;//(integrity ?? (typeof inline == "string" ? hash(inline) : null));
-            if (typeof I?.then == "function") { I?.then?.((H)=>base?.[0]?.setAttribute?.("integrity", H)); } else
+        if (typeof I?.then == "function") { I?.then?.((H) => base?.[0]?.setAttribute?.("integrity", H)); } else
             if (I) { base?.[0]?.setAttribute?.("integrity", I as string); }
     }
     load?.then?.(()=>{if(base?.[0]) base?.[0].setAttribute("loaded", ""); });
 };
 
 //
-export const loadBlobStyle   = (inline: string)=>{ const style = document.createElement("link"); Object.assign(style, {rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" }); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "href"]); document.head.append(style); return style; };
-export const loadInlineStyle = (inline: string, rootElement: any = document.head, layer: string = "")=>{
-    const PLACE = (rootElement?.querySelector("head") ?? rootElement); if (PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); } // @ts-ignore
-    const style = document.createElement("style"); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "innerHTML"], layer); PLACE?.prepend?.(style); return style;
+export const loadBlobStyle = (inline: string) => {
+    const style = typeof document != "undefined" ? document.createElement("link") : null;
+    if (style) {
+        Object.assign(style, { rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" }); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "href"]); typeof document != "undefined" ? document.head.append(style) : null; return style;
+    };
+    return null;
+};
+
+//
+export const loadInlineStyle = (inline: string, rootElement: any = typeof document != "undefined" ? document?.head : null, layer: string = "") => {
+    //if (!rootElement) return;
+    const PLACE = (rootElement?.querySelector?.("head") ?? rootElement); if (typeof HTMLHeadElement != "undefined" && PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); } // @ts-ignore
+    const style = typeof document != "undefined" ? document.createElement("style") : null; if (style) { style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "innerHTML"], layer); PLACE?.prepend?.(style); return style; }
+    return null;
 };
 
 //
@@ -174,13 +191,14 @@ export const setProperty = (target, name, value, importance = "")=>{
 
 //
 export const preloadStyle = (styles: string)=>{
-    return loadInlineStyle(URL.createObjectURL(new Blob([styles], {type: "text/css"})), null, "ux-layer");
+    // @ts-ignore
+    return loadInlineStyle(typeof URL != "undefined" ? URL.createObjectURL(new Blob([styles], { type: "text/css" })) : null, null, "ux-layer");
 }
 
 
 //
 export type Point = DOMPoint;
-export const parseOrigin = (origin: string, element: Element): Point => { const values = origin.split(' '); return new DOMPoint(parseLength(values[0], ()=>element.clientWidth), parseLength(values[1], ()=>element.clientHeight)); }
+export const parseOrigin = (origin: string, element: Element): Point => { const values = origin.split(' '); return new DOMPoint(parseLength(values[0], () => element.clientWidth), parseLength(values[1], () => element.clientHeight)); } // @ts-ignore
 export const parseLength = (value: string, size: ()=>number): number => { if (value.endsWith('%')) { return (parseFloat(value) / 100) * size(); }; return parseFloat(value); }
 
 //
@@ -189,12 +207,14 @@ export const getTransform = (el)=>{
         const styleMap = el.computedStyleMap(), transform = styleMap.get("transform"), matrix = transform?.toMatrix?.();
         if (matrix) return matrix;
     } else
+        // @ts-ignore
     if (el) { const style = getComputedStyle(el); return new DOMMatrix(style?.getPropertyValue?.("transform")); }
     return new DOMMatrix();
 }
 
 //
 export const getTransformOrigin = (el)=>{
+    // @ts-ignore
     const style = getComputedStyle(el), cssOrigin = style?.getPropertyValue?.("transform-origin") || `50% 50%`;
     return parseOrigin(cssOrigin, el);
 }
@@ -205,6 +225,7 @@ export const getPropertyValue = (src, name)=>{
         const val = src?.computedStyleMap?.()?.get(name);
         return val instanceof CSSUnitValue ? (val?.value || 0) : val?.toString?.();
     }
+    // @ts-ignore
     if (src instanceof HTMLElement) { const cs = getComputedStyle?.(src, ""); return (parseFloat(cs?.getPropertyValue?.(name)?.replace?.("px", "")) || 0); }
     return (parseFloat((src?.style ?? src).getPropertyValue?.(name)?.replace?.("px", "")) || 0) || 0;
 }

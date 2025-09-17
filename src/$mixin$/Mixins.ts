@@ -68,7 +68,8 @@ export const updateMixinAttributes = (element, mixin)=>{
 
 //
 export const roots   = new Set<any>();
-export const addRoot = (root: any = document) => {
+export const addRoot = (root: any = typeof document != "undefined" ? document : null) => {
+    if (!root) return;
     if (!roots?.has?.(root)) {
         roots?.add?.(root);
 
@@ -115,7 +116,7 @@ export const registerMixin = (name, mixin) => {
 };
 
 //
-addRoot(document);
+addRoot(typeof document != "undefined" ? document : null);
 
 //
 export class DOMMixin {
