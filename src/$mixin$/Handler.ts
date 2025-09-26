@@ -21,10 +21,10 @@ export const handleHidden = (element, _, visible) => {
 export const handleProperty = (el?: HTMLElement|null, prop?: string, val?: any)=>{
     if (!prop || !el) return; prop = kebabToCamel(prop);
 
-    /*if (
+    if (
         (typeof val == "object" && val != null) &&
         ("value" in val || val?.value != null)
-    ) { val = val.value ?? val; };*/
+    ) { val = val.value /*?? val*/; };
 
     //
     if (el?.[prop] === val) return el;
