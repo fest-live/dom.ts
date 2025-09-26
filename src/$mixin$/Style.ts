@@ -69,8 +69,7 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
     //
     const kebab = camelToKebab(name || "");
     const val = value?.value ?? value;
-    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1) { value = parseFloat(val); }// else
-    //if (typeof val == "string" && val?.split?.(" ").length > 1) { value = val?.split?.(" ").map((v)=>parseFloat(v)).filter((v)=>!Number.isNaN(v)); }
+    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1 && !(value instanceof CSSStyleValue)) { value = parseFloat(val); }// else
 
     //
     if (value instanceof CSSStyleValue) {
