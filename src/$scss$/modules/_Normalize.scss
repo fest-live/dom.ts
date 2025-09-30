@@ -111,6 +111,9 @@
             }
 
             //
+            [aria-hidden] { display: none !important; }
+
+            //
             :where(button, input, form) {
                 border: none;
                 outline: none;
