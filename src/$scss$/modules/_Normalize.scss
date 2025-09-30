@@ -111,7 +111,7 @@
             }
 
             //
-            [aria-hidden] { display: none !important; }
+            [aria-hidden="true"] { display: none !important; }
 
             //
             :where(button, input, form) {
