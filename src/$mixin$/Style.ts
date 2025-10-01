@@ -63,63 +63,74 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
 };
 
 //
+const isStyleValue = (val: any) => (typeof CSSStyleValue !== "undefined" && val instanceof CSSStyleValue);
+const isUnitValue = (val: any) => (typeof CSSUnitValue !== "undefined" && val instanceof CSSUnitValue);
+
+//
+const setPropertyIfNotEqual = (styleRef?: any | null, kebab?: string, value?: any, importance = "") => {
+    if (!styleRef || !kebab) return styleRef;
+    const old = styleRef?.getPropertyValue?.(kebab);
+    if (value != null && (!old || old != value)) {
+        styleRef?.setProperty?.(kebab, value, importance);
+    } else if (value == null) {
+        styleRef?.removeProperty?.(kebab);
+    }
+    return styleRef;
+}
+
+//
+const hasValue = (v: any) => {
+    return (typeof v == "object" && (v?.value != null || (v != null && ("value" in v))));
+}
+
+//
 export const setStyleProperty = (element?: any|null, name?: string, value?: any, importance = "")=>{
     if (!element || !name) return element;
 
     //
     const kebab = camelToKebab(name || "");
-    const val = value?.value ?? value;
-    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1 && !(value instanceof CSSStyleValue)) { value = parseFloat(val); }// else
+    const val = (hasValue(value) && !isUnitValue(value)) ? value?.value : value;
+    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1 && !isStyleValue(val)) { value = parseFloat(val); }// else
 
     //
-    if (value instanceof CSSStyleValue) {
-        if ((element?.attributeStyleMap ?? element?.styleMap) != null) {
-            const old = (element?.attributeStyleMap ?? element?.styleMap)?.get?.(kebab);
+    const styleRef = element?.style;
+    const styleMapRef = element?.attributeStyleMap ?? element?.styleMap;
+    if (!(styleRef || styleMapRef)) return element;
+
+    //
+    if (isStyleValue(value)) {
+        if (styleMapRef != null) {
+            const old = styleMapRef?.get?.(kebab);
             if (old != value) {
-                if (value instanceof CSSUnitValue) {
-                    if (old != null && value.unit && value.unit !== old?.unit) {
-                        if (old.value != value.value) { old.value = value.value; }
-                    } else { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, value); }
+                if (isUnitValue(value) && (isUnitValue(old) && value.unit !== old.unit)) {
+                    if (old.value != value.value) { old.value = value.value; }
                 } else {
-                    (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, value);
+                    styleMapRef?.set?.(kebab, value);
                 }
             }
-        } else
-        if (element?.style?.getPropertyValue?.(kebab) != value.toString()) {
-            element?.style?.setProperty?.(kebab, value.toString(), importance);
+        } else {
+            setPropertyIfNotEqual(styleRef, kebab, value?.toString?.(), importance);
         }
     } else
-    if ((element?.attributeStyleMap ?? element?.styleMap) && (typeof (value?.value ?? value) === "number" || typeof value === "number") && !Number.isNaN(value?.value ?? value)) {
-        const numeric = value?.value ?? value;
-        const old = (element?.attributeStyleMap ?? element?.styleMap)?.get?.(kebab);
-        if (old) {
-            if (old instanceof CSSUnitValue && old?.unit) {
-                if (old?.value != numeric) { old.value = numeric; }
-            } else
-            if (element?.style?.getPropertyValue?.(kebab) != numeric) {
-                element?.style?.setProperty?.(kebab, numeric, importance);
+        if (styleMapRef && (typeof value === "number") && !Number.isNaN(value)) {
+            const numeric = value;
+            const old = styleMapRef?.get?.(kebab);
+            if (old != null) {
+                if (isUnitValue(old)) { if (old?.value != numeric) { old.value = numeric; } } else { setPropertyIfNotEqual(styleRef, kebab, numeric, importance); }
+            } else { // hard-case
+                const computed = (!kebab?.trim?.()?.startsWith?.("--")) ? element?.computedStyleMap?.() : styleMapRef;
+                const oldCmVal = computed?.get?.(kebab) ?? computed?.getPropertyValue?.(kebab);
+                if (isUnitValue(oldCmVal)) {
+                    if (oldCmVal.value != numeric && oldCmVal.unit == "number") { oldCmVal.value = numeric; }
+                    { try { styleMapRef?.set?.(kebab, oldCmVal); } catch (e) { styleMapRef?.set?.(kebab, oldCmVal?.toString?.()); } }
+                } else
+                { setPropertyIfNotEqual(styleRef, kebab, numeric, importance); }
             }
         } else
-        {   // hard-case
-            const computed = (!kebab?.trim?.()?.startsWith?.("--")) ? element?.computedStyleMap?.() : (element?.attributeStyleMap ?? element?.styleMap);
-            const oldCmVal = computed?.get?.(kebab);
-            if (oldCmVal instanceof CSSUnitValue && oldCmVal?.unit) {
-                if (oldCmVal.value != numeric) { oldCmVal.value = numeric; }
-                if (oldCmVal.unit == "number") { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, oldCmVal?.value); } else
-                { try { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, oldCmVal); } catch (e) { (element?.attributeStyleMap ?? element?.styleMap)?.set?.(kebab, oldCmVal?.toString?.()); } }
-            } else
-            if (element?.style?.getPropertyValue?.(kebab) != numeric) {
-                element?.style?.setProperty?.(kebab, numeric, importance);
-            }
+        {
+            const val = (hasValue(value) ? value?.value : value);
+            setPropertyIfNotEqual(styleRef, kebab, (isStyleValue(value) ? value.toString() : val), importance);
         }
-    } else
-    //if (name?.trim?.()?.startsWith?.("--") || !element?.attributeStyleMap)
-    {
-        const old = element?.style?.getPropertyValue?.(kebab);
-        const val = (value?.value ?? value);
-        value = (value instanceof CSSStyleValue ? value.toString() : val);
-        if (old !== value) { element?.style?.setProperty?.(kebab, value, importance); };
-    }
     return element;
 }
 
@@ -174,18 +185,6 @@ export const loadInlineStyle = (inline: string, rootElement: any = typeof docume
 //
 export const setProperty = (target, name, value, importance = "")=>{
     return setStyleProperty(target, name, value, importance);
-    /*if (!target) return;
-    if ("attributeStyleMap" in target && typeof value != "string") {
-        const raw = target.attributeStyleMap.get(name), oldv = raw?.[0] ?? raw?.value;
-        if (parseFloat(value) != parseFloat(oldv) || oldv !== value || !oldv) {
-            if (raw?.value != null) { raw.value = value; } else { target.attributeStyleMap.set(name, value); };
-        }
-    } else {
-        const oldv = target?.style?.getPropertyValue?.(name);
-        if (parseFloat(oldv) != value || oldv !== value || !oldv) {
-            target?.style?.setProperty?.(name, value, importance);
-        }
-    }*/
 }
 
 //
