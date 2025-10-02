@@ -146,53 +146,33 @@
     image-rendering: crisp-edges #{$importance};
     image-rendering: optimizeSpeed #{$importance};
     image-rendering: pixelated #{$importance};
+    will-change: transform #{$importance};
 }
 
 //
 @mixin hw-optimize() {
     @include LQRendering();
 
-    //
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeSpeed;
-    font-smooth: 0px;
-    font-smooth: never;
-
-    //
-    //-webkit-perspective: 1000px;
-    //-moz-perspective: 1000px;
-    //-ms-perspective: 1000px;
-    //perspective: 1000px;
-
-    //
-    -webkit-backface-visibility: visible;
-    -moz-backface-visibility: visible;
-    -ms-backface-visibility: visible;
-    backface-visibility: visible;
-
-    /* Enable hardware acceleration */
-    -webkit-transform: translate3d(0, 0, 0);
-    -moz-transform: translate3d(0, 0, 0);
-    -ms-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-
-    //
+    transform: translateZ(0);
     transform-origin: 50% 50%;
+    backface-visibility: hidden;
 
-    /* Some filter hack */
-    filter: grayscale(0%);
+    @supports (contain: layout paint) {
+        contain: layout paint;
+    }
 
-    //
     box-sizing: border-box;
-    scrollbar-width: none;
     overflow: hidden;
-
-    /* Disable transition by default */
-    -webkit-transition: none;
-    -moz-transition: none;
-    -o-transition: none;
     transition: none;
+    will-change: transform;
+
+    @supports (scrollbar-width: none) {
+        scrollbar-width: none;
+    }
+
+    @supports (scrollbar-gutter: stable both-edges) {
+        scrollbar-gutter: stable both-edges;
+    }
 }
 
 //
@@ -224,49 +204,22 @@
     overflow: auto;
     overscroll-behavior: contain;
     scroll-behavior: smooth;
-    scroll-snap-type: y mandatory;
-
-    //
-    scrollbar-gutter: auto;
     scrollbar-color: transparent;
 
-    //
     @supports (scrollbar-width: none) {
-        scrollbar-gutter: stable both-edges;
         scrollbar-width: none;
         scrollbar-color: transparent;
     }
 
-    /* work-around for chrome */
+    @supports (scrollbar-gutter: stable both-edges) {
+        scrollbar-gutter: stable both-edges;
+    }
+
     &::-webkit-scrollbar {
-        //
         -webkit-appearance: none;
-        visibility: collapse;
-        display: none;
-        opacity: 0;
-
-        //
-        box-sizing: border-box;
-        margin: 0px;
-        padding: 0px;
-
-        //
-        min-inline-size: 0px;
-        min-block-size: 0px;
-
-        //
         inline-size: 0px;
         block-size: 0px;
-
-        //
-        max-inline-size: 0px;
-        max-block-size: 0px;
-
-        //
-        pointer-events: none;
-
-        //
-        position: fixed;
+        display: none;
     }
 }
 

@@ -52,7 +52,7 @@
             };
 
             //
-            :where(ui-icon) {
+            :where(ui-icon::before) {
                 @include ps.LQRendering();
             }
 
@@ -114,10 +114,6 @@
             [aria-hidden="true"] { display: none !important; }
 
             //
-            :where(button, input, form) {
-                border: none;
-                outline: none;
-            }
 
             //
             :where(img, picture, span, a, button, input, svg, video, canvas) {
@@ -191,7 +187,7 @@
             :where(input[type="text"], input[type="number"]) { user-select: auto; }
 
             //
-            .ui-icon { background-color: var(--ui-icon-color, currentColor); }
+            //.ui-icon { background-color: var(--ui-icon-color, currentColor); }
             input, button { accent-color: currentColor; };
 
             //
