@@ -71,12 +71,12 @@
 @property --in-inset-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
 
 //
-@property --cs-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-@property --cs-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-@property --os-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-@property --os-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-@property --in-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
-@property --in-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: true; };
+@property --cs-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: false; };
+@property --cs-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: false; };
+@property --os-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: false; };
+@property --os-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: false; };
+@property --in-drag-x { syntax: "<length-percentage>"; initial-value: 0px; inherits: false; };
+@property --in-drag-y { syntax: "<length-percentage>"; initial-value: 0px; inherits: false; };
 
 //
 @property --cs-size-x { syntax: "<length-percentage>"; initial-value: 100cqi; inherits: true; };
@@ -111,16 +111,16 @@
 @property --dir-y { syntax: "<number>"; initial-value: 0; inherits: true; }
 @property --f-col { syntax: "<integer>"; initial-value: 0; inherits: true; }
 @property --f-row { syntax: "<integer>"; initial-value: 0; inherits: true; }
-@property --drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
-@property --drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --drag-x { syntax: "<number>"; initial-value: 0; inherits: false; }
+@property --drag-y { syntax: "<number>"; initial-value: 0; inherits: false; }
 @property --grid-c { syntax: "<number>"; initial-value: 0; inherits: true; }
 @property --grid-r { syntax: "<number>"; initial-value: 0; inherits: true; }
 @property --cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }
 @property --cell-y { syntax: "<integer>"; initial-value: 0; inherits: true; }
 
 //
-@property --p-drag-x { syntax: "<number>"; initial-value: 0; inherits: true; }
-@property --p-drag-y { syntax: "<number>"; initial-value: 0; inherits: true; }
+@property --p-drag-x { syntax: "<number>"; initial-value: 0; inherits: false; }
+@property --p-drag-y { syntax: "<number>"; initial-value: 0; inherits: false; }
 @property --layout-r { syntax: "<integer>"; initial-value: 1; inherits: true; }
 @property --layout-c { syntax: "<integer>"; initial-value: 1; inherits: true; }
 @property --p-cell-x { syntax: "<integer>"; initial-value: 0; inherits: true; }

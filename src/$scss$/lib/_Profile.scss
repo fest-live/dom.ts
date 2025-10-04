@@ -119,6 +119,7 @@
 
 //
 @mixin HQRendering($importance: null) {
+    /*
     -webkit-font-smoothing: subpixel-antialiased #{$importance};
     -moz-osx-font-smoothing: auto #{$importance};
     text-rendering: optimizeLegibility #{$importance};
@@ -130,11 +131,12 @@
     image-rendering: optimizeQuality #{$importance};
     image-rendering: smooth #{$importance};
     image-rendering: high-quality #{$importance};
-    image-rendering: crisp-edges #{$importance};
+    image-rendering: crisp-edges #{$importance};*/
 }
 
 //
 @mixin LQRendering($importance: null) {
+    /*
     -webkit-font-smoothing: none #{$importance};
     -moz-osx-font-smoothing: grayscale #{$importance};
     text-rendering: optimizeSpeed #{$importance};
@@ -146,7 +148,7 @@
     image-rendering: crisp-edges #{$importance};
     image-rendering: optimizeSpeed #{$importance};
     image-rendering: pixelated #{$importance};
-    will-change: transform #{$importance};
+    will-change: transform #{$importance};*/
 }
 
 //
