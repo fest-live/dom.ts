@@ -206,8 +206,8 @@ export const doBorderObserve = (element, cb: any = ()=>{}) => {
 }
 
 //
-export const camelToKebab = (str: string) => { return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
-export const kebabToCamel = (str: string) => { return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
+export const camelToKebab = (str: string) => { if (!str) return str; return str?.replace?.(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(); }
+export const kebabToCamel = (str: string) => { if (!str) return str; return str?.replace?.(/-([a-z])/g, (_, char) => char.toUpperCase()); }
 
 //
 export const url  = (type: string, ...source: any[]) => { return URL.createObjectURL(new Blob(source, {type})); };
