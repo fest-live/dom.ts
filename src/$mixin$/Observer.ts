@@ -1,5 +1,5 @@
 const onBorderObserve = new WeakMap<HTMLElement, Function[]>(), onContentObserve = new WeakMap<HTMLElement, Function[]>();
-const unwrapFromQuery = (element: any) => { if (typeof element?.current == "object") { element = element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; }; return element; }
+const unwrapFromQuery = (element: any) => { if (typeof element?.current == "object") { element = element?.element ?? element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; }; return element; }
 
 // TODO: support of fragments
 export const observeContentBox = (element, cb) => {
@@ -24,7 +24,9 @@ export const observeContentBox = (element, cb) => {
 
         //
         onContentObserve.set(element, callbacks);
-        observer.observe(element, {box: "content-box"});
+        if ((element?.element ?? element) instanceof Node) {
+            observer.observe(element?.element ?? element, {box: "content-box"});
+        }
     }
 
     //
@@ -55,7 +57,9 @@ export const observeBorderBox = (element, cb) => {
 
         //
         onBorderObserve.set(element, callbacks);
-        observer.observe(element, {box: "border-box"});
+        if ((element?.element ?? element) instanceof Node) {
+            observer.observe(element?.element ?? element, {box: "border-box"});
+        }
     }
 
     //
@@ -87,7 +91,9 @@ export const observeAttribute = (element, attribute, cb) => {
     });
 
     //
-    observer.observe(element = unwrapFromQuery(element), { attributes: true, attributeOldValue: true, attributeFilter: [...attributeList] });
+    if ((element?.element ?? element) instanceof Node) {
+        observer.observe(element = unwrapFromQuery(element), { attributes: true, attributeOldValue: true, attributeFilter: [...attributeList] });
+    }
     attributeList.forEach((attribute)=>cb({ target: element, type: "attributes", attributeName: attribute, oldValue: (element as HTMLElement)?.getAttribute?.(attribute) }, observer));
     return observer;
 };
@@ -260,7 +266,9 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
 
     //
     const obRef = new WeakRef(observer);
-    observer.observe(element = unwrapFromQuery(element), { childList: true, subtree : true });
+    if ((element?.element ?? element) instanceof Node) {
+        observer.observe(element = unwrapFromQuery(element), { childList: true, subtree : true });
+    }
     const selected = Array.from(element.querySelectorAll(selector));
     if (selected.length > 0) { cb?.({ addedNodes: selected }, observer); };
     return observer;

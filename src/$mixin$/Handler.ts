@@ -103,15 +103,15 @@ export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: an
     //
     const $ref: any = val;
     if (hasValue(val)) val = val.value; prop = camelToKebab(prop);
-    if (el.getAttribute?.(prop) === val || val == undefined) return el;
+    if (el?.getAttribute?.(prop) === val || val == undefined) return el;
 
     //
     $avoidTrigger($ref, ()=>{
-        if (val == null || val === false) { el.removeAttribute(prop); } else {
+        if (val == null || val === false) { el?.removeAttribute?.(prop); } else {
             if (typeof val != "object" && typeof val != "function") {
-                el.setAttribute(prop, String(val));
+                el?.setAttribute?.(prop, String(val));
             } else {
-                el.removeAttribute(prop);
+                el?.removeAttribute?.(prop);
             }
         }
     });
