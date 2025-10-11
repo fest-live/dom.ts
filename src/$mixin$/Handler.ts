@@ -15,13 +15,19 @@ const hasValue = (v: any) => {
 }
 
 //
+const $triggerLock = Symbol.for("@trigger-lock");
+
+//
 export const handleHidden = (element, _, visible) => {
+    const $ref: any = visible;
     if (hasValue(visible)) { visible = visible.value };
     const isVisible = (typeof visible == "boolean") ? visible : (visible == null ? false : ((visible || visible == "" || visible == 0) ? true : false));
 
     //
+    if (hasValue($ref)) { $ref[$triggerLock] = true; };
     if (element instanceof HTMLInputElement) { element.hidden = !isVisible; } else
         { if (isVisible) { element?.removeAttribute?.("data-hidden"); } else { element?.setAttribute?.("data-hidden", ""); } }
+    if (hasValue($ref)) { delete $ref[$triggerLock]; };
 
     //
     return element;
@@ -30,6 +36,7 @@ export const handleHidden = (element, _, visible) => {
 //
 export const handleProperty = (el?: HTMLElement|null, prop?: string, val?: any)=>{
     if (!prop || !el || ["style", "dataset", "attributeStyleMap", "styleMap", "computedStyleMap"].indexOf(prop || "") != -1) return el;
+    const $ref: any = val;
 
     //
     if (hasValue(val)) { val = val.value; };
@@ -38,7 +45,9 @@ export const handleProperty = (el?: HTMLElement|null, prop?: string, val?: any)=
     prop = kebabToCamel(prop);
     if (el?.[prop] === val || val == undefined) { return el; };
     if (el?.[prop] !== val) {
+        if (hasValue($ref)) { $ref[$triggerLock] = true; };
         if (val != null) { el[prop] = val; } else { delete el[prop]; };
+        if (hasValue($ref)) { delete $ref[$triggerLock]; };
     }
     return el;
 }
@@ -46,15 +55,18 @@ export const handleProperty = (el?: HTMLElement|null, prop?: string, val?: any)=
 //
 export const handleDataset = (el?: HTMLElement|null, prop?: string, val?: DatasetValue) => {
     const datasetRef = el?.dataset; if (!prop || !el || !datasetRef) return el;
+    const $ref: any = val;
     prop = kebabToCamel(prop);  // @ts-ignore
     if (hasValue(val)) val = val?.value;
     if (val == undefined || datasetRef[prop] === val) return el;
     if (val == null || val === false) { delete datasetRef[prop]; } else {
+        if (hasValue($ref)) { $ref[$triggerLock] = true; };
         if (typeof val != "object" && typeof val != "function") {
             datasetRef[prop] = String(val);
         } else {
             delete datasetRef[prop];
         }
+        if (hasValue($ref)) { delete $ref[$triggerLock]; };
     }
     return el;
 };
@@ -66,8 +78,11 @@ export const handleStyleChange = (el?: HTMLElement | null, prop?: string, val?: 
     //if (hasValue(val) && !isValueUnit(val)) val = val.value;
 
     //
+    const $ref: any = val;
+    if (hasValue($ref)) { $ref[$triggerLock] = true; };
     if (val == null) { deleteStyleProperty(el, prop); } else
-        if (isVal(val) || isValueUnit(val)) { setStyleProperty(el, prop, val); } else { deleteStyleProperty(el, prop); }
+    if (isVal(val) || isValueUnit(val)) { setStyleProperty(el, prop, val); } else { deleteStyleProperty(el, prop); }
+    if (hasValue($ref)) { delete $ref[$triggerLock]; };
 
     //
     return el;
@@ -78,10 +93,12 @@ export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: an
     if (!prop || !el) return el; prop = camelToKebab(prop);
 
     //
+    const $ref: any = val;
     if (hasValue(val)) val = val.value;
     if (el.getAttribute?.(prop) === val || val == undefined) return el;
 
     //
+    if (hasValue($ref)) { $ref[$triggerLock] = true; };
     if (val == null || val === false) { el.removeAttribute(prop); } else {
         if (typeof val != "object" && typeof val != "function") {
             el.setAttribute(prop, String(val));
@@ -89,6 +106,7 @@ export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: an
             el.removeAttribute(prop);
         }
     }
+    if (hasValue($ref)) { delete $ref[$triggerLock]; };
 
     //
     return el;
