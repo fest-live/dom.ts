@@ -1,6 +1,6 @@
 // @ts-ignore
 //import styles from "./index.scss";
-import styles from "./index.scss?inline"; //with { type: "css" };
+import styles from "veela-runtime"; //with { type: "css" };
 
 //
 import { initVisibility } from "./$decor$/Appear";
