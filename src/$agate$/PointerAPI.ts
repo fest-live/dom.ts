@@ -239,7 +239,7 @@ export const grabForDrag = (
     };
 
     //
-    const moveEvent = [agWrapEvent((evc)=>{
+    const moveEvent = [/*agWrapEvent*/((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             evc?.preventDefault?.();
             if (hasParent(evc?.target, em)) {
@@ -263,7 +263,7 @@ export const grabForDrag = (
 
     // @ts-ignore
     const promised = Promise.withResolvers();
-    const releaseEvent = [agWrapEvent((evc)=>{
+    const releaseEvent = [/*agWrapEvent*/((evc)=>{
         if (ex?.pointerId == evc?.pointerId) {
             if (hm.canceled) return; hm.canceled = true;
             if (hasParent(evc?.target, em)) {
