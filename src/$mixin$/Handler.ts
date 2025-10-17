@@ -3,7 +3,7 @@ import { camelToKebab, kebabToCamel } from "../$agate$/Utils";
 
 //
 const isValueUnit = (val: any) => (typeof CSSStyleValue !== "undefined" && val instanceof CSSStyleValue);
-const isVal = (v: any) => v != null && v !== false && (typeof v != "object" && typeof v != "function");
+const isVal = (v: any) => v != null && (typeof v == "boolean" ? v !== false : true) && (typeof v != "object" && typeof v != "function");
 type DatasetValue = string | number | boolean | null | undefined | { value?: string | number | boolean | null | undefined };
 
 //
@@ -31,7 +31,7 @@ const $avoidTrigger = (ref: any, cb: Function)=>{
 export const handleHidden = (element, _, visible) => {
     const $ref: any = visible;
     if (hasValue(visible)) { visible = visible.value };
-    const isVisible = (typeof visible == "boolean") ? visible : (visible == null ? false : ((visible || visible == "" || visible == 0) ? true : false));
+    const isVisible = (visible = normalizePrimitive(visible)) != null && visible !== false;
 
     //
     $avoidTrigger($ref, ()=>{
@@ -52,7 +52,7 @@ export const handleProperty = (el?: HTMLElement|null, prop?: string|null, val?: 
     if (hasValue(val)) { val = val.value; };
 
     //
-    if (el?.[prop] === val || val == undefined) { return el; };
+    if (el?.[prop] === val) { return el; };
     if (el?.[prop] !== val) {
         $avoidTrigger($ref, ()=>{
             if (val != null) { el[prop] = val; } else { delete el[prop]; };
@@ -66,7 +66,7 @@ export const handleDataset = (el?: HTMLElement|null, prop?: string, val?: Datase
     const datasetRef = el?.dataset; if (!prop || !el || !datasetRef) return el;
     const $ref: any = val;  // @ts-ignore
     if (hasValue(val)) val = val?.value; prop = kebabToCamel(prop);
-    if (val == undefined || datasetRef[prop] === val) return el;
+    if (datasetRef?.[prop] === (val = normalizePrimitive(val))) return el;
     if (val == null || val === false) { delete datasetRef[prop]; } else {
         $avoidTrigger($ref, ()=>{
             if (typeof val != "object" && typeof val != "function") {
@@ -82,19 +82,26 @@ export const handleDataset = (el?: HTMLElement|null, prop?: string, val?: Datase
 //
 export const handleStyleChange = (el?: HTMLElement | null, prop?: string, val?: any) => {
     const styleRef = el?.style;
-    if (!prop || typeof prop != "string" || !el || !styleRef || val == undefined) return el;
+    if (!prop || typeof prop != "string" || !el || !styleRef) return el;
     //if (hasValue(val) && !isValueUnit(val)) val = val.value;
 
     //
     const $ref: any = val;
     $avoidTrigger($ref, ()=>{
-        if (val == null) { deleteStyleProperty(el, prop); } else
-        if (isVal(val) || isValueUnit(val)) { setStyleProperty(el, prop, val); } else { deleteStyleProperty(el, prop); }
+        //if (val == null) { deleteStyleProperty(el, prop); } else
+        if (isVal(val) || hasValue(val) || isValueUnit(val))
+            { setStyleProperty(el, prop, val); } else if (val == null)
+            { deleteStyleProperty(el, prop); }
     });
 
     //
     return el;
 };
+
+//
+const normalizePrimitive = (val: any) => {
+    return (typeof val == "boolean" ? (val ? "" : null) : (typeof val == "number" ? String(val) : val));
+}
 
 //
 export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: any) => {
@@ -103,16 +110,14 @@ export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: an
     //
     const $ref: any = val;
     if (hasValue(val)) val = val.value; prop = camelToKebab(prop);
-    if (el?.getAttribute?.(prop) === val || val == undefined) return el;
+    if (el?.getAttribute?.(prop) === (val = normalizePrimitive(val))) return el;
 
     //
     $avoidTrigger($ref, ()=>{
-        if (val == null || val === false) { el?.removeAttribute?.(prop); } else {
-            if (typeof val != "object" && typeof val != "function") {
-                el?.setAttribute?.(prop, String(val));
-            } else {
-                el?.removeAttribute?.(prop);
-            }
+        if (typeof val != "object" && typeof val != "function" && val != null) {
+            el?.setAttribute?.(prop, String(val));
+        } else {
+            el?.removeAttribute?.(prop);
         }
     });
 

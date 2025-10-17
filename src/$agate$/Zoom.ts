@@ -59,11 +59,9 @@ export const unfixedClientZoom = (element = document.documentElement)=>{
 //
 export const orientOf = (element = document.documentElement) => {
     // legacy browser
-    const container: any = ((element?.matches?.(".ui-orientbox") ? element : null) || element?.closest?.(".ui-orientbox") || element);
-    return container?.orient || 0;
-    //if (container?.orient != null) return container?.orient;
-    //const computed = element ? getComputedStyle(element) : null;
-    //return parseFloat(computed?.getPropertyValue("--orient") || "0") || 0;
+    const container: any = ((element?.matches?.("[orient]") ? element : null) || element?.closest?.("[orient]") || element);
+    if (container?.hasAttribute?.("orient")) return parseInt(container?.getAttribute?.("orient") || "0") || 0;
+    return (container?.orient || 0);
 }
 
 //
@@ -80,7 +78,7 @@ export const getBoundingOrientRect = (element, orient: number|null|undefined = n
     };
 
     //
-    const or_i: number = orient || orientOf(element) || 0;
+    const or_i: number = orient ?? (orientOf(element) || 0);
     const size: [number, number] = [document.body.clientWidth / zoom, document.body.clientHeight / zoom];
     const [left_, top_] = cvt_cs_to_os([nbx.left, nbx.top], size, or_i);
     const [right_, bottom_] = cvt_cs_to_os([nbx.right, nbx.bottom], size, or_i);

@@ -1,8 +1,8 @@
-import { cvt_cs_to_os } from "../$agate$/Convert";
 import type { GridArgsType, GridItemType } from "./Types";
+import { cvt_cs_to_os, cvt_os_to_cs } from "../$agate$/Convert";
 
 //
-const roundNearest = (number, N = 1)=>(Math.round(number * N) / N);
+const roundNearest = (number: number, N = 1)=>(Math.round(number * N) / N);
 const get = (items, id)=>{ if (typeof items?.get == "function") { const item = items?.get?.(id); if (item) { return item; }; }; return Array.from(items?.values?.()||items||[])?.find?.((item: any)=>(item?.id == id || item == id)); }
 
 //
@@ -42,14 +42,70 @@ export const redirectCell = ($preCell: [number, number], gridArgs: GridArgsType)
 
 
 /* LAST GENERATION... */
-export const convertOrientPxToCX = ($orientPx: [number, number], gridArgs: GridArgsType, orient: number = 0): [number, number] => {
-    const boxInPx = [...gridArgs.size];
-    const orientPx: [number, number] = [...$orientPx];
-    const layout = [...gridArgs.layout];
-    if (orient%2) { boxInPx.reverse(); };
-    const gridPxToCX = [layout[0] / boxInPx[0], layout[1] / boxInPx[1]];
-    return [orientPx[0] * gridPxToCX[0], orientPx[1] * gridPxToCX[1]]
-}
+const toFiniteNumber = (value: any, fallback = 0) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+};
+
+const clampDimension = (value: number, max: number) => {
+    if (!Number.isFinite(max) || max <= 0) { return 0; }
+    if (!Number.isFinite(value)) { return 0; }
+    return Math.min(Math.max(value, 0), max);
+};
+
+const normalizeOrientIndex = (orient: number = 0) => (((orient ?? 0) % 4) + 4) % 4;
+
+export const convertOrientPxToCX = (
+    clientPx: [number, number],
+    gridArgs: GridArgsType,
+    orient: number = 0
+): [number, number] => {
+    const normalized = normalizeOrientIndex(orient);
+
+    const layout: [number, number] = [
+        toFiniteNumber(gridArgs?.layout?.[0], 1),
+        toFiniteNumber(gridArgs?.layout?.[1], 1)
+    ];
+
+    const size: [number, number] = [
+        toFiniteNumber(gridArgs?.size?.[0], 1),
+        toFiniteNumber(gridArgs?.size?.[1], 1)
+    ];
+
+    if (!layout[0] || !layout[1] || !size[0] || !size[1]) {
+        return [0, 0];
+    }
+
+    const orientedLayout: [number, number] = normalized % 2
+        ? [layout[1], layout[0]]
+        : [layout[0], layout[1]];
+
+    const orientedSize: [number, number] = normalized % 2
+        ? [size[1], size[0]]
+        : [size[0], size[1]];
+
+    const orientedCoords = cvt_cs_to_os([
+        toFiniteNumber(clientPx?.[0], 0),
+        toFiniteNumber(clientPx?.[1], 0)
+    ], size, normalized);
+
+    const boundedOriented: [number, number] = [
+        clampDimension(orientedCoords[0], orientedSize[0]),
+        clampDimension(orientedCoords[1], orientedSize[1])
+    ];
+
+    const projectedCell: [number, number] = [
+        orientedSize[0] ? (boundedOriented[0] / orientedSize[0]) * orientedLayout[0] : 0,
+        orientedSize[1] ? (boundedOriented[1] / orientedSize[1]) * orientedLayout[1] : 0
+    ];
+
+    const canonicalCell = cvt_os_to_cs(projectedCell, layout, normalized);
+
+    return [
+        clampDimension(canonicalCell[0], layout[0] - 1),
+        clampDimension(canonicalCell[1], layout[1] - 1)
+    ];
+};
 
 // should be relative from grid-box (not absolute or fixed position)
 export const floorInOrientPx = ($orientPx: [number, number], gridArgs: GridArgsType, orient: number = 0) => {
@@ -69,15 +125,3 @@ export const floorInCX = ($CX: [number, number], gridArgs: GridArgsType): [numbe
         Math.min(Math.max(roundNearest($CX[1]), 0), layout[1]-1)
     ];
 }
-
-//
-export const clientSpaceInOrientCX = ($clientPx, gridArgs: GridArgsType, orient: number = 0): [number, number] => {
-    const clientPx: [number, number] = [...$clientPx] as [number, number];
-    const size: [number, number] = [...gridArgs.size] as [number, number];
-    //if (orient%2) { size.reverse(); };
-    const orientPx = cvt_cs_to_os(clientPx, size, orient);
-    return [
-        Math.min(Math.max(roundNearest(orientPx[0] / size[0] * (gridArgs.layout[0]), 1), 0), gridArgs.layout[0]-1),
-        Math.min(Math.max(roundNearest(orientPx[1] / size[1] * (gridArgs.layout[1]), 1), 0), gridArgs.layout[1]-1)
-    ]
-};

@@ -69,10 +69,12 @@ const isUnitValue = (val: any) => (typeof CSSUnitValue !== "undefined" && val in
 //
 const setPropertyIfNotEqual = (styleRef?: any | null, kebab?: string, value?: any, importance = "") => {
     if (!styleRef || !kebab) return styleRef;
-    const old = styleRef?.getPropertyValue?.(kebab);
-    if (value != null && (!old || old != value)) {
-        styleRef?.setProperty?.(kebab, value, importance);
-    } else if (value == null) {
+    if (value != null) {
+        const old = styleRef?.getPropertyValue?.(kebab);
+        if (old == null || old !== value || old == "") {
+            styleRef?.setProperty?.(kebab, value, importance);
+        }
+    } else if (styleRef?.getPropertyValue?.(kebab) != null) {
         styleRef?.removeProperty?.(kebab);
     }
     return styleRef;
@@ -89,8 +91,15 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
 
     //
     const kebab = camelToKebab(name || "");
-    const val = (hasValue(value) && !isUnitValue(value)) ? value?.value : value;
-    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1 && !isStyleValue(val)) { value = parseFloat(val); }// else
+    let val: any = (hasValue(value) && !isUnitValue(value)) ? value?.value : value;
+    let numValue: number | null = typeof val == "number" ? val : null;
+    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1 && !isStyleValue(val)) {
+        numValue = parseFloat(val);
+    }
+
+    //
+    const isNumeric = numValue != null && !Number.isNaN(numValue) && typeof numValue == "number";
+    if (isNumeric) { val = numValue; }
 
     //
     const styleRef = element?.style;
@@ -98,38 +107,40 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
     if (!(styleRef || styleMapRef)) return element;
 
     //
-    if (isStyleValue(value)) {
+    if (isStyleValue(val)) {
         if (styleMapRef != null) {
             const old = styleMapRef?.get?.(kebab);
-            if (old != value) {
-                if (isUnitValue(value) && (isUnitValue(old) && value.unit !== old.unit)) {
-                    if (old.value != value.value) { old.value = value.value; }
+            if (old != val) {
+                if (isUnitValue(val) && (isUnitValue(old) && val.unit !== old.unit)) {
+                    if (old.value != val.value) { old.value = val.value; }
                 } else {
-                    styleMapRef?.set?.(kebab, value);
+                    styleMapRef?.set?.(kebab, val);
                 }
             }
         } else {
-            setPropertyIfNotEqual(styleRef, kebab, value?.toString?.(), importance);
+            setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
         }
     } else
-        if (styleMapRef && (typeof value === "number") && !Number.isNaN(value)) {
-            const numeric = value;
+        if (styleMapRef && isNumeric) {
             const old = styleMapRef?.get?.(kebab);
             if (old != null) {
-                if (isUnitValue(old)) { if (old?.value != numeric) { old.value = numeric; } } else { setPropertyIfNotEqual(styleRef, kebab, numeric, importance); }
+                if (isUnitValue(old)) {
+                    if (old?.value != val) { old.value = val; }
+                } else {
+                    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+                }
             } else { // hard-case
                 const computed = (!kebab?.trim?.()?.startsWith?.("--")) ? element?.computedStyleMap?.() : styleMapRef;
                 const oldCmVal = computed?.get?.(kebab) ?? computed?.getPropertyValue?.(kebab);
                 if (isUnitValue(oldCmVal)) {
-                    if (oldCmVal.value != numeric && oldCmVal.unit == "number") { oldCmVal.value = numeric; }
+                    if (oldCmVal.value != val && oldCmVal.unit == "number") { oldCmVal.value = val; }
                     { try { styleMapRef?.set?.(kebab, oldCmVal); } catch (e) { styleMapRef?.set?.(kebab, oldCmVal?.toString?.()); } }
                 } else
-                { setPropertyIfNotEqual(styleRef, kebab, numeric, importance); }
+                { setPropertyIfNotEqual(styleRef, kebab, String(val), importance); }
             }
         } else
         {
-            const val = (hasValue(value) ? value?.value : value);
-            setPropertyIfNotEqual(styleRef, kebab, (isStyleValue(value) ? value.toString() : val), importance);
+            setPropertyIfNotEqual(styleRef, kebab, (isStyleValue(val) ? val.toString() : String(val)), importance);
         }
     return element;
 }
