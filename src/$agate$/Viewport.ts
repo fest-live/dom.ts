@@ -1,5 +1,5 @@
 import type { StyleTuple } from "../$mixin$/Style";
-import { addEvent } from "./EventManager";
+import { addEvent } from "fest/core";
 
 //
 export const getAvailSize = () => {

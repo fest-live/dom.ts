@@ -1,31 +1,5 @@
 import { setStyleProperty } from "./Style";
-import { camelToKebab, kebabToCamel } from "../$agate$/Utils";
-
-//
-const isValueUnit = (val: any) => (typeof CSSStyleValue !== "undefined" && val instanceof CSSStyleValue);
-const isVal = (v: any) => v != null && (typeof v == "boolean" ? v !== false : true) && (typeof v != "object" && typeof v != "function");
-type DatasetValue = string | number | boolean | null | undefined | { value?: string | number | boolean | null | undefined };
-
-//
-export const deleteStyleProperty = (el: HTMLElement, name: string) => el.style.removeProperty(camelToKebab(name));
-
-//
-const hasValue = (v: any) => {
-    return (typeof v == "object" && (v?.value != null || (v != null && ("value" in v))));
-}
-
-//
-const $triggerLock  = Symbol.for("@trigger-lock");
-const $avoidTrigger = (ref: any, cb: Function)=>{
-    if (hasValue(ref)) ref[$triggerLock] = true;
-    let result;
-    try {
-        result = cb?.();
-    } finally {
-        if (hasValue(ref)) { delete ref[$triggerLock]; }
-    }
-    return result;
-}
+import { camelToKebab, DatasetValue, hasValue, isVal, isValueUnit, kebabToCamel, normalizePrimitive, $avoidTrigger } from "fest/core";
 
 //
 export const handleHidden = (element, _, visible) => {
@@ -80,6 +54,9 @@ export const handleDataset = (el?: HTMLElement|null, prop?: string, val?: Datase
 };
 
 //
+export const deleteStyleProperty = (el: HTMLElement, name: string) => el.style.removeProperty(camelToKebab(name));
+
+//
 export const handleStyleChange = (el?: HTMLElement | null, prop?: string, val?: any) => {
     const styleRef = el?.style;
     if (!prop || typeof prop != "string" || !el || !styleRef) return el;
@@ -97,11 +74,6 @@ export const handleStyleChange = (el?: HTMLElement | null, prop?: string, val?: 
     //
     return el;
 };
-
-//
-const normalizePrimitive = (val: any) => {
-    return (typeof val == "boolean" ? (val ? "" : null) : (typeof val == "number" ? String(val) : val));
-}
 
 //
 export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: any) => {

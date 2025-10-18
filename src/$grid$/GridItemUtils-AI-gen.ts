@@ -1,8 +1,8 @@
 import type { GridArgsType, GridItemType } from "./Types";
 import { cvt_cs_to_os, cvt_os_to_cs } from "../$agate$/Convert";
+import { clampDimension, roundNearest, toFiniteNumber } from "fest/core";
 
 //
-const roundNearest = (number: number, N = 1)=>(Math.round(number * N) / N);
 const get = (items, id)=>{ if (typeof items?.get == "function") { const item = items?.get?.(id); if (item) { return item; }; }; return Array.from(items?.values?.()||items||[])?.find?.((item: any)=>(item?.id == id || item == id)); }
 
 //
@@ -39,22 +39,10 @@ export const redirectCell = ($preCell: [number, number], gridArgs: GridArgsType)
     return [...preCell];
 }
 
-
-
 /* LAST GENERATION... */
-const toFiniteNumber = (value: any, fallback = 0) => {
-    const number = Number(value);
-    return Number.isFinite(number) ? number : fallback;
-};
-
-const clampDimension = (value: number, max: number) => {
-    if (!Number.isFinite(max) || max <= 0) { return 0; }
-    if (!Number.isFinite(value)) { return 0; }
-    return Math.min(Math.max(value, 0), max);
-};
-
 const normalizeOrientIndex = (orient: number = 0) => (((orient ?? 0) % 4) + 4) % 4;
 
+//
 export const convertOrientPxToCX = (
     clientPx: [number, number],
     gridArgs: GridArgsType,

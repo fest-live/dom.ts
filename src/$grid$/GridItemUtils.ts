@@ -1,8 +1,8 @@
+import { roundNearest } from "fest/core";
 import { cvt_cs_to_os } from "../$agate$/Convert";
 import type { GridArgsType, GridItemType } from "./Types";
 
 //
-const roundNearest = (number, N = 1)=>(Math.round(number * N) / N);
 const get = (items, id)=>{ if (typeof items?.get == "function") { const item = items?.get?.(id); if (item) { return item; }; }; return Array.from(items?.values?.()||items||[])?.find?.((item: any)=>(item?.id == id || item == id)); }
 
 //

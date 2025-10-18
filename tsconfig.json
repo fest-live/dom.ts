@@ -8,6 +8,7 @@
             "fest/*": ["../../shared/fest/*"],
             "fest/cdnImport": ["../../cdnImport.mjs"],
             "fest/dom": ["./src/index.ts"],
+            "fest/core": ["../core.ts/src/index.ts"],
 
             "fest/veela": ["../veela.css/src/index.ts"],
             "fest/veela/*": ["../veela.css/src/scss/*"],

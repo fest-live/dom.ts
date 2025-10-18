@@ -1,4 +1,4 @@
-import { UUIDv4, camelToKebab, kebabToCamel } from "../$agate$/Utils";
+import { camelToKebab, hasValue, isValidNumber, tryStringAsNumber } from "fest/core";
 
 //
 const OWNER = "DOM",
@@ -34,7 +34,7 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
     const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : typeof document != "undefined" ? document.documentElement : null);
 
     // Making element defined for CSS query
-    const uqid = (root instanceof ShadowRoot || root instanceof HTMLDocument) ? "" : (basis?.getAttribute?.("data-style-id") || UUIDv4());
+    const uqid = (root instanceof ShadowRoot || root instanceof HTMLDocument) ? "" : (basis?.getAttribute?.("data-style-id") || (typeof crypto != "undefined" ? crypto?.randomUUID?.() : ""));
     const usel = root instanceof HTMLDocument ? ":root" : (root instanceof ShadowRoot ? ":host" : `[data-style-id="${uqid}"]`);
     basis?.setAttribute?.("data-style-id", uqid);
 
@@ -81,25 +81,13 @@ const setPropertyIfNotEqual = (styleRef?: any | null, kebab?: string, value?: an
 }
 
 //
-const hasValue = (v: any) => {
-    return (typeof v == "object" && (v?.value != null || (v != null && ("value" in v))));
-}
-
-//
 export const setStyleProperty = (element?: any|null, name?: string, value?: any, importance = "")=>{
     if (!element || !name) return element;
 
     //
     const kebab = camelToKebab(name || "");
-    let val: any = (hasValue(value) && !isUnitValue(value)) ? value?.value : value;
-    let numValue: number | null = typeof val == "number" ? val : null;
-    if (typeof val == "string" && [...val?.matchAll?.(/^\d+(\.\d+)?$/g)]?.length == 1 && !isStyleValue(val)) {
-        numValue = parseFloat(val);
-    }
-
-    //
-    const isNumeric = numValue != null && !Number.isNaN(numValue) && typeof numValue == "number";
-    if (isNumeric) { val = numValue; }
+    let val: any = (hasValue(value)) ? value?.value : value;
+    if (typeof val == "string" && !isStyleValue(val)) { val = tryStringAsNumber(val) ?? val; }
 
     //
     const styleRef = element?.style;
@@ -121,7 +109,7 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
             setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
         }
     } else
-        if (styleMapRef && isNumeric) {
+        if (styleMapRef && isValidNumber(val)) {
             const old = styleMapRef?.get?.(kebab);
             if (old != null) {
                 if (isUnitValue(old)) {

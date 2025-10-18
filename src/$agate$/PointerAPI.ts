@@ -1,7 +1,6 @@
 import { cvt_cs_to_os } from "./Convert";
 import { getBoundingOrientRect, orientOf } from "./Zoom";
-import { addEvent, addEvents, removeEvent } from "./EventManager";
-import { hasParent, withCtx } from "./Utils";
+import { addEvent, addEvents, hasParent, removeEvent, withCtx } from "fest/core";
 
 //
 export class DecorWith {
@@ -9,7 +8,7 @@ export class DecorWith {
 
     // needs prototype extends with Reflect
     constructor(addition) { this.#addition = addition; }
-    get(target, name, rec) { return withCtx(this.#addition, this.#addition?.[name]) ?? withCtx(target, target?.[name]); }
+    get(target, name) { return withCtx(this.#addition, this.#addition?.[name]) ?? withCtx(target, target?.[name]); }
     set(target, name, val) {
         if (!Reflect.set(target, name, val)) {
             this.#addition[name] = val;
