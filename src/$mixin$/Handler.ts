@@ -82,13 +82,16 @@ export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: an
     //
     const $ref: any = val;
     if (hasValue(val)) val = val.value; prop = camelToKebab(prop);
-    if (el?.getAttribute?.(prop) === (val = normalizePrimitive(val))) return el;
+    if (el?.getAttribute?.(prop) === (val = normalizePrimitive(val))) {
+        return el;
+    }
 
     //
     $avoidTrigger($ref, ()=>{
         if (typeof val != "object" && typeof val != "function" && val != null) {
             el?.setAttribute?.(prop, String(val));
-        } else {
+        } else
+        if (val == null) {
             el?.removeAttribute?.(prop);
         }
     });
