@@ -8,14 +8,11 @@ import { loadInlineStyle, preloadStyle } from "./$mixin$/Style";
 import { updateVP, whenAnyScreenChanges } from "./$agate$/Viewport";
 
 //
-export * from "./$agate$/Convert";
 export * from "./$agate$/Detect";
 export * from "./$agate$/Zoom";
 export * from "./$agate$/Utils";
 export * from "./$agate$/Viewport";
 export * from "./$agate$/Measure";
-export * from "./$agate$/PointerAPI";
-export * from "./$agate$/EventManager";
 
 //
 export * from "./$decor$/Animation";
@@ -31,9 +28,6 @@ export * from "./$mixin$/Mixins";
 export * from "./$mixin$/Store";
 export * from "./$mixin$/Handler";
 
-//
-export * from "./$grid$/GridItemUtils";
-
 //@ts-ignore
 import $fonts from "fonts/inter.css?inline";
 loadInlineStyle($fonts);
@@ -46,7 +40,7 @@ loadInlineStyle($fonts);
 export const initialize = async (ROOT: any = document.body)=>{
     const styled = preloadStyle(styles);
     initVisibility(ROOT);
-    const styleElement = styled?.cloneNode?.(true);
+    const styleElement: any = styled?.cloneNode?.(true);
     if (ROOT?.closest?.("html")) {
         whenAnyScreenChanges(updateVP);
         document?.head?.append(styleElement);

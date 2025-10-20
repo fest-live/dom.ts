@@ -1,5 +1,5 @@
 {
-    "include": ["./src/**/*.ts", "./test/**/*.ts"],
+    "include": ["./src/**/*.ts", "./test/**/*.ts", "../core.ts/src/utils/Convert.ts"],
     "exclude": ["./dist/**/*", "./externals/**/*"],
     "compilerOptions": {
         "outDir": "./dist/",

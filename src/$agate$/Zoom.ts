@@ -1,4 +1,4 @@
-import { cvt_cs_to_os } from "./Convert";
+import { cvt_cs_to_os } from "../../../core.ts/src/utils/Convert";
 import { borderBoxHeight, borderBoxWidth, contentBoxHeight, contentBoxWidth } from "./Utils";
 
 //
