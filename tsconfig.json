@@ -4,7 +4,8 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "paths": {
-            "fonts/*": ["../../shared/assets/fonts/*"],
+            "assets/*": ["./assets/*"],
+            "assets/fonts/*": ["./assets/fonts/*"],
             "fest/*": ["../../shared/fest/*"],
             "fest/cdnImport": ["../../cdnImport.mjs"],
             "fest/dom": ["./src/index.ts"],

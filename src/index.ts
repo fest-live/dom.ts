@@ -28,14 +28,6 @@ export * from "./$mixin$/Mixins";
 export * from "./$mixin$/Store";
 export * from "./$mixin$/Handler";
 
-//@ts-ignore
-import $fonts from "fonts/inter.css?inline";
-loadInlineStyle($fonts);
-
-//
-//console.log(styles);
-//
-
 //
 export const initialize = async (ROOT: any = document.body)=>{
     const styled = preloadStyle(styles);
