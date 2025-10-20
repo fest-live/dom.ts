@@ -179,8 +179,11 @@ export const html = (source: string, type: DOMParserSupportedType = 'text/html')
 
 //
 export const setChecked = (input: HTMLInputElement, value: boolean, ev?: any)=>{
-    if (value && input.checked != value) {
-        if (input?.['type'] == "checkbox" || (input?.['type'] == "radio" && !input?.checked)) { input?.click?.(); ev?.preventDefault?.(); } else {
+    if (value != null && input.checked != value) {
+        if (
+            (input?.['type'] == "checkbox") ||
+            (input?.['type'] == "radio" && !input?.checked)
+        ) { input?.click?.(); ev?.preventDefault?.(); } else {
             input.checked = !!value;
             input?.dispatchEvent?.(new Event("change", { bubbles: true, cancelable: true, }));
         }
