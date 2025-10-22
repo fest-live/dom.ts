@@ -37,5 +37,8 @@
         "vite-plugin-dynamic-import": "^1.6.0",
         "vite-plugin-external": "^4.3.1",
         "vite-plugin-optimizer": "^1.4.3"
+    },
+    "dependencies": {
+        "@praha/vite-plugin-external": "^1.1.1"
     }
 }
