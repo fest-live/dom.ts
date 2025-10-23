@@ -1,5 +1,5 @@
 {
-    "name": "@fest/dom-ts",
+    "name": "@fest/dom",
     "description": "DOM Utility",
     "version": "1.0.0alpha",
     "private": false,
