@@ -1,10 +1,9 @@
 // @ts-ignore
-//import styles from "./index.scss";
-import styles from "fest/veela"; //with { type: "css" };
+import styles from "fest/veela";
 
 //
 import { initVisibility } from "./$decor$/Appear";
-import { loadInlineStyle, preloadStyle } from "./$mixin$/Style";
+import { preloadStyle } from "./$mixin$/Style";
 import { updateVP, whenAnyScreenChanges } from "./$agate$/Viewport";
 
 //
