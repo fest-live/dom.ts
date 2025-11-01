@@ -279,11 +279,11 @@ export const containsOrSelf = (a: any, b: any)=>{
 
 // get by selector self or parent, matches by selector, include shadow DOM host
 export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => {
-    const self = (element?.matches?.(selector) && element);
+    const self = (element?.matches?.(selector) ? element : null);
     const host = (element?.getRootNode({ composed: true }) as any ?? element?.parentElement?.getRootNode({ composed: true}) as any)?.host;
-    const hostMatched = host?.matches?.(selector) && host;
-    const closest = (self as any)?.closest?.(selector) ?? (hostMatched as any)?.closest?.(selector) ?? null;
-    return (self ?? hostMatched ?? closest);
+    const hostMatched = host?.matches?.(selector) ? host : null;
+    const closest = (element as any)?.closest?.(selector) ?? (self as any)?.closest?.(selector) ?? (hostMatched as any)?.closest?.(selector) ?? null;
+    return (self ?? closest ?? hostMatched);
 };
 
 //
