@@ -1,4 +1,4 @@
-import { observeAttributeBySelector } from "../$mixin$/Observer";
+import { observeAttributeBySelector } from "../mixin/Observer";
 import { animateShow, animateHide } from "./Animation";
 
 //

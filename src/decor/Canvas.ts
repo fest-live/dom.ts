@@ -1,4 +1,4 @@
-import { makeRAFCycle } from "../$agate$/Utils";
+import { makeRAFCycle } from "../agate/Utils";
 
 //
 const blobImageMap = new WeakMap(), delayed = new Map<number, Function | null>([]);

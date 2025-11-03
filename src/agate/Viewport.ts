@@ -1,4 +1,4 @@
-import type { StyleTuple } from "../$mixin$/Style";
+import type { StyleTuple } from "../mixin/Style";
 import { addEvent } from "./Utils";
 
 //

@@ -1,6 +1,6 @@
-import { setProperty } from "../$mixin$/Style";
-import { isMobile } from "../$agate$/Detect";
-import { addEvents } from "../$agate$/Utils";
+import { setProperty } from "../mixin/Style";
+import { isMobile } from "../agate/Detect";
+import { addEvents } from "../agate/Utils";
 
 //
 //const computed = Symbol("@computed");

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/index.ts"],
+  "out": "./docs",
+  "tsconfig": "./tsconfig.json",
+  "includeVersion": true,
+  "readme": "./README.md",
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "skipErrorChecking": true,
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "name": "@fest/dom API Documentation",
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "DOM API",
+    "Utilities",
+    "*"
+  ],
+  "sort": [
+    "source-order",
+    "alphabetical"
+  ],
+  "kindSortOrder": [
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Function",
+    "Variable"
+  ],
+  "treatWarningsAsErrors": false,
+  "validation": {
+    "invalidLink": true,
+    "notDocumented": false
+  }
+}
