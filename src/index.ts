@@ -3,7 +3,7 @@ import styles from "fest/veela";
 
 //
 import { initVisibility } from "./decor/Appear";
-import { preloadStyle } from "./mixin/Style";
+import { loadInlineStyle, preloadStyle } from "./mixin/Style";
 import { updateVP, whenAnyScreenChanges } from "./agate/Viewport";
 
 //
@@ -38,14 +38,11 @@ export * from "./mixin/Handler";
  * @returns A promise that resolves to the appended style element (or its clone).
  */
 export const initialize = async (ROOT: any = document.body)=>{
-    const styled = preloadStyle(styles);
     initVisibility(ROOT);
-    const styleElement: any = styled?.cloneNode?.(true);
     if (ROOT?.closest?.("html")) {
         whenAnyScreenChanges(updateVP);
-        document?.head?.append(styleElement);
     }
-    return styleElement;
+    return loadInlineStyle(styles);
 }
 
 //
