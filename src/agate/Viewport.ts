@@ -48,7 +48,7 @@ export const updateVP = (ev?: any)=>{
     });
 
     // make secondary screen orientation detectable
-    document.documentElement.style.setProperty("--secondary", screen?.orientation?.type?.endsWith?.("secondary") ? "1" : "0");
+    document.documentElement.style.setProperty("--orientation-secondary", screen?.orientation?.type?.endsWith?.("secondary") ? "1" : "0");
 }
 
 //

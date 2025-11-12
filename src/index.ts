@@ -37,12 +37,16 @@ export * from "./mixin/Handler";
  * @param ROOT The root element to initialize against. Defaults to `document.body`.
  * @returns A promise that resolves to the appended style element (or its clone).
  */
+
+let loadedStyles: any = null;
+
+//
 export const initialize = async (ROOT: any = document.body)=>{
     initVisibility(ROOT);
     if (ROOT?.closest?.("html")) {
         whenAnyScreenChanges(updateVP);
     }
-    return loadInlineStyle(styles);
+    return (loadedStyles ??= loadInlineStyle(styles));
 }
 
 //
