@@ -19,8 +19,8 @@ export const callByFrame = (pointerId, cb)=>{ delayed.set(pointerId, cb); }
 export const cover = (ctx, img, scale = 1, port, orient = 0) => {
     const canvas = ctx.canvas;
     ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((orient || 0) * (Math.PI * 0.5));
-    ctx.rotate((1 - port) * -(Math.PI / 2));
+    ctx.rotate((-orient || 0) * (Math.PI * 0.5));
+    ctx.rotate((1 - port) * (Math.PI / 2));
     ctx.translate(-(getImgWidth(img) / 2) * scale, -(getImgHeight(img) / 2) * scale);
 };
 

@@ -7,6 +7,7 @@ import { loadInlineStyle, preloadStyle } from "./mixin/Style";
 import { updateVP, whenAnyScreenChanges } from "./agate/Viewport";
 
 //
+export * from "./agate/Properties";
 export * from "./agate/Detect";
 export * from "./agate/Zoom";
 export * from "./agate/Utils";
