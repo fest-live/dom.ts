@@ -8,35 +8,33 @@ const depAxis  = (axis: string = "x")=>{ const m = /*matchMedia("(orientation: p
 const swapped  = (axis: string = "x")=>{ const m = matchMedia("(orientation: portrait)").matches; return {["x"]: m?"x":"y", ["y"]: m?"y":"x"}[axis]; }
 
 //
-export const animationSequence = (DragCoord = 0, ValStart: any = null, ValEnd: any = null, axis = "x") => {
-    const drag = "--drag-" + swapped(axis);
+export const animationSequence = (DragCoord = 0, axis = "x") => {
+    const drag = "--drag-" + axis;
+    const axisKey = depAxis(axis);
+    const rvProp = `--rv-grid-${axisKey}`;
+    const gridProp = `--cs-grid-${axisKey}`;
+    const prevGridProp = `--cs-p-grid-${axisKey}`;
     return [
-        { [drag]: DragCoord || 0, ["--grid-" + depAxis(axis)]: ValStart != null ? (ValStart+1) : "var(--fp-cell-"+axis+")", }, // starting...
-        { [drag]:              0, ["--grid-" + depAxis(axis)]: ValEnd   != null ? (ValEnd  +1) : "var(--fc-cell-"+axis+")" }];
+        { [rvProp]: `var(${prevGridProp})`, [drag]: DragCoord }, // starting...
+        { [rvProp]: `var(${gridProp})`, [drag]: 0 }
+    ];
 };
 
 //
-export const doAnimate = async (newItem, val: number, axis: any = "x", animate = false, signal?: AbortSignal)=>{
-    const swp = swapped(axis);
-    const oldValue = parseInt(newItem.style.getPropertyValue("--cell-" + axis)) || 0,
-          dragName = "--drag-" + swapped(axis),
-          oldDrag  = parseFloat(newItem.style.getPropertyValue(dragName)) || 0;
+export const doAnimate = async (newItem, axis: any = "x", animate = false, signal?: AbortSignal)=>{
 
     //
     //setProperty(newItem, "--cs-p-offset-" + swp, `${newItem?.[{"x": "offsetLeft", "y": "offsetTop"}[swp as any]] || 0}px`);
     //const oldOffset = `${newItem?.[{"x": "offsetLeft", "y": "offsetTop"}[swp as any]] || 0}px`;
-    setProperty(newItem, "--p-cell-" + swp, oldValue);
-    await new Promise((r)=>requestAnimationFrame(r));
-    //setProperty(newItem, "--cs-p-offset-" + swp, oldOffset);
+    //setProperty(newItem, "--cs-p-grid-" + depAxis(axis), oldValue);
+    const dragCoord = parseFloat(newItem?.style?.getPropertyValue?.("--drag-" + axis) || "0") || 0;
 
     //
-    const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(
-        oldDrag,
-        oldValue,
-        val,
-        axis
-    ), {
-        fill: "none",
+    if (!animate) { await new Promise((r)=>requestAnimationFrame(r)); };
+
+    //
+    const animation = animate && !matchMedia("(prefers-reduced-motion: reduce)")?.matches ? newItem.animate(animationSequence(dragCoord, axis), {
+        fill: "forwards",
         duration: 150,
         easing: "linear"
     }) : null;
@@ -46,7 +44,6 @@ export const doAnimate = async (newItem, val: number, axis: any = "x", animate =
     const onShift: [any, any] = [(ev)=>{
         if (!shifted) {
             shifted = true;
-            //animation?.commitStyles?.();
             animation?.finish?.();
         }
 
@@ -59,14 +56,8 @@ export const doAnimate = async (newItem, val: number, axis: any = "x", animate =
     signal?.addEventListener?.("abort", ...onShift);
     newItem?.addEventListener?.("m-dragstart", ...onShift);
     //await new Promise((r)=>requestAnimationFrame(r));
-    await animation?.finished?.catch?.(console.warn.bind(console));
-    delete newItem.dataset.dragging;
-
-    //
-    if (!shifted) { onShift?.[0]?.(); } // commit dragging result
-    setProperty(newItem, "--p-cell-" + axis, val);
-    //setProperty(newItem, "--cs-p-offset-" + swp, `${newItem?.[{"x": "offsetLeft", "y": "offsetTop"}[swp as any]] || 0}px`);
-    setProperty(newItem, dragName, 0);
+    return animation?.finished?.catch?.(console.warn.bind(console));
+    //if (!shifted) { onShift?.[0]?.(); } // commit dragging result
 }
 
 //
