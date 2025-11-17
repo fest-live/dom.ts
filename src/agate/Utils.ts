@@ -221,7 +221,7 @@ export const createElementVanilla = (selector): HTMLElement | DocumentFragment =
 };
 
 //
-export const isElement = (el: any) => { return el != null && (el instanceof Node || el instanceof Text || el instanceof Element || el instanceof HTMLElement || el instanceof DocumentFragment) ? el : null; }
+export const isElement = (el: any) => { return el != null && (el instanceof Node || el instanceof Text || el instanceof Element || el instanceof Comment || el instanceof HTMLElement || el instanceof DocumentFragment) ? el : null; }
 export const includeSelf = (target: HTMLElement, selector: string) => { return (target.querySelector(selector) ?? (target.matches(selector) ? target : null)); }
 export const hasParent = (current: any, parent: any) => { while (current) { if (!(current?.element ?? current)) { return false; }; if ((current?.element ?? current) === (parent?.element ?? parent)) return true; current = current.parentElement ?? (current.parentNode == current?.getRootNode?.({ composed: true }) ? current?.getRootNode?.({ composed: true })?.host : current?.parentNode); } }
 export const passiveOpts = {};
