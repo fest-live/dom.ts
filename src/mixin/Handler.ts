@@ -88,10 +88,9 @@ export const handleAttribute = (el?: HTMLElement | null, prop?: string, val?: an
 
     //
     $avoidTrigger($ref, ()=>{
-        if (typeof val != "object" && typeof val != "function" && val != null) {
+        if ((typeof val != "object" && typeof val != "function") && val != null && (typeof val == "boolean" ? val == true : true)) {
             el?.setAttribute?.(prop, String(val));
-        } else
-        if (val == null) {
+        } else {
             el?.removeAttribute?.(prop);
         }
     });
