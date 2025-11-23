@@ -59,8 +59,8 @@ export const unfixedClientZoom = (element = document.documentElement)=>{
 //
 export const orientOf = (element = document.documentElement) => {
     // legacy browser
-    const container: any = ((element?.matches?.("[orient]") ? element : null) || element?.closest?.("[orient]") || element);
-    if (container?.hasAttribute?.("orient")) return parseInt(container?.getAttribute?.("orient") || "0") || 0;
+    const container: any = ((element?.matches?.("[orient], [data-mixin=\"ui-orientbox\"]") ? element : null) || element?.closest?.("[orient], [data-mixin=\"ui-orientbox\"]") || element);
+    if (container?.hasAttribute?.("orient")) { return parseInt(container?.getAttribute?.("orient") || "0") || 0; };
     return (container?.orient || 0);
 }
 
