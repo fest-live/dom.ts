@@ -66,21 +66,32 @@ const passiveOpts = { passive: true };
 
 //
 export const whenAnyScreenChanges = (cb) => {
+    let ticking = false;
+    const update = () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                cb();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    };
+
     const unsubscribers: any[] = [];
 
     // @ts-ignore
-    unsubscribers.push(addEvent(navigator?.virtualKeyboard, "geometrychange", cb, passiveOpts));
-    unsubscribers.push(addEvent(window?.visualViewport, "scroll", cb, passiveOpts));
-    unsubscribers.push(addEvent(window?.visualViewport, "resize", cb, passiveOpts));
-    unsubscribers.push(addEvent(screen?.orientation, "change", cb));
-    unsubscribers.push(addEvent(window, "resize", cb));
-    unsubscribers.push(addEvent(document?.documentElement, "fullscreenchange", cb));
-    unsubscribers.push(addEvent(document, "DOMContentLoaded", cb));
-    unsubscribers.push(addEvent(matchMedia("(orientation: portrait)"), "change", cb));
+    unsubscribers.push(addEvent(navigator?.virtualKeyboard, "geometrychange", update, passiveOpts));
+    unsubscribers.push(addEvent(window?.visualViewport, "scroll", update, passiveOpts));
+    unsubscribers.push(addEvent(window?.visualViewport, "resize", update, passiveOpts));
+    unsubscribers.push(addEvent(screen?.orientation, "change", update));
+    unsubscribers.push(addEvent(window, "resize", update));
+    unsubscribers.push(addEvent(document?.documentElement, "fullscreenchange", update));
+    unsubscribers.push(addEvent(document, "DOMContentLoaded", update));
+    unsubscribers.push(addEvent(matchMedia("(orientation: portrait)"), "change", update));
 
     //
-    requestAnimationFrame(cb);
-    requestIdleCallback(cb, { timeout: 100 });
+    update();
+    requestIdleCallback(update, { timeout: 100 });
     return () => unsubscribers.forEach((unsub) => unsub());
 };
 
