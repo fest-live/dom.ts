@@ -196,8 +196,9 @@ export const isValidParent = (parent: Node | null) => {
 }
 
 //
-export const indexOf = (element: Node, node: Node) => {
-    return Array.from(element?.childNodes ?? []).indexOf(node as any);
+export const indexOf = (element: Node | null, node: Node | null) => {
+    if (element == null || node == null) return -1;
+    return Array.from(element?.childNodes ?? [])?.indexOf?.((node as ChildNode)) ?? -1;
 }
 
 //
