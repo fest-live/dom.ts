@@ -157,10 +157,11 @@ if (typeof HTMLCanvasElement != "undefined") {
 
                 //
                 const ox = (this.#orient % 2) || 0;
-                const port = getImgWidth(img) < getImgHeight(img) ? 1 : 0;
+                const port = getImgWidth(img) <= getImgHeight(img) ? 1 : 0;
                 const scale = Math.max(
-                    canvas[["height", "width"][ox]] / getImgWidth(img),
-                    canvas[["width", "height"][ox]] / getImgHeight(img));
+                    canvas[["height", "width"][ox]] / (port ? getImgHeight(img) : getImgWidth(img)),
+                    canvas[["width", "height"][ox]] / (port ? getImgWidth(img) : getImgHeight(img))
+                );
 
                 //
                 ctx.save();
