@@ -289,3 +289,53 @@ export const MOCElement = (element: HTMLElement | null, selector: string): HTMLE
 
 //
 export const MOC = (element: HTMLElement | null, selector: string): boolean => { return !!MOCElement(element, selector); };
+
+//
+export const isInFocus = (element: HTMLElement | null, selectorOrElement?: string | HTMLElement, dir: "parent" | "child" = "parent"): boolean => {
+    if (!element) return false;
+
+    // Visibility Check (if supported, otherwise basic offsetParent)
+    // @ts-ignore
+    if (element.checkVisibility && !element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+    // @ts-ignore
+    if (!element.checkVisibility && element.offsetParent === null && element.style.position !== 'fixed') return false;
+
+    // Deep Active Element Resolution
+    let active = document.activeElement;
+    while (active && active.shadowRoot && active.shadowRoot.activeElement) {
+        active = active.shadowRoot.activeElement;
+    }
+
+    // Interaction Status
+    const isFocused = (active === element) || hasParent(active, element);
+    const isHovered = element.matches(":hover");
+
+    // Top-most check for hover (optional, but requested "elementFromPoint")
+    // Only worth checking if hovered but not focused, to see if it's occluded?
+    // Skipping expensive rect calc for now unless strictly needed, :hover is usually reliable for CSS pointer-events.
+
+    if (!isFocused && !isHovered && !selectorOrElement) return false;
+
+    // Constraints
+    if (selectorOrElement) {
+        if (typeof selectorOrElement === "string") {
+            if (dir === "parent") {
+                // Does the element (or its context) match the selector?
+                return !!MOCElement(element, selectorOrElement);
+            } else {
+                // Does the interaction target inside match the selector?
+                const target = isFocused ? active : (element.querySelector(":hover") || element);
+                const altCnd = !!MOCElement(target as HTMLElement, selectorOrElement);
+                return (element?.querySelector?.(selectorOrElement) != null || element?.matches?.(selectorOrElement) || altCnd);
+            }
+        } else if (selectorOrElement instanceof HTMLElement) {
+             if (dir === "parent") {
+                 return hasParent(element, selectorOrElement) || false;
+             } else {
+                 return hasParent(selectorOrElement, element) || false;
+             }
+        }
+    }
+
+    return true;
+}
