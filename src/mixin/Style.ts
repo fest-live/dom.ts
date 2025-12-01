@@ -271,8 +271,8 @@ export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], laye
     if (base && url && typeof url == "string") { setStyleURL(base, url, layer); };
     if (base?.[0] && (!URL.canParse(inline as string) || integrity) && base?.[0] instanceof HTMLLinkElement) {
         const I: any = null;//(integrity ?? (typeof inline == "string" ? hash(inline) : null));
-        if (typeof I?.then == "function") { I?.then?.((H) => base?.[0]?.setAttribute?.("integrity", H)); } else
-            if (I) { base?.[0]?.setAttribute?.("integrity", I as string); }
+        //if (typeof I?.then == "function") { I?.then?.((H) => base?.[0]?.setAttribute?.("integrity", H)); } else
+            //if (I) { base?.[0]?.setAttribute?.("integrity", I as string); }
     }
 
     //

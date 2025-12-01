@@ -65,6 +65,8 @@ if (typeof HTMLCanvasElement != "undefined") {
         //
         connectedCallback() {
             const parent: HTMLElement = this.parentNode as HTMLElement;
+            this.style.setProperty("max-inline-size", "min(100%, min(100cqi, 100dvi))");
+            this.style.setProperty("max-block-size", "min(100%, min(100cqb, 100dvb))");
             this.#size = [ // @ts-ignore
                 Math.min(Math.min(Math.max(this.clientWidth || parent?.clientWidth || 1, 1), parent?.clientWidth || 1) * (this.currentCSSZoom || 1), screen?.width || 1) * (devicePixelRatio || 1), // @ts-ignore
                 Math.min(Math.min(Math.max(this.clientHeight || parent?.clientHeight || 1, 1), parent?.clientHeight || 1) * (this.currentCSSZoom || 1), screen?.height || 1) * (devicePixelRatio || 1)
@@ -110,6 +112,10 @@ if (typeof HTMLCanvasElement != "undefined") {
                 this.classList.add("u-canvas");
                 this.classList.add("u2-canvas");
                 this.classList.add("ui-canvas");
+
+                //
+                this.style.setProperty("max-inline-size", "min(100%, min(100cqi, 100dvi))");
+                this.style.setProperty("max-block-size", "min(100%, min(100cqb, 100dvb))");
 
                 //
                 fixSize();
