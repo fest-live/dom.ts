@@ -172,7 +172,12 @@ if (typeof HTMLCanvasElement != "undefined") {
         }
 
         //
-        #preload(src) { const ready = src || this.#loading; this.#loading = ready; return fetch(src)?.then?.(async (rsp) => this.$useImageAsSource(await rsp.blob(), ready)?.catch(console.warn.bind(console)))?.catch?.(console.warn.bind(console)); }
+        #preload(src) {
+            const ready = src || this.#loading; this.#loading = ready; return fetch(src, {
+            cache: "force-cache",
+            mode: "same-origin",
+            priority: "high",
+        })?.then?.(async (rsp) => this.$useImageAsSource(await rsp.blob(), ready)?.catch(console.warn.bind(console)))?.catch?.(console.warn.bind(console)); }
         #render(whatIsReady?: File | Blob | string) {
             const ctx = this.ctx, img = this.image;
             if (img && ctx && (whatIsReady == this.#loading || !whatIsReady)) { sheduler?.shedule?.(bindCached(this.$renderPass, this)); }

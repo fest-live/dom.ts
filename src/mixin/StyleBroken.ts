@@ -134,116 +134,6 @@ export const setStyleProperty = (element?: any|null, name?: string, value?: any,
 }
 
 //
-const promiseOrDirect = (promise: any|Promise<any>, cb: (...args: any[]) => any) => {
-    if (typeof promise?.then == "function") { return promise?.then?.(cb); }
-    return cb(promise);
-}
-
-//
-const blobURLMap = new WeakMap<Blob | File, string | Promise<string>>();
-const cacheMap = new Map<string, string | Promise<string>>();
-
-//
-export const fetchAndCache = (url: string | Blob | File): any => {
-    if (!url) return null;
-
-    //
-    if (cacheMap.has(url as string)) { return cacheMap.get(url as string); }
-
-    //
-    if (url instanceof Blob || (url as any) instanceof File) {
-        if (blobURLMap.has(url as Blob | File)) { return blobURLMap.get(url as Blob | File); }
-        const burl = URL.createObjectURL(url as Blob | File);
-        blobURLMap.set(url as Blob | File, burl);
-        cacheMap.set(burl as string, burl);
-        return burl;
-    }
-
-    //
-    if (URL.canParse(url as string) || url?.trim?.()?.startsWith?.("./")) {
-        const promised = fetch(url?.replace?.("?url", "?raw"), {
-            cache: "force-cache",
-            mode: "same-origin",
-            priority: "high",
-
-        })?.then?.(async (res: Response) => {
-            const blob = await res.blob();
-            const burl = URL.createObjectURL(blob);
-            blobURLMap.set(blob as Blob | File, burl);
-            cacheMap.set(url as string, burl);
-            cacheMap.set(burl as string, burl);
-            return burl;
-        });
-
-        //
-        cacheMap.set(url as string, promised as Promise<string>);
-        return promised;
-    }
-
-    //
-    if (typeof url == "string") {
-        const blob = new Blob([url], { type: "text/css" });
-        const burl = URL.createObjectURL(blob);
-        blobURLMap.set(blob as Blob | File, burl);
-        //cacheMap.set(url as string, burl);
-        cacheMap.set(burl as string, burl);
-        return burl;
-    }
-
-    //
-    return url as string;
-}
-
-//
-const cacheContentMap = new Map<string, string | Promise<string>>();
-const cacheBlobContentMap = new WeakMap<Blob | File, string | Promise<string>>();
-export const fetchAsInline = (url: string | Blob | File): Promise<string>|string => {
-    if (!url) return "";
-
-    //
-    if (cacheContentMap.has(url as string)) { return cacheContentMap.get(url as string) ?? ""; }
-
-    //
-    if (url instanceof Blob || (url as any) instanceof File) {
-        if (cacheBlobContentMap.has(url as Blob | File)) { return cacheBlobContentMap.get(url as Blob | File) ?? ""; }
-
-        //
-        const promised = (url as any)?.text?.()?.then?.(text => {
-            cacheBlobContentMap.set(url as Blob | File, text);
-            return text;
-        });
-        cacheBlobContentMap.set(url as Blob | File, promised);
-        return promised;
-    }
-
-    //
-    if (URL.canParse(url as string) || url?.trim?.()?.startsWith?.("./")) {
-        const promised = fetch(url?.replace?.("?url", "?raw"), {
-            cache: "force-cache",
-            mode: "same-origin",
-            priority: "high",
-
-        })?.then?.(async (res: Response) => {
-            const text = await res.text();
-            cacheContentMap.set(url as string, text);
-            return text;
-        });
-        cacheContentMap.set(url as string, promised);
-        return promised;
-    }
-
-    //
-    if (typeof url == "string") {
-        cacheContentMap.set(url as string, url);
-        return url;
-    }
-
-    //
-    return url as string;
-}
-
-
-//
 export const setStyleInRule = (selector: string, name: string, value: any) => {
     return setStyleProperty(getStyleRule(selector), name, value);
 };
@@ -262,46 +152,111 @@ export const hash = async (string: string|ArrayBuffer|Blob|File) => {
 };
 
 //
-export const loadStyleSheet = (inline: string|File|Blob, base?: [any, any], layer: string = "", integrity?: string|Promise<string>)=>{ // @ts-ignore
-    const load = fetchAndCache(inline);
-    const url = typeof inline == "string" ? (URL.canParse(inline) ? inline : load) : load;
+const promiseOrDirect = (promise: any|Promise<any>, cb: (...args: any[]) => any) => {
+    if (typeof promise?.then == "function") { return promise?.then?.(cb); }
+    return cb(promise);
+}
+
+
+//
+const blobURLMap = new WeakMap<Blob | File, string>();
+const cacheMap = new Map<string, string>();
+export const fetchAndCache = (url: string | Blob | File) => {
+    if (!url) return null;
 
     //
-    if (base?.[0]) base[0].fetchPriority = "high";
-    if (base && url && typeof url == "string") { setStyleURL(base, url, layer); };
-    if (base?.[0] && (!URL.canParse(inline as string) || integrity) && base?.[0] instanceof HTMLLinkElement) {
+    if (url instanceof Blob || (url as any) instanceof File) {
+        if (blobURLMap.has(url as Blob | File)) { return blobURLMap.get(url as Blob | File); }
+        const blob = URL.createObjectURL(url as Blob | File);
+        blobURLMap.set(url as Blob | File, blob);
+        return blob;
+    }
+
+    //
+    if (cacheMap.has(url as string)) { return cacheMap.get(url as string); }
+
+    console.log(url);
+    if (URL.canParse(url as string)) {
+        return fetch(new URL(url as string, import.meta.url).href, { cache: "force-cache", mode: "same-origin" })?.then?.(async (res: Response) => {
+            const blob = await res.blob();
+            blob?.text?.()?.then?.(console.log.bind(console));
+
+            const burl = URL.createObjectURL(blob);
+            blobURLMap.set(blob as Blob | File, burl);
+            cacheMap.set(url as string, burl);
+            cacheMap.set(burl as string, burl);
+            return burl;
+        });
+    }
+
+    //
+    if (typeof url == "string") {
+        const blob = new Blob([url], { type: "text/css" });
+        const burl = URL.createObjectURL(blob);
+        blobURLMap.set(blob as Blob | File, burl);
+        cacheMap.set(url as string, burl);
+        cacheMap.set(burl as string, burl);
+        return burl;
+    }
+
+    //
+    return url as string;
+}
+
+//
+export const loadStyleSheet = (inline: string | File | Blob, base?: [any, any], layer: string = "", integrity?: string | Promise<string>) => { // @ts-ignore
+    const load = fetchAndCache(inline);
+
+    //
+    if (base?.[0] && typeof inline == "string" && URL.canParse(inline)) {
+        setStyleURL(base, inline, layer);
+        base?.[0].setAttribute("loaded", "");
+        return base?.[0];
+    }
+
+    //
+    if (base?.[0] && (typeof inline != "string" || integrity) && base?.[0] instanceof HTMLLinkElement) {
         const I: any = null;//(integrity ?? (typeof inline == "string" ? hash(inline) : null));
         if (typeof I?.then == "function") { I?.then?.((H) => base?.[0]?.setAttribute?.("integrity", H)); } else
             if (I) { base?.[0]?.setAttribute?.("integrity", I as string); }
     }
 
     //
-    return promiseOrDirect(load, (res?: any | null) => {
+    promiseOrDirect(load, (res?: any | null) => {
         if (base?.[0] && res) {
-            setStyleURL(base, res, layer);
-            base?.[0].setAttribute("loaded", "");
-        }
-    })?.catch?.((error: any) => { console.warn("Failed to load style sheet:", error); });
-
-    //
+            setStyleURL(base, (res instanceof Blob || (res as any) instanceof File) ? blobURLMap.get(res as Blob | File) ?? URL.createObjectURL(res as Blob | File) : res as string, layer);
+                base?.[0].setAttribute("loaded", "");
+            }
+        })?.catch?.((error: any) => { console.warn("Failed to load style sheet:", error); });
     return base?.[0];
 };
 
 //
-export const loadBlobStyle = (inline: string) => {
+export const loadBlobStyle = (inline: string|Blob|File) => {
     const style = typeof document != "undefined" ? document.createElement("link") : null;
-    if (style) style.fetchPriority = "high";
     if (style) {
-        Object.assign(style, { rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" }); style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "href"]); typeof document != "undefined" ? document.head.append(style) : null; return style;
+        Object.assign(style, { rel: "stylesheet", type: "text/css", crossOrigin: "same-origin" });
+        style.dataset.owner = OWNER;
+        loadStyleSheet(
+            (inline instanceof Blob || (inline as any) instanceof File) ? inline : new Blob([inline],
+            { type: "text/css" }),
+            [style, "href"]
+        );
+        typeof document != "undefined" ? document.head.append(style) : null;
+        return style;
     };
     return null;
 };
 
 //
-export const loadInlineStyle = (inline: string, rootElement: any = typeof document != "undefined" ? document?.head : null, layer: string = "") => {
+export const loadInlineStyle = (inline: string|Blob|File, rootElement: any = typeof document != "undefined" ? document?.head : null, layer: string = "") => {
     //if (!rootElement) return;
-    const PLACE = (rootElement?.querySelector?.("head") ?? rootElement); if (typeof HTMLHeadElement != "undefined" && PLACE instanceof HTMLHeadElement) { return loadBlobStyle(inline); } // @ts-ignore
-    const style = typeof document != "undefined" ? document.createElement("style") : null; if (style) { style.dataset.owner = OWNER; loadStyleSheet(inline, [style, "innerHTML"], layer); PLACE?.prepend?.(style); return style; }
+    const PLACE = (rootElement?.querySelector?.("head") ?? rootElement); if (typeof HTMLHeadElement != "undefined" && PLACE instanceof HTMLHeadElement) { return loadBlobStyle((inline instanceof Blob || (inline as any) instanceof File) ? inline : new Blob([inline], { type: "text/css" })); } // @ts-ignore
+    const style = typeof document != "undefined" ? document.createElement("style") : null; if (style) {
+        style.dataset.owner = OWNER;
+        loadStyleSheet(inline as string | Blob | File, [style, "innerHTML"], layer);
+        PLACE?.prepend?.(style); return style;
+    }
     return null;
 };
 
@@ -311,52 +266,9 @@ export const setProperty = (target, name, value, importance = "")=>{
 }
 
 //
-export const preloadStyle = (styles: string)=>{
-    // @ts-ignore
-    return loadAsAdopted(styles, "ux-layer");
-}
-
-//
-export const adoptedMap = new Map<string, CSSStyleSheet>();
-export const adoptedBlobMap = new WeakMap<Blob | File, CSSStyleSheet>();
-
-//
-let layerCounter = 0;
-export const loadAsAdopted = (styles: string | Blob | File, layerName: string | null = null) => {
-    if (typeof styles == "string" && adoptedMap?.has?.(styles)) { return adoptedMap.get(styles); }
-    if ((styles instanceof Blob || (styles as any) instanceof File) && adoptedBlobMap?.has?.(styles as Blob | File)) { return adoptedBlobMap.get(styles as Blob | File); }
-
-    //
-    if (!styles) return null; //@ts-ignore
-    const sheet = (typeof styles == "string" ?  //@ts-ignore
-        adoptedMap.getOrInsertComputed(styles, (styles) => new CSSStyleSheet() as CSSStyleSheet) :  //@ts-ignore
-        adoptedBlobMap.getOrInsertComputed(styles as Blob | File, (styles) => new CSSStyleSheet() as CSSStyleSheet));
-
-    //
-    //if (!layerName) { layerName = `ux-layer-${layerCounter++}`; }
-    document.adoptedStyleSheets.push(sheet as unknown as CSSStyleSheet);
-
-    //
-    if (typeof styles == "string" && !URL.canParse(styles)) {
-        const layerWrapped = layerName ? `@layer ${layerName} { ${styles} }` : styles;
-        adoptedMap.set(styles, sheet);
-        sheet.replaceSync(layerWrapped);
-        return sheet;
-    } else {
-        promiseOrDirect(fetchAsInline(styles), (cached: string) => {
-            adoptedMap.set(cached, sheet);
-            if (cached) {
-                const layerWrapped = layerName ? `@layer ${layerName} { ${cached} }` : cached;
-                sheet.replaceSync(layerWrapped);
-                return sheet;
-            };
-        });
-    }
-
-    //
-    return sheet as CSSStyleSheet;
-}
-
+export const preloadStyle = (styles: string|Blob|File)=>{
+    return loadInlineStyle(styles, null, "ux-layer");
+};
 
 //
 export type Point = DOMPoint;

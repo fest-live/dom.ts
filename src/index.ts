@@ -1,14 +1,3 @@
-// @ts-ignore
-import styles from "fest/veela";
-
-
-
-//
-import { initVisibility } from "./decor/Appear";
-import { loadInlineStyle, preloadStyle } from "./mixin/Style";
-import { updateVP, whenAnyScreenChanges } from "./agate/Viewport";
-
-//
 export * from "./agate/Properties";
 export * from "./agate/Detect";
 export * from "./agate/Zoom";
