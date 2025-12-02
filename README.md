@@ -23,9 +23,9 @@
 ## 📦 Installation
 
 ```bash
-npm install @fest/dom.ts
+npm install @fest-lib/dom.ts
 # or
-yarn add @fest/dom.ts
+yarn add @fest-lib/dom.ts
 ```
 
 ---
