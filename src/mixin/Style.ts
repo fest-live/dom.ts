@@ -63,75 +63,172 @@ export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-quer
 };
 
 //
-const isStyleValue = (val: any) => (typeof CSSStyleValue !== "undefined" && val instanceof CSSStyleValue);
-const isUnitValue = (val: any) => (typeof CSSUnitValue !== "undefined" && val instanceof CSSUnitValue);
+const hasTypedOM =
+    typeof CSSStyleValue !== "undefined" &&
+    typeof CSSUnitValue !== "undefined";
 
-//
-const setPropertyIfNotEqual = (styleRef?: any | null, kebab?: string, value?: any, importance = "") => {
-    if (!styleRef || !kebab) return styleRef;
-    if (value != null) {
-        const old = styleRef?.getPropertyValue?.(kebab);
-        if (old == null || old !== value || old == "") {
-            styleRef?.setProperty?.(kebab, value, importance);
+const isStyleValue = (val: any): val is CSSStyleValue =>
+    hasTypedOM && val instanceof CSSStyleValue;
+
+const isUnitValue = (val: any): val is CSSUnitValue =>
+    hasTypedOM && val instanceof CSSUnitValue;
+
+const setPropertyIfNotEqual = (
+    styleRef: CSSStyleDeclaration,
+    kebab: string,
+    value: string | null,
+    importance = ""
+) => {
+    if (!styleRef || !kebab) return;
+
+    if (value == null) {
+        if (styleRef.getPropertyValue(kebab) !== "") {
+        styleRef.removeProperty(kebab);
         }
-    } else if (styleRef?.getPropertyValue?.(kebab) != null) {
-        styleRef?.removeProperty?.(kebab);
+        return;
     }
-    return styleRef;
-}
+
+    const old = styleRef.getPropertyValue(kebab);
+    if (old !== value) {
+        styleRef.setProperty(kebab, value, importance);
+    }
+};
 
 //
-export const setStyleProperty = (element?: any|null, name?: string, value?: any, importance = "")=>{
+export const setStylePropertyTyped = (
+    element?: HTMLElement | null,
+    name?: string,
+    value?: any,
+    importance = ""
+) => {
     if (!element || !name) return element;
 
-    //
-    const kebab = camelToKebab(name || "");
-    let val: any = (hasValue(value)) ? value?.value : value;
-    if (typeof val == "string" && !isStyleValue(val)) { val = tryStringAsNumber(val) ?? val; }
+    const kebab = camelToKebab(name);
+    const styleRef = element.style;
+    const styleMapRef: StylePropertyMap | undefined =
+        (element as any).attributeStyleMap ?? (element as any).styleMap;
 
-    //
-    const styleRef = element?.style;
-    const styleMapRef = element?.attributeStyleMap ?? element?.styleMap;
-    if (!(styleRef || styleMapRef)) return element;
+    // если нет Typed OM или styleMap — уходим в обычный путь
+    if (!hasTypedOM || !styleMapRef) {
+        return setStylePropertyFallback(element, name, value, importance);
+    }
 
-    //
+    // распаковываем ref
+    let val: any = hasValue(value) ? value?.value : value;
+
+    // null/undefined -> удалить свойство
+    if (val == null) {
+        styleMapRef.delete?.(kebab);
+        // для синхронизации лучше тоже подчистить обычный style
+        if (styleRef) {
+            setPropertyIfNotEqual(styleRef, kebab, null, importance);
+        }
+        return element;
+    }
+
+    // уже CSSStyleValue
     if (isStyleValue(val)) {
-        if (styleMapRef != null) {
-            const old = styleMapRef?.get?.(kebab);
-            if (old != val) {
-                if (isUnitValue(val) && (isUnitValue(old) && val.unit !== old.unit)) {
-                    if (old.value != val.value) { old.value = val.value; }
-                } else {
-                    styleMapRef?.set?.(kebab, val);
-                }
+        const old = styleMapRef.get(kebab);
+        // сравниваем по value/unit, но НЕ мутируем старый
+        if (isUnitValue(val) && isUnitValue(old)) {
+            if (old.value === val.value && old.unit === val.unit) {
+                return element; // без изменений
             }
+        } else if (old === val) {
+            return element; // тот же объект, ничего не делаем
+        }
+        styleMapRef.set(kebab, val); // просто ставим новое значение
+        return element;
+    }
+
+    // число -> CSSUnitValue('number') или обычная строка
+    if (typeof val === "number") {
+        // здесь два варианта:
+        // 1) использовать CSS.px / CSS.number, если хочешь Typed OM полноценно
+        // 2) оставить как string, чтобы не плодить CSSUnitValue без нужды
+        //
+        // Пример с CSS.number (если поддерживается):
+        if ((CSS as any)?.number && !kebab.startsWith("--")) {
+            const newVal: CSSUnitValue = (CSS as any).number(val);
+            const old = styleMapRef.get(kebab);
+            if (isUnitValue(old) && old.value === newVal.value && old.unit === newVal.unit) {
+                return element;
+            }
+            styleMapRef.set(kebab, newVal);
+            return element;
         } else {
+            // fallback в обычный стиль
             setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+            return element;
         }
-    } else
-        if (styleMapRef && isValidNumber(val)) {
-            const old = styleMapRef?.get?.(kebab);
-            if (old != null) {
-                if (isUnitValue(old)) {
-                    if (old?.value != val) { old.value = val; }
-                } else {
-                    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
-                }
-            } else { // hard-case
-                const computed = (!kebab?.trim?.()?.startsWith?.("--")) ? element?.computedStyleMap?.() : styleMapRef;
-                const oldCmVal = computed?.get?.(kebab) ?? computed?.getPropertyValue?.(kebab);
-                if (isUnitValue(oldCmVal)) {
-                    if (oldCmVal.value != val && oldCmVal.unit == "number") { oldCmVal.value = val; }
-                    { try { styleMapRef?.set?.(kebab, oldCmVal); } catch (e) { styleMapRef?.set?.(kebab, oldCmVal?.toString?.()); } }
-                } else
-                { setPropertyIfNotEqual(styleRef, kebab, String(val), importance); }
+    }
+
+    // строки и всё остальное: попытка Typed OM -> fallback в строку
+    if (typeof val === "string" && !isStyleValue(val)) {
+        const maybeNum = tryStringAsNumber(val);
+        if (typeof maybeNum === "number" && (CSS as any)?.number && !kebab.startsWith("--")) {
+            const newVal: CSSUnitValue = (CSS as any).number(maybeNum);
+            const old = styleMapRef.get(kebab);
+            if (isUnitValue(old) && old.value === newVal.value && old.unit === newVal.unit) {
+                return element;
             }
-        } else
-        {
-            setPropertyIfNotEqual(styleRef, kebab, (isStyleValue(val) ? val.toString() : String(val)), importance);
+            styleMapRef.set(kebab, newVal);
+            return element;
+        } else {
+            // обычное строковое значение
+            setPropertyIfNotEqual(styleRef, kebab, val, importance);
+            return element;
         }
+    }
+
+    // любой другой тип -> строка
+    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
     return element;
-}
+};
+
+//
+export const setStylePropertyFallback = (
+    element?: HTMLElement | null,
+    name?: string,
+    value?: any,
+    importance = ""
+) => {
+    if (!element || !name) return element;
+
+    const kebab = camelToKebab(name);
+    const styleRef = element.style;
+    if (!styleRef) return element;
+
+    // распаковываем ref, если нужно
+    let val: any = hasValue(value) ? value?.value : value;
+
+    // пробуем число из строки
+    if (typeof val === "string" && !isStyleValue(val)) {
+        val = tryStringAsNumber(val) ?? val;
+    }
+
+    // null/undefined — убрать
+    if (val == null) {
+        setPropertyIfNotEqual(styleRef, kebab, null, importance);
+        return element;
+    }
+
+    // CSSStyleValue -> строка
+    if (isStyleValue(val)) {
+        setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+        return element;
+    }
+
+    // число -> строка (на твой вкус можно добавить 'px' для некоторых свойств)
+    if (typeof val === "number") {
+        setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+        return element;
+    }
+
+    // всё остальное -> строка
+    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+    return element;
+};
 
 //
 const promiseOrDirect = (promise: any|Promise<any>, cb: (...args: any[]) => any) => {
@@ -242,12 +339,13 @@ export const fetchAsInline = (url: string | Blob | File): Promise<string>|string
     return url as string;
 }
 
-
 //
 const adoptedSelectorMap = new Map<string, CSSStyleSheet>();
 const adoptedShadowSelectorMap = new WeakMap<ShadowRoot, Map<string, CSSStyleSheet>>();
 const adoptedLayerMap = new Map<string, CSSLayerBlockRule>();
 const adoptedShadowLayerMap = new WeakMap<ShadowRoot, Map<string, CSSLayerBlockRule>>();
+
+//
 export const getAdoptedStyleRule = (selector: string, layerName: string | null = "ux-query", basis: any = null) => {
     if (!selector) return null;
 
@@ -371,6 +469,11 @@ export const getAdoptedStyleRule = (selector: string, layerName: string | null =
 
     return null;
 };
+
+//
+export const setStyleProperty = (element?: HTMLElement | null, name?: string, value?: any, importance = "") => {
+    return hasTypedOM ? setStylePropertyTyped(element, name, value, importance) : setStylePropertyFallback(element, name, value, importance);
+}
 
 //
 export const setStyleInRule = (selector: string, name: string, value: any) => {
