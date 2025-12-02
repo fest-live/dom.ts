@@ -271,15 +271,67 @@ export const removeEvents = (root, handlers) => {
 }
 
 //
-export const containsOrSelf = (a: any, b: any)=>{
+// Get the actual target element from an event, considering shadow DOM boundaries
+export const getEventTarget = (ev: Event | any): HTMLElement | Element | null => {
+    if (!ev) return null;
+
+    // Use composedPath() for shadow DOM compatibility
+    if (ev?.composedPath && typeof ev.composedPath === 'function') {
+        const path = ev.composedPath();
+        // Return the first element in the path (the actual target)
+        for (const node of path) {
+            if (node instanceof HTMLElement || node instanceof Element) {
+                return node as HTMLElement;
+            }
+        }
+    }
+
+    // Fallback to target property
+    const target = ev?.target;
+    if (target instanceof HTMLElement || target instanceof Element) {
+        return target;
+    }
+
+    return null;
+};
+
+//
+export const containsOrSelf = (a: any, b: any, ev?: Event)=>{
     if (b == null || !(b instanceof Node) && b?.element == null) return false; // if isn't node with element or just null
     if ((a == b)  || (a?.element ?? a) == (b?.element ?? b)) return true; // wrapper or element is same
+
+    // Use composedPath() for shadow DOM compatibility if event is provided
+    if (ev?.composedPath && typeof ev.composedPath === 'function') {
+        const path = ev.composedPath();
+        const aEl = a?.element ?? a;
+        const bEl = b?.element ?? b;
+        if (path.includes(aEl) && path.includes(bEl)) {
+            // Check if b appears before a in the path (b is deeper/child of a)
+            const aIndex = path.indexOf(aEl);
+            const bIndex = path.indexOf(bEl);
+            if (bIndex >= 0 && aIndex >= 0 && bIndex < aIndex) return true;
+        }
+    }
+
     if (a?.contains?.(b?.element ?? b) || a?.getRootNode({ composed: true })?.host == (b?.element ?? b)) return true; // a contains b element
     return false;
 }
 
 // get by selector self or parent, matches by selector, include shadow DOM host
-export const MOCElement = (element: HTMLElement | null, selector: string): HTMLElement | null => {
+export const MOCElement = (element: HTMLElement | null, selector: string, ev?: Event): HTMLElement | null => {
+    // Use composedPath() for shadow DOM compatibility if event is provided
+    if (ev?.composedPath && typeof ev.composedPath === 'function') {
+        const path = ev.composedPath();
+        // Search through the composed path for matching elements
+        for (const node of path) {
+            if (node instanceof HTMLElement || node instanceof Element) {
+                if ((node as HTMLElement).matches?.(selector)) {
+                    return node as HTMLElement;
+                }
+            }
+        }
+    }
+
     const self = (element?.matches?.(selector) ? element : null);
     const host = (element?.getRootNode({ composed: true }) as any ?? element?.parentElement?.getRootNode({ composed: true}) as any)?.host;
     const hostMatched = host?.matches?.(selector) ? host : null;
