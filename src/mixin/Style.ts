@@ -244,6 +244,135 @@ export const fetchAsInline = (url: string | Blob | File): Promise<string>|string
 
 
 //
+const adoptedSelectorMap = new Map<string, CSSStyleSheet>();
+const adoptedShadowSelectorMap = new WeakMap<ShadowRoot, Map<string, CSSStyleSheet>>();
+const adoptedLayerMap = new Map<string, CSSLayerBlockRule>();
+const adoptedShadowLayerMap = new WeakMap<ShadowRoot, Map<string, CSSLayerBlockRule>>();
+export const getAdoptedStyleRule = (selector: string, layerName: string | null = "ux-query", basis: any = null) => {
+    if (!selector) return null;
+
+    const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : null);
+    const isShadowRoot = root instanceof ShadowRoot;
+    const targetAdoptedSheets = isShadowRoot ? root.adoptedStyleSheets : (typeof document != "undefined" ? document.adoptedStyleSheets : null);
+
+    if (!targetAdoptedSheets) return null;
+
+    const selectorKey = `${layerName || ""}:${selector}`;
+    let sheet: CSSStyleSheet | undefined;
+
+    if (isShadowRoot) {
+        let shadowMap = adoptedShadowSelectorMap.get(root);
+        if (!shadowMap) {
+            shadowMap = new Map();
+            adoptedShadowSelectorMap.set(root, shadowMap);
+        }
+        sheet = shadowMap.get(selectorKey);
+
+        if (!sheet) {
+            sheet = new CSSStyleSheet();
+            shadowMap.set(selectorKey, sheet);
+
+            if (!targetAdoptedSheets.includes(sheet)) {
+                targetAdoptedSheets.push(sheet);
+            }
+        }
+    } else {
+        sheet = adoptedSelectorMap.get(selectorKey);
+
+        if (!sheet) {
+            sheet = new CSSStyleSheet();
+            adoptedSelectorMap.set(selectorKey, sheet);
+
+            if (!targetAdoptedSheets.includes(sheet)) {
+                targetAdoptedSheets.push(sheet);
+            }
+        }
+    }
+
+    if (layerName) {
+        let layerRule: CSSLayerBlockRule | undefined;
+
+        if (isShadowRoot) {
+            let shadowLayerMap = adoptedShadowLayerMap.get(root);
+            if (!shadowLayerMap) {
+                shadowLayerMap = new Map();
+                adoptedShadowLayerMap.set(root, shadowLayerMap);
+            }
+            layerRule = shadowLayerMap.get(layerName);
+        } else {
+            layerRule = adoptedLayerMap.get(layerName);
+        }
+
+        if (!layerRule) {
+            const rules = Array.from(sheet.cssRules || []);
+            const layerIndex = rules.findIndex((rule) =>
+                rule instanceof CSSLayerBlockRule && rule.name === layerName
+            );
+            if (layerIndex === -1) {
+                try {
+                    sheet.insertRule(`@layer ${layerName} {}`, sheet.cssRules.length);
+                    const newRule = sheet.cssRules[sheet.cssRules.length - 1];
+                    if (newRule instanceof CSSLayerBlockRule) {
+                        layerRule = newRule;
+                    }
+                } catch (e) {
+                    layerRule = undefined;
+                }
+            } else {
+                layerRule = rules[layerIndex] as CSSLayerBlockRule;
+            }
+            if (layerRule) {
+                if (isShadowRoot) {
+                    let shadowLayerMap = adoptedShadowLayerMap.get(root);
+                    if (!shadowLayerMap) {
+                        shadowLayerMap = new Map();
+                        adoptedShadowLayerMap.set(root, shadowLayerMap);
+                    }
+                    shadowLayerMap.set(layerName, layerRule);
+                } else {
+                    adoptedLayerMap.set(layerName, layerRule);
+                }
+            }
+        }
+
+        if (layerRule) {
+            const layerRules = Array.from(layerRule.cssRules || []);
+            let layerRuleIndex = layerRules.findIndex((r) =>
+                r instanceof CSSStyleRule && r.selectorText?.trim?.() === selector?.trim?.()
+            );
+            if (layerRuleIndex === -1) {
+                try {
+                    layerRuleIndex = layerRule.insertRule(`${selector} {}`, layerRule.cssRules.length);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return layerRule.cssRules[layerRuleIndex] as CSSStyleRule;
+        }
+    }
+
+    const rules = Array.from(sheet.cssRules || []);
+    let ruleIndex = rules.findIndex((rule) =>
+        rule instanceof CSSStyleRule && rule.selectorText?.trim?.() === selector?.trim?.()
+    );
+
+    if (ruleIndex === -1) {
+        try {
+            ruleIndex = sheet.insertRule(`${selector} {}`, sheet.cssRules.length);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    const rule = sheet.cssRules[ruleIndex];
+    if (rule instanceof CSSStyleRule) {
+        return rule;
+    }
+
+    return null;
+};
+
+//
 export const setStyleInRule = (selector: string, name: string, value: any) => {
     return setStyleProperty(getStyleRule(selector), name, value);
 };
