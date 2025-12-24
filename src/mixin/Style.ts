@@ -114,7 +114,7 @@ export const setStylePropertyTyped = (
     }
 
     // распаковываем ref
-    let val: any = hasValue(value) ? value?.value : value;
+    let val: any = hasValue(value) && !(isStyleValue(value) || isUnitValue(value)) ? value?.value : value;
 
     // null/undefined -> удалить свойство
     if (val == null) {
