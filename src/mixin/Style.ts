@@ -200,7 +200,7 @@ export const setStylePropertyFallback = (
     if (!styleRef) return element;
 
     // распаковываем ref, если нужно
-    let val: any = hasValue(value) ? value?.value : value;
+    let val: any = (hasValue(value) && !(isStyleValue(value) || isUnitValue(value))) ? value?.value : value;
 
     // пробуем число из строки
     if (typeof val === "string" && !isStyleValue(val)) {
