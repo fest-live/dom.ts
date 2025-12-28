@@ -1,4 +1,4 @@
-import { observeAttributeBySelector, observeBySelector } from "../mixin/Observer";
+import { observeAttributeBySelector, observeAttribute, observeBySelector } from "../mixin/Observer";
 import { MOCElement } from "../agate/Utils";
 
 //

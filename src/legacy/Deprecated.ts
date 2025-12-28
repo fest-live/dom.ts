@@ -1,6 +1,3 @@
-//import {subscribe} from "./ReactiveLib.ts";
-
-//
 export class StateManager {
     elements = new WeakMap<HTMLElement, any>();
     named = new Map<string, any>();
@@ -36,11 +33,11 @@ export class StateManager {
         //
         if (element instanceof HTMLElement) {
             const ref = new WeakRef(element);
-            subscribe(state, (value, prop)=>{
+            affected(state, (value, prop)=>{
                 onChange?.(ref.deref(), prop, value);
             });
         } else {
-            subscribe(state, (value, prop)=>{
+            affected(state, (value, prop)=>{
                 onChange?.(element, prop, value);
             });
         }
