@@ -567,7 +567,7 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
     //
     //if (!layerName) { layerName = `ux-layer-${layerCounter++}`; }
     if (typeof document != "undefined" && document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(sheet as unknown as CSSStyleSheet)) {
-        document.adoptedStyleSheets.push(sheet as unknown as CSSStyleSheet);
+    document.adoptedStyleSheets.push(sheet as unknown as CSSStyleSheet);
     }
 
     //
@@ -578,7 +578,7 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
         if (layerWrapped.length > 50_000 && typeof (sheet as any).replace === "function") {
             (sheet as any).replace(layerWrapped).catch?.(() => {});
         } else {
-            sheet.replaceSync(layerWrapped);
+        sheet.replaceSync(layerWrapped);
         }
         return sheet;
     } else {
@@ -589,7 +589,7 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
                 if (layerWrapped.length > 50_000 && typeof (sheet as any).replace === "function") {
                     (sheet as any).replace(layerWrapped).catch?.(() => {});
                 } else {
-                    sheet.replaceSync(layerWrapped);
+                sheet.replaceSync(layerWrapped);
                 }
                 return sheet;
             };
