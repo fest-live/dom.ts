@@ -600,6 +600,19 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
     return sheet as CSSStyleSheet;
 }
 
+//
+export const removeAdopted = (sheet: CSSStyleSheet | string | null | undefined): boolean => {
+    if (!sheet) return false;
+    const target = typeof sheet === "string" ? adoptedMap.get(sheet) : sheet;
+    if (!target || typeof document === "undefined") return false;
+    const sheets = document.adoptedStyleSheets;
+    const idx = sheets.indexOf(target);
+    if (idx !== -1) {
+        sheets.splice(idx, 1);
+        return true;
+    }
+    return false;
+};
 
 //
 export type Point = DOMPoint;
