@@ -67,7 +67,7 @@ export default class State {
         this.$story.push(state);
 
         //
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
             new CustomEvent("u2-push-state", {
                 detail: {
                     prevState,
@@ -77,7 +77,7 @@ export default class State {
         );
 
         //
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
             new CustomEvent("u2-change-state", {
                 detail: {
                     prevState,
@@ -101,7 +101,7 @@ export default class State {
         const state = this.$story.at(this.$story.length - 1) ?? null;
 
         //
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
             new CustomEvent("u2-pop-state", {
                 detail: {
                     prevState,
@@ -111,7 +111,7 @@ export default class State {
         );
 
         //
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
             new CustomEvent("u2-change-state", {
                 detail: {
                     prevState,
@@ -129,7 +129,7 @@ export const initHistory = ()=>{
         State.$story.pop();
         const state = State.$story.at(State.$story.length - 1) ?? null;
 
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
             new CustomEvent("u2-pop-state", {
                 detail: {
                     prevState,
@@ -138,7 +138,7 @@ export const initHistory = ()=>{
             })
         );
 
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
             new CustomEvent("u2-change-state", {
                 detail: {
                     prevState,
