@@ -267,7 +267,7 @@ export const setProperty = (target, name, value, importance = "")=>{
 
 //
 export const preloadStyle = (styles: string|Blob|File)=>{
-    return loadInlineStyle(styles, null, "ux-layer");
+    return loadInlineStyle(styles, null, "");
 };
 
 //

@@ -545,7 +545,7 @@ export const setProperty = (target, name, value, importance = "")=>{
 //
 export const preloadStyle = (styles: string)=>{
     // @ts-ignore
-    return loadAsAdopted(styles, "ux-layer");
+    return loadAsAdopted(styles, "");
 }
 
 //
