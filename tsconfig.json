@@ -1,23 +1,57 @@
 {
-    "include": ["./src/**/*.ts", "./test/**/*.ts"],
-    "exclude": ["./dist/**/*", "./externals/**/*"],
+    "include": [
+        "./src/**/*.ts",
+        "./test/**/*.ts"
+    ],
+    "exclude": [
+        "./dist/**/*",
+        "./externals/**/*",
+        "./src/**/*.js",
+        "./src/**/*.jsx"
+    ],
     "compilerOptions": {
         "outDir": "./dist/",
         "paths": {
-            "assets/*": ["./assets/*"],
-            "assets/fonts/*": ["./assets/fonts/*"],
-            "fest/*": ["../../shared/fest/*"],
-            "fest/cdnImport": ["../../cdnImport.mjs"],
-            "fest/dom": ["./src/index.ts"],
-            "fest/core": ["../core.ts/src/index.ts"],
-            "fest/veela": ["../veela.css/src/index.ts", "../../shared/fest/veela/index.ts"],
-            "fest/veela-runtime": ["../veela.css/src/index.ts", "../../shared/fest/veela/index.ts"],
-            "veela-lib": ["../veela.css/src/scss/lib/index.scss"],
-            "veela-lib/*": ["../veela.css/src/scss/lib/*"]
+            "assets/*": [
+                "./assets/*"
+            ],
+            "assets/fonts/*": [
+                "./assets/fonts/*"
+            ],
+            "fest/*": [
+                "../../shared/fest/*"
+            ],
+            "fest/cdnImport": [
+                "../../cdnImport.mjs"
+            ],
+            "fest/dom": [
+                "./src/index.ts"
+            ],
+            "fest/core": [
+                "../core.ts/src/index.ts"
+            ],
+            "fest/veela": [
+                "../veela.css/src/index.ts",
+                "../../shared/fest/veela/index.ts"
+            ],
+            "fest/veela-runtime": [
+                "../veela.css/src/index.ts",
+                "../../shared/fest/veela/index.ts"
+            ],
+            "veela-lib": [
+                "../veela.css/src/scss/lib/index.scss"
+            ],
+            "veela-lib/*": [
+                "../veela.css/src/scss/lib/*"
+            ]
         },
         "target": "ESNext",
         "module": "ESNext",
-        "lib": ["ESNext", "DOM", "WebWorker"],
+        "lib": [
+            "ESNext",
+            "DOM",
+            "WebWorker"
+        ],
         "esModuleInterop": true,
         "strict": true,
         "forceConsistentCasingInFileNames": true,
@@ -33,7 +67,13 @@
         "inlineSources": true,
         "inlineSourceMap": true,
         "sourceMap": false,
-        "typeRoots": ["plugins/global.d.ts"],
-        "experimentalDecorators": true
-    }
+        "typeRoots": [
+            "plugins/global.d.ts"
+        ],
+        "experimentalDecorators": true,
+        "noEmit": true,
+        "noEmitOnError": true,
+        "noEmitHelpers": true
+    },
+    "compileOnSave": false
 }
