@@ -1,3 +1,5 @@
+const __registeredCssProperties = new Set<string>();
+
 [   // @ts-ignore
     { name: "--screen-width", syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
     { name: "--screen-height", syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
@@ -32,8 +34,18 @@
     { name: "--cell-x", syntax: "<number>", inherits: false, initialValue: "0" },
     { name: "--cell-y", syntax: "<number>", inherits: false, initialValue: "0" },
 ].forEach((options: any) => {
-    if (typeof CSS != "undefined") {
-        try { CSS?.registerProperty?.(options); } catch (e) { console.warn(e); }
+    if (typeof CSS == "undefined" || typeof CSS?.registerProperty != "function") return;
+    const name = String(options?.name || "").trim();
+    if (!name || __registeredCssProperties.has(name)) return;
+    try {
+        CSS.registerProperty(options);
+    } catch (e: any) {
+        const maybeDuplicate = String(e?.name || "").toLowerCase() === "invalidmodificationerror";
+        if (!maybeDuplicate) {
+            console.warn(e);
+        }
+    } finally {
+        __registeredCssProperties.add(name);
     }
 });
 

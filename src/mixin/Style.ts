@@ -554,6 +554,25 @@ export const adoptedBlobMap = new WeakMap<Blob | File, CSSStyleSheet>();
 
 //
 let layerCounter = 0;
+const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean => {
+    if (!sheet || !cssText) return false;
+    try {
+        if (cssText.length > 50_000 && typeof (sheet as any).replace === "function") {
+            (sheet as any).replace(cssText).catch?.(() => { });
+        } else {
+            sheet.replaceSync(cssText);
+        }
+        return true;
+    } catch (error: any) {
+        const message = String(error?.message || "").toLowerCase();
+        const isImportConstraint = message.includes("@import rules are not allowed here");
+        if (!isImportConstraint) {
+            console.warn("[DOM] Failed to apply adopted stylesheet:", error);
+        }
+        return false;
+    }
+};
+
 export const loadAsAdopted = (styles: string | Blob | File, layerName: string | null = null) => {
     if (typeof styles == "string" && adoptedMap?.has?.(styles)) { return adoptedMap.get(styles); }
     if ((styles instanceof Blob || (styles as any) instanceof File) && adoptedBlobMap?.has?.(styles as Blob | File)) { return adoptedBlobMap.get(styles as Blob | File); }
@@ -574,11 +593,9 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
     if (typeof styles == "string" && !URL.canParse(styles)) {
         const layerWrapped = layerName ? `@layer ${layerName} { ${styles} }` : styles;
         adoptedMap.set(styles, sheet);
-        // Avoid blocking the main thread on huge styles (veela runtime can be big).
-        if (layerWrapped.length > 50_000 && typeof (sheet as any).replace === "function") {
-            (sheet as any).replace(layerWrapped).catch?.(() => {});
-        } else {
-        sheet.replaceSync(layerWrapped);
+        if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
+            // Fallback for constructable stylesheet limitations (e.g. top-level @import).
+            loadInlineStyle(styles);
         }
         return sheet;
     } else {
@@ -586,10 +603,9 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
             adoptedMap.set(cached, sheet);
             if (cached) {
                 const layerWrapped = layerName ? `@layer ${layerName} { ${cached} }` : cached;
-                if (layerWrapped.length > 50_000 && typeof (sheet as any).replace === "function") {
-                    (sheet as any).replace(layerWrapped).catch?.(() => {});
-                } else {
-                sheet.replaceSync(layerWrapped);
+                if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
+                    // Blob/file or URL-loaded stylesheet fallback.
+                    loadInlineStyle(cached);
                 }
                 return sheet;
             };
