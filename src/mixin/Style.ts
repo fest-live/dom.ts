@@ -557,11 +557,8 @@ let layerCounter = 0;
 const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean => {
     if (!sheet || !cssText) return false;
     try {
-        if (cssText.length > 50_000 && typeof (sheet as any).replace === "function") {
-            (sheet as any).replace(cssText).catch?.(() => { });
-        } else {
-            sheet.replaceSync(cssText);
-        }
+        // Constructable sheets must not use replace() fire-and-forget: failures would leave a broken adopted sheet.
+        sheet.replaceSync(cssText);
         return true;
     } catch (error: any) {
         const message = String(error?.message || "").toLowerCase();
@@ -594,7 +591,8 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
         const layerWrapped = layerName ? `@layer ${layerName} { ${styles} }` : styles;
         adoptedMap.set(styles, sheet);
         if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
-            // Fallback for constructable stylesheet limitations (e.g. top-level @import).
+            removeAdopted(sheet);
+            adoptedMap.delete(styles);
             loadInlineStyle(styles);
         }
         return sheet;
@@ -604,7 +602,9 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
             if (cached) {
                 const layerWrapped = layerName ? `@layer ${layerName} { ${cached} }` : cached;
                 if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
-                    // Blob/file or URL-loaded stylesheet fallback.
+                    removeAdopted(sheet);
+                    adoptedMap.delete(cached);
+                    adoptedBlobMap.delete(styles as Blob | File);
                     loadInlineStyle(cached);
                 }
                 return sheet;
