@@ -1,21 +1,54 @@
 {
     "name": "@fest-lib/dom",
-    "description": "DOM Utility",
-    "version": "0.0.0",
-    "private": false,
+    "description": "DOM utilities for browsers (fest-lib)",
+    "version": "0.1.0",
+    "license": "MIT",
     "type": "module",
-    "index": "./dist/dom.js",
+    "sideEffects": true,
+    "engines": {
+        "node": ">=20"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/fest-live/dom.ts.git"
+    },
+    "bugs": {
+        "url": "https://github.com/fest-live/dom.ts/issues"
+    },
+    "homepage": "https://github.com/fest-live/dom.ts#readme",
+    "keywords": [
+        "fest",
+        "fest-lib",
+        "dom",
+        "browser",
+        "typescript"
+    ],
+    "files": [
+        "dist",
+        "LICENSE"
+    ],
+    "main": "./dist/dom.js",
+    "module": "./dist/dom.js",
     "exports": {
         ".": {
-            "import": "./src/index.ts",
-            "require": "./dist/dom.js"
-        }
+            "import": "./dist/dom.js",
+            "default": "./dist/dom.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "peerDependencies": {
+        "@fest-lib/core": "^0.1.0"
     },
     "scripts": {
         "test": "vite --host 0.0.0.0",
         "dev": "vite --host 0.0.0.0",
         "watch": "vite build --watch",
         "build": "vite build --config vite.config.js && npm run docs && npm run docs:md",
+        "build:publish": "FEST_NPM_IMPORTS=1 vite build --config vite.config.js",
+        "prepack": "npm run build:publish",
         "preview": "vite preview",
         "docs": "typedoc ./src/index.ts --options ./typedoc.json --out ./docs --tsconfig ./tsconfig.json --excludeExternals --excludePrivate --excludeProtected --skipErrorChecking",
         "docs:clean": "rm -rf ./docs && typedoc --options ./typedoc.json",
