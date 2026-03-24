@@ -1,5 +1,17 @@
 import { isArrayOrIterable } from "fest/core";
 
+type IdleCallback = (deadline: IdleDeadline) => void;
+const createIdleDeadlineFallback = (): IdleDeadline => ({
+    didTimeout: false,
+    timeRemaining: () => 0,
+} as IdleDeadline);
+const runWhenIdle = (cb: IdleCallback, timeout = 1000) => {
+    if (typeof globalThis.requestIdleCallback === "function") {
+        return globalThis.requestIdleCallback(cb, { timeout });
+    }
+    return setTimeout(() => cb(createIdleDeadlineFallback()), 0);
+};
+
 //
 export const getOffsetParent = (element: Element): Element | null => { return (element as HTMLElement)?.offsetParent ?? (element as any)?.host; }
 export const getOffsetParentChain = (element: Element): Element[] => {
@@ -82,7 +94,7 @@ export const setAttributes = (element, attrs = {})=>{
 export const throttleMap = new Map<string, any>();
 export const setIdleInterval = (cb, timeout = 1000, ...args)=>{
     const status = { running: true, cancel: ()=>{ status.running = false; } };
-    requestIdleCallback(async ()=>{
+    runWhenIdle(async ()=>{
         if (!cb || (typeof cb != "function")) return;
         while (status.running) {
             await Promise.all([ // @ts-ignore
@@ -92,7 +104,7 @@ export const setIdleInterval = (cb, timeout = 1000, ...args)=>{
 
             //
             await Promise.any([
-                new Promise((r)=>requestIdleCallback(r, { timeout })),
+                new Promise((r)=>runWhenIdle(r as IdleCallback, timeout)),
                 new Promise((r)=>setTimeout(r, timeout))
                 //new Promise((r)=>requestAnimationFrame(r))
             ]);

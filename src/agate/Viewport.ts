@@ -1,6 +1,13 @@
 import type { StyleTuple } from "../mixin/Style";
 import { addEvent } from "./Utils";
 
+const runWhenIdle = (cb: IdleRequestCallback, timeout = 100) => {
+    if (typeof globalThis.requestIdleCallback === "function") {
+        return globalThis.requestIdleCallback(cb, { timeout });
+    }
+    return setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 0 } as IdleDeadline), 0);
+};
+
 //
 export const getAvailSize = () => {
     const l = typeof matchMedia != "undefined" ? matchMedia("(orientation: landscape)")?.matches : false;
@@ -91,7 +98,7 @@ export const whenAnyScreenChanges = (cb) => {
 
     //
     update();
-    requestIdleCallback(update, { timeout: 100 });
+    runWhenIdle(() => update(), 100);
     return () => unsubscribers.forEach((unsub) => unsub());
 };
 
