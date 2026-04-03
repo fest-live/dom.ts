@@ -1,6 +1,16 @@
 import { camelToKebab, hasValue, isValidNumber, tryStringAsNumber } from "fest/core";
 
 //
+/** Constructable stylesheets are unavailable in some runtimes (e.g. extension service workers). */
+const supportsConstructableStylesheet = (): boolean =>
+    typeof globalThis !== "undefined" &&
+    typeof (globalThis as unknown as { CSSStyleSheet?: unknown }).CSSStyleSheet === "function";
+
+/** `CSSStyleSheet.replaceSync()` rejects CSS containing `@import` (constructable sheet limitation). */
+const cssTextRequiresInlineStyleElement = (css: string): boolean =>
+    typeof css === "string" && /@import\b/i.test(css);
+
+//
 const OWNER = "DOM",
     styleElement = typeof document != "undefined" ? document.createElement("style") : null;
 
@@ -348,6 +358,7 @@ const adoptedShadowLayerMap = new WeakMap<ShadowRoot, Map<string, CSSLayerBlockR
 //
 export const getAdoptedStyleRule = (selector: string, layerName: string | null = "ux-query", basis: any = null) => {
     if (!selector) return null;
+    if (!supportsConstructableStylesheet()) return null;
 
     const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : null);
     const isShadowRoot = root instanceof ShadowRoot;
@@ -562,7 +573,9 @@ const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean =
         return true;
     } catch (error: any) {
         const message = String(error?.message || "").toLowerCase();
-        const isImportConstraint = message.includes("@import rules are not allowed here");
+        const isImportConstraint =
+            message.includes("@import rules are not allowed") ||
+            (message.includes("@import") && message.includes("not allowed"));
         if (!isImportConstraint) {
             console.warn("[DOM] Failed to apply adopted stylesheet:", error);
         }
@@ -571,6 +584,18 @@ const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean =
 };
 
 export const loadAsAdopted = (styles: string | Blob | File, layerName: string | null = null) => {
+    if (!supportsConstructableStylesheet()) {
+        if (typeof styles === "string") {
+            loadInlineStyle(styles, undefined, layerName || "");
+        }
+        return null;
+    }
+
+    if (typeof styles === "string" && cssTextRequiresInlineStyleElement(styles)) {
+        loadInlineStyle(styles, undefined, layerName || "");
+        return null;
+    }
+
     if (typeof styles == "string" && adoptedMap?.has?.(styles)) { return adoptedMap.get(styles); }
     if ((styles instanceof Blob || (styles as any) instanceof File) && adoptedBlobMap?.has?.(styles as Blob | File)) { return adoptedBlobMap.get(styles as Blob | File); }
 
@@ -600,12 +625,19 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
         promiseOrDirect(fetchAsInline(styles), (cached: string) => {
             adoptedMap.set(cached, sheet);
             if (cached) {
+                if (cssTextRequiresInlineStyleElement(cached)) {
+                    removeAdopted(sheet);
+                    adoptedMap.delete(cached);
+                    adoptedBlobMap.delete(styles as Blob | File);
+                    loadInlineStyle(cached, undefined, layerName || "");
+                    return sheet;
+                }
                 const layerWrapped = layerName ? `@layer ${layerName} { ${cached} }` : cached;
                 if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
                     removeAdopted(sheet);
                     adoptedMap.delete(cached);
                     adoptedBlobMap.delete(styles as Blob | File);
-                    loadInlineStyle(cached);
+                    loadInlineStyle(cached, undefined, layerName || "");
                 }
                 return sheet;
             };
