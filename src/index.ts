@@ -4,6 +4,7 @@ export * from "./agate/Zoom";
 export * from "./agate/Utils";
 export * from "./agate/Viewport";
 export * from "./agate/Measure";
+export * from "./agate/LauncherGrid";
 
 //
 export * from "./decor/Animation";

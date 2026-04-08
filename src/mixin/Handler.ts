@@ -1,5 +1,6 @@
 import { setStyleProperty } from "./Style";
-import { camelToKebab, DatasetValue, hasValue, isVal, isValueUnit, kebabToCamel, normalizePrimitive, $avoidTrigger } from "fest/core";
+import type { DatasetValue } from "fest/core";
+import { camelToKebab, hasValue, isVal, isValueUnit, kebabToCamel, normalizePrimitive, $avoidTrigger } from "fest/core";
 
 //
 export const handleHidden = (element, _, visible) => {

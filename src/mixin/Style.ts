@@ -596,8 +596,20 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
         return null;
     }
 
-    if (typeof styles == "string" && adoptedMap?.has?.(styles)) { return adoptedMap.get(styles); }
-    if ((styles instanceof Blob || (styles as any) instanceof File) && adoptedBlobMap?.has?.(styles as Blob | File)) { return adoptedBlobMap.get(styles as Blob | File); }
+    if (typeof styles == "string" && adoptedMap?.has?.(styles)) {
+        const cached = adoptedMap.get(styles)!;
+        if (typeof document !== "undefined" && document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(cached)) {
+            document.adoptedStyleSheets.push(cached);
+        }
+        return cached;
+    }
+    if ((styles instanceof Blob || (styles as any) instanceof File) && adoptedBlobMap?.has?.(styles as Blob | File)) {
+        const cached = adoptedBlobMap.get(styles as Blob | File)!;
+        if (typeof document !== "undefined" && document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(cached)) {
+            document.adoptedStyleSheets.push(cached);
+        }
+        return cached;
+    }
 
     //
     if (!styles) return null; //@ts-ignore

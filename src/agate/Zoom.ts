@@ -79,7 +79,12 @@ export const getBoundingOrientRect = (element, orient: number|null|undefined = n
 
     //
     const or_i: number = orient ?? (orientOf(element) || 0);
-    const size: [number, number] = [document.body.clientWidth / zoom, document.body.clientHeight / zoom];
+    // Use visual viewport (mobile URL bar / keyboard) or document element — not body — so nested grids match client coordinates.
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    const size: [number, number] = [
+        ((vv?.width ?? document.documentElement?.clientWidth ?? window.innerWidth) || 1) / zoom,
+        ((vv?.height ?? document.documentElement?.clientHeight ?? window.innerHeight) || 1) / zoom
+    ];
     const [left_, top_] = cvt_cs_to_os([nbx.left, nbx.top], size, or_i);
     const [right_, bottom_] = cvt_cs_to_os([nbx.right, nbx.bottom], size, or_i);
 

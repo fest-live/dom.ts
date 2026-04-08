@@ -11,6 +11,22 @@ const runWhenIdle = (cb: IdleRequestCallback, timeout = 100) => {
 //
 export const getAvailSize = () => {
     const l = typeof matchMedia != "undefined" ? matchMedia("(orientation: landscape)")?.matches : false;
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    const vvBlock: Record<string, string> = vv
+        ? {
+            "--vv-width": `${vv.width}px`,
+            "--vv-height": `${vv.height}px`,
+            "--vv-offset-left": `${vv.offsetLeft}px`,
+            "--vv-offset-top": `${vv.offsetTop}px`,
+            "--vv-scale": String(vv.scale ?? 1)
+        }
+        : {
+            "--vv-width": typeof window !== "undefined" ? `${window.innerWidth}px` : "0px",
+            "--vv-height": typeof window !== "undefined" ? `${window.innerHeight}px` : "0px",
+            "--vv-offset-left": "0px",
+            "--vv-offset-top": "0px",
+            "--vv-scale": "1"
+        };
     if (typeof screen != "undefined") {
         const aw = screen?.availWidth + "px";
         const ah = screen?.availHeight + "px";
@@ -20,7 +36,8 @@ export const getAvailSize = () => {
             "--avail-width": l ? ah : aw,
             "--avail-height": l ? aw : ah,
             "--view-height": (Math.min(screen?.availHeight, window?.innerHeight) + "px"),
-            "--pixel-ratio": devicePixelRatio || 1,
+            "--pixel-ratio": String(devicePixelRatio || 1),
+            ...vvBlock
         };
     };
     return {
@@ -29,7 +46,8 @@ export const getAvailSize = () => {
         "--avail-width": 0 + "px",
         "--avail-height": 0 + "px",
         "--view-height": 0 + "px",
-        "--pixel-ratio": 1,
+        "--pixel-ratio": "1",
+        ...vvBlock
     };
 }
 
@@ -60,7 +78,7 @@ export const updateVP = (ev?: any)=>{
 
 //
 export const getCorrectOrientation = () => {
-    let orientationType: string = screen.orientation.type;
+    let orientationType: string = screen?.orientation?.type || "portrait-primary";
     if (!globalThis.matchMedia("((display-mode: fullscreen) or (display-mode: standalone) or (display-mode: window-controls-overlay))").matches) {
         if (matchMedia("(orientation: portrait)").matches) {orientationType = orientationType.replace("landscape", "portrait");} else
             if (matchMedia("(orientation: landscape)").matches) {orientationType = orientationType.replace("portrait", "landscape");};
@@ -72,11 +90,12 @@ export const getCorrectOrientation = () => {
 const passiveOpts = { passive: true };
 
 //
-export const whenAnyScreenChanges = (cb) => {
+export const whenAnyScreenChanges = (cb: () => void) => {
     let ticking = false;
     const update = () => {
         if (!ticking) {
             requestAnimationFrame(() => {
+                updateVP();
                 cb();
                 ticking = false;
             });
@@ -84,7 +103,7 @@ export const whenAnyScreenChanges = (cb) => {
         }
     };
 
-    const unsubscribers: any[] = [];
+    const unsubscribers: Array<() => void> = [];
 
     // @ts-ignore
     unsubscribers.push(addEvent(navigator?.virtualKeyboard, "geometrychange", update, passiveOpts));
@@ -95,6 +114,7 @@ export const whenAnyScreenChanges = (cb) => {
     unsubscribers.push(addEvent(document?.documentElement, "fullscreenchange", update));
     unsubscribers.push(addEvent(document, "DOMContentLoaded", update));
     unsubscribers.push(addEvent(matchMedia("(orientation: portrait)"), "change", update));
+    unsubscribers.push(addEvent(matchMedia("(orientation: landscape)"), "change", update));
 
     //
     update();
@@ -103,11 +123,14 @@ export const whenAnyScreenChanges = (cb) => {
 };
 
 //
-export const fixOrientToScreen = (element)=>{
+export const fixOrientToScreen = (element: HTMLElement & { orient?: number }) => {
     if (!element?.classList?.contains?.("native-portrait-optimized")) {
         element?.classList?.add?.("native-portrait-optimized");
-        return whenAnyScreenChanges(()=>{
-            element.orient = orientationNumberMap?.[getCorrectOrientation()] || 0;
+        return whenAnyScreenChanges(() => {
+            const next = orientationNumberMap?.[getCorrectOrientation()] ?? 0;
+            element.orient = next;
+            element.setAttribute?.("orient", String(next));
+            element.style?.setProperty?.("--orient", String(next));
         });
     }
 }
