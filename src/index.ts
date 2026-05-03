@@ -19,3 +19,6 @@ export * from "./mixin/Behavior";
 export * from "./mixin/Mixins";
 export * from "./mixin/Store";
 export * from "./mixin/Handler";
+
+// TODO: move `fest/lure`
+export * from "./mixin/junction/JunctionMixins";
