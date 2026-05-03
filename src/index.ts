@@ -9,7 +9,6 @@ export * from "./agate/LauncherGrid";
 //
 export * from "./decor/Animation";
 export * from "./decor/Appear";
-export * from "../../fl.ui/src/ui/misc/Canvas";
 export * from "./decor/Shape";
 
 //
