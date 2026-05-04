@@ -19,7 +19,7 @@
                 "./assets/fonts/*"
             ],
             "fest/*": [
-                "../../shared/fest/*"
+                "../../subsystem/fest/*"
             ],
             "fest/cdnImport": [
                 "../../cdnImport.mjs"
@@ -32,11 +32,11 @@
             ],
             "fest/veela": [
                 "../veela.css/src/index.ts",
-                "../../shared/fest/veela/index.ts"
+                "../../subsystem/fest/veela/index.ts"
             ],
             "fest/veela-runtime": [
                 "../veela.css/src/index.ts",
-                "../../shared/fest/veela/index.ts"
+                "../../subsystem/fest/veela/index.ts"
             ],
             "veela-lib": [
                 "../veela.css/src/scss/lib/index.scss"
