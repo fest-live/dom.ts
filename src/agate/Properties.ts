@@ -31,8 +31,9 @@ const __registeredCssProperties = new Set<string>();
     { name: "--os-grid-c", syntax: "<number>", inherits: false, initialValue: "0" },
     { name: "--rv-grid-r", syntax: "<number>", inherits: false, initialValue: "0" },
     { name: "--rv-grid-c", syntax: "<number>", inherits: false, initialValue: "0" },
-    { name: "--cell-x", syntax: "<number>", inherits: false, initialValue: "0" },
-    { name: "--cell-y", syntax: "<number>", inherits: false, initialValue: "0" },
+    /* WHY: Grid cell indices are discrete; match Veela `compute_grid_item_cell` / `v2-coord-num` and WAAPI-friendly integer semantics. */
+    { name: "--cell-x", syntax: "<integer>", inherits: false, initialValue: "0" },
+    { name: "--cell-y", syntax: "<integer>", inherits: false, initialValue: "0" },
 ].forEach((options: any) => {
     if (typeof CSS == "undefined" || typeof CSS?.registerProperty != "function") return;
     const name = String(options?.name || "").trim();
