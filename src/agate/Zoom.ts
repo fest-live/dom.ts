@@ -61,7 +61,21 @@ export const orientOf = (element = document.documentElement) => {
     // legacy browser
     const container: any = ((element?.matches?.("[orient], [data-mixin=\"ui-orientbox\"]") ? element : null) || element?.closest?.("[orient], [data-mixin=\"ui-orientbox\"]") || element);
     if (container?.hasAttribute?.("orient")) { return parseInt(container?.getAttribute?.("orient") || "0") || 0; };
-    return (container?.orient || 0);
+    if (container?.orient != null && Number.isFinite(Number(container.orient))) {
+        return Number(container.orient) || 0;
+    }
+    // COMPAT: some hosts historically set only CSS `--orient` (layout) without attr / `.orient`.
+    try {
+        const raw =
+            container?.style?.getPropertyValue?.("--orient") ||
+            (typeof getComputedStyle === "function" && container
+                ? getComputedStyle(container).getPropertyValue("--orient")
+                : "") ||
+            "";
+        const n = parseInt(String(raw).trim(), 10);
+        if (Number.isFinite(n)) return n;
+    } catch { /* noop */ }
+    return 0;
 }
 
 //
