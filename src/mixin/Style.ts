@@ -39,38 +39,224 @@ export const getStyleLayer = (layerName, sheet?)=>{
     return layerRule;
 }
 
-//
-export const getStyleRule = (selector, sheet?, layerName: string|null = "ux-query", basis: any = null) => {
-    const root = basis instanceof ShadowRoot ? basis : (basis?.getRootNode ? basis.getRootNode({ composed: true }) : typeof document != "undefined" ? document.documentElement : null);
 
-    // Making element defined for CSS query
-    const uqid = (root instanceof ShadowRoot || root instanceof HTMLDocument) ? "" : (basis?.getAttribute?.("data-style-id") || (typeof crypto != "undefined" ? crypto?.randomUUID?.() : ""));
-    const usel = root instanceof HTMLDocument ? ":root" : (root instanceof ShadowRoot ? ":host" : `[data-style-id="${uqid}"]`);
-    basis?.setAttribute?.("data-style-id", uqid);
 
-    //
-    let $styleElement: any;// = styleElement;
-    if (root instanceof ShadowRoot) {
-        if (!($styleElement = root.querySelector('style'))) {
-            $styleElement = typeof document != "undefined" ? document.createElement('style[data-ux-query]') : null;
-            $styleElement.setAttribute('data-ux-query', '');
-            root.appendChild($styleElement);
-        }
-    } else { $styleElement = styleElement; }
 
-    //
-    sheet ||= $styleElement?.sheet || sheet;
+let styleIdCounter = 0;
 
-    //
-    if (!layerName) {
-        let ruleId = Array.from(sheet?.cssRules || []).findIndex((rule) => rule instanceof CSSStyleRule && rule.selectorText?.trim?.()?.endsWith?.(selector?.trim?.() ?? ""));
-        if (ruleId === -1 && sheet) { ruleId = sheet?.insertRule?.(`${usel || ""} ${selector}`?.trim?.() + " {}"); }
-        return sheet?.cssRules?.[ruleId];
+const isShadowRoot = (value: any): value is ShadowRoot =>
+    typeof ShadowRoot !== "undefined" &&
+    value instanceof ShadowRoot;
+
+const isDocument = (value: any): value is Document =>
+    typeof Document !== "undefined" &&
+    value instanceof Document;
+
+const isElement = (value: any): value is Element =>
+    typeof Element !== "undefined" &&
+    value instanceof Element;
+
+/**
+ * CSS.escape() должен существовать в браузерах с CSSOM.
+ * Fallback экранирует каждый code point и потому безопасен для ID.
+ */
+const escapeCSSIdentifier = (value: string): string => {
+    if (
+        typeof CSS !== "undefined" &&
+        typeof CSS.escape === "function"
+    ) {
+        return CSS.escape(value);
     }
 
-    //
-    return getStyleRule(selector, getStyleLayer(layerName, sheet), null, basis);
+    return Array
+        .from(value)
+        .map(char => `\\${char.codePointAt(0)!.toString(16)} `)
+        .join("");
 };
+
+const createStyleId = (): string => {
+    if (
+        typeof crypto !== "undefined" &&
+        typeof crypto.randomUUID === "function"
+    ) {
+        return crypto.randomUUID();
+    }
+
+    return `ux-${Date.now().toString(36)}-${(++styleIdCounter).toString(36)}`;
+};
+
+/**
+ * ::before должен присоединяться к basis непосредственно:
+ *
+ *   #element::before
+ *
+ * Обычный selector остаётся descendant-селектором:
+ *
+ *   #element .child
+ */
+const joinScopedSelector = (
+    scope: string,
+    selector: string,
+): string => {
+    selector = selector.trim();
+
+    if (!scope) return selector;
+    if (!selector) return scope;
+
+    if (selector.startsWith("::")) {
+        return `${scope}${selector}`;
+    }
+
+    return `${scope} ${selector}`;
+};
+
+const findStyleRule = (
+    sheet: any,
+    fullSelector: string,
+    scope: string,
+    selector: string,
+): number => {
+    const rules = Array.from(sheet?.cssRules || []) as CSSRule[];
+
+    const expected = fullSelector.trim();
+    const requested = selector.trim();
+
+    return rules.findIndex(rule => {
+        if (!(rule instanceof CSSStyleRule)) {
+            return false;
+        }
+
+        const actual = rule.selectorText?.trim?.() ?? "";
+
+        // Основное строгое сравнение.
+        if (actual === expected) {
+            return true;
+        }
+
+        /*
+         * Ограниченный fallback для CSSOM-сериализации.
+         *
+         * В отличие от обычного endsWith() проверяется также scope.
+         * Поэтому запрос ".item" не захватит правило "#app .item",
+         * если ожидаемый scope, например, равен ":root".
+         */
+        if (requested && actual.endsWith(requested)) {
+            const actualScope = actual
+                .slice(0, actual.length - requested.length)
+                .trim();
+
+            return actualScope === scope;
+        }
+
+        return false;
+    });
+};
+
+//
+export const getStyleRule = (
+    selector: string,
+    sheet?: any,
+    layerName: string | null = "ux-query",
+    basis: any = null,
+) => {
+    /*
+     * composed:true использовать здесь нельзя:
+     * для элемента внутри ShadowRoot он вернёт Document,
+     * и правило будет добавлено не в тот stylesheet.
+     */
+    const root =
+        isShadowRoot(basis) || isDocument(basis)
+            ? basis
+            : basis?.getRootNode?.() ??
+              (typeof document !== "undefined" ? document : null);
+
+    const basisElement: Element | null =
+        isElement(basis) ? basis : null;
+
+    let scope = "";
+
+    /*
+     * Главное исключение:
+     * явный ID имеет приоритет перед data-style-id.
+     */
+    if (basisElement?.id) {
+        scope = `#${escapeCSSIdentifier(basisElement.id)}`;
+    } else if (basisElement) {
+        let styleId = basisElement.getAttribute("data-style-id");
+
+        if (!styleId) {
+            styleId = createStyleId();
+            basisElement.setAttribute("data-style-id", styleId);
+        }
+
+        scope =
+            `[data-style-id="${escapeCSSIdentifier(styleId)}"]`;
+    } else if (isShadowRoot(root)) {
+        scope = ":host";
+    } else if (isDocument(root)) {
+        scope = ":root";
+    }
+
+    let styleElement: HTMLStyleElement | null = null;
+
+    if (isShadowRoot(root)) {
+        styleElement =
+            root.querySelector<HTMLStyleElement>(
+                "style[data-ux-query]",
+            );
+
+        if (!styleElement && typeof document !== "undefined") {
+            /*
+             * createElement("style[data-ux-query]") некорректен:
+             * createElement принимает имя тега, а не selector.
+             */
+            styleElement = document.createElement("style");
+            styleElement.setAttribute("data-ux-query", "");
+            root.appendChild(styleElement);
+        }
+    } else {
+        styleElement = styleElementGlobal();
+    }
+
+    sheet ||= styleElement?.sheet;
+
+    if (!sheet) {
+        return undefined;
+    }
+
+    if (layerName) {
+        return getStyleRule(
+            selector,
+            getStyleLayer(layerName, sheet),
+            null,
+            basis,
+        );
+    }
+
+    const fullSelector = joinScopedSelector(scope, selector);
+
+    let ruleId = findStyleRule(
+        sheet,
+        fullSelector,
+        scope,
+        selector,
+    );
+
+    if (ruleId === -1) {
+        ruleId = sheet.insertRule(`${fullSelector} {}`);
+    }
+
+    return sheet.cssRules?.[ruleId] as CSSStyleRule | undefined;
+};
+
+/**
+ * Замените реализацией получения вашего глобального <style>.
+ * Нужна только для устранения конфликта имени локальной переменной
+ * с существующим styleElement.
+ */
+function styleElementGlobal(): HTMLStyleElement | null {
+    return styleElement ?? null;
+}
 
 //
 const hasTypedOM =
