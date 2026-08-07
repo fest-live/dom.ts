@@ -270,6 +270,6 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
         observer.observe(element = unwrapFromQuery(element), { childList: true, subtree : true });
     }
     const selected = Array.from(element.querySelectorAll(selector));
-    if (selected.length > 0) { cb?.({ addedNodes: selected }, observer); };
+    if (selected.length > 0) { cb?.({ addedNodes: selected, removedNodes: [] }, observer); };
     return observer;
 };
