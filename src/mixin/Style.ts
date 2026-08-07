@@ -1,4 +1,4 @@
-import { camelToKebab, hasValue, isValidNumber, tryStringAsNumber } from "fest/core";
+import { camelToKebab, hasValue, isValidNumber, tryStringAsNumber } from "@fest-lib/core";
 
 //
 /** Constructable stylesheets are unavailable in some runtimes (e.g. extension service workers). */

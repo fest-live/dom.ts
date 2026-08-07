@@ -1,7 +1,7 @@
 /**
  * Junction-based DOM mixins: selection (A/B), drag, resize.
  */
-import { addEvent, DOMMixin, setStyleProperty } from "fest/dom";
+import { addEvent, DOMMixin, setStyleProperty } from "@fest-lib/dom";
 import type { JunctionPoint2D } from "./types";
 import {
     junctionToBox,

@@ -1,4 +1,4 @@
-import { isArrayOrIterable } from "fest/core";
+import { isArrayOrIterable } from "@fest-lib/core";
 
 type IdleCallback = (deadline: IdleDeadline) => void;
 const createIdleDeadlineFallback = (): IdleDeadline => ({

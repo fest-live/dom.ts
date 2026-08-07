@@ -1,4 +1,4 @@
-import { cvt_cs_to_os } from "fest/core";
+import { cvt_cs_to_os } from "@fest-lib/core";
 import { borderBoxHeight, borderBoxWidth, contentBoxHeight, contentBoxWidth } from "./Utils";
 
 //

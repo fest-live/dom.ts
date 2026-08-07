@@ -3,8 +3,8 @@
  * Pair with Veela `.ui-launcher-grid` + `compute_grid_item_cell` on items, and `fest/lure` `bindDraggable` / app `bindInteraction`.
  * Grid hosts should set `--layout-c` / `--layout-r` (and `data-grid-columns` / `data-grid-rows`); CSS bridges `--sd-inherit-*` onto children so cell clamps match the **closest** grid’s logical + orient-swapped (`--cs-layout-*`) tracks.
  */
-import type { GridArgsType, GridLayoutLike } from "fest/core";
-import { normalizeGridLayout, resolveLocalPointToGridCell } from "fest/core";
+import type { GridArgsType, GridLayoutLike } from "@fest-lib/core";
+import { normalizeGridLayout, resolveLocalPointToGridCell } from "@fest-lib/core";
 import { orientOf } from "./Zoom";
 
 /** Read `data-grid-columns` / `data-grid-rows` with optional JS override. */
