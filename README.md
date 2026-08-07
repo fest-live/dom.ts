@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/fest-live/dom.ts"><img src="https://img.shields.io/github/stars/fest-live/dom.ts?style=flat-square" alt="GitHub stars"></a>
   <a href="https://github.com/fest-live/dom.ts/actions"><img src="https://img.shields.io/github/workflow/status/fest-live/dom.ts/CI?style=flat-square" alt="Build Status"></a>
-  <a href="https://www.npmjs.com/package/dom.ts"><img src="https://img.shields.io/npm/v/dom.ts?style=flat-square" alt="NPM version"></a>
+  <a href="https://www.npmjs.com/package/@fest-lib/dom"><img src="https://img.shields.io/npm/v/dom.ts?style=flat-square" alt="NPM version"></a>
   <a href="https://github.com/fest-live/dom.ts/blob/main/LICENSE"><img src="https://img.shields.io/github/license/fest-live/dom.ts?style=flat-square" alt="License"></a>
 </p>
 
@@ -23,9 +23,9 @@
 ## 📦 Installation
 
 ```bash
-npm install @fest-lib/dom.ts
+npm install @fest-lib/dom
 # or
-yarn add @fest-lib/dom.ts
+yarn add @fest-lib/dom
 ```
 
 ---
