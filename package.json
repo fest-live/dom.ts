@@ -64,5 +64,8 @@
         "vite": "^8.0.7",
         "vite-plugin-dynamic-import": ">=1.6.0",
         "vite-plugin-external": ">=6.2.2"
+    },
+    "dependencies": {
+        "@fest-lib/core": "github:fest-live/core.ts#main"
     }
 }
