@@ -10,7 +10,9 @@ import {
     JUNCTION_SELECT_EVENTS
 } from "./types";
 
-const mixinDisposers = new WeakMap<HTMLElement, Map<string, Array<() => void>>>();
+const mixinDisposersSymbol = Symbol.for("dom.ts@mixinDisposers");
+const mixinDisposers = globalThis[mixinDisposersSymbol] ??= new WeakMap<HTMLElement, Map<string, Array<() => void>>>();
+export { mixinDisposers };
 
 const pushDisposable = (host: HTMLElement, mixinName: string, fn: () => void): void => {
     const map = mixinDisposers.get(host) ?? new Map();

@@ -1,7 +1,12 @@
-const onBorderObserve = new WeakMap<HTMLElement, Function[]>(), onContentObserve = new WeakMap<HTMLElement, Function[]>();
+const onBorderObserveSymbol = Symbol.for("dom.ts@onBorderObserve");
+const onBorderObserve = globalThis[onBorderObserveSymbol] ??= new WeakMap<HTMLElement, Function[]>();
+const onContentObserveSymbol = Symbol.for("dom.ts@onContentObserve");
+const onContentObserve = globalThis[onContentObserveSymbol] ??= new WeakMap<HTMLElement, Function[]>();
+
+//
 const unwrapFromQuery = (element: any) => { if (typeof element?.current == "object") { element = element?.element ?? element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; }; return element; }
 
-// TODO: support of fragments
+//
 export const observeContentBox = (element, cb) => {
     if (!onContentObserve.has(element = unwrapFromQuery(element))) {
         const callbacks: Function[] = [];
@@ -34,7 +39,7 @@ export const observeContentBox = (element, cb) => {
     return { disconnect: ()=>(onContentObserve.get(element)?.splice?.(onContentObserve.get(element)?.indexOf(cb) || -1, 1)) };
 };
 
-// TODO: support of fragments
+//
 export const observeBorderBox = (element, cb) => {
     if (!onBorderObserve.has(element = unwrapFromQuery(element))) {
         const callbacks: Function[] = [];

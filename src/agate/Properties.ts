@@ -1,5 +1,8 @@
-const __registeredCssProperties = new Set<string>();
+const __registeredCssPropertiesSymbol = Symbol.for("dom.ts@__registeredCssProperties");
+const __registeredCssProperties = globalThis[__registeredCssPropertiesSymbol] ??= new Set<string>();
+export { __registeredCssProperties };
 
+//
 [   // @ts-ignore
     { name: "--screen-width", syntax: "<length-percentage>", inherits: true, initialValue: "0px" },
     { name: "--screen-height", syntax: "<length-percentage>", inherits: true, initialValue: "0px" },

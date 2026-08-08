@@ -10,7 +10,9 @@ export const getZoom = ()=>{
 }
 
 //
-const zoomValues = new WeakMap<HTMLElement, number>();
+const zoomValuesSymbol = Symbol.for("dom.ts@zoomValues");
+const zoomValues = globalThis[zoomValuesSymbol] ??= new WeakMap<HTMLElement, number>();
+export { zoomValues };
 
 //
 export const zoomOf = (element = document.documentElement) => {

@@ -33,12 +33,20 @@ export const bindMixins = (element, mixin, mixSet?)=>{
 }
 
 // element <--> mixin-set
-export const boundMixinSet  = new WeakMap<any, WeakSet<any>>();
-export const mixinElements  = new WeakMap<any, any>();
+const boundMixinSetSymbol = Symbol.for("dom.ts@boundMixinSet");
+const boundMixinSet = globalThis[boundMixinSetSymbol] ??= new WeakMap<any, WeakSet<any>>();
+export { boundMixinSet };
+const mixinElementsSymbol = Symbol.for("dom.ts@mixinElements");
+const mixinElements = globalThis[mixinElementsSymbol] ??= new WeakMap<any, any>();
+export { mixinElements };
 
 // mixin-set <--> naming
-export const mixinRegistry  = new Map<string, any>();
-export const mixinNamespace = new WeakMap<any, string>;
+const mixinRegistrySymbol = Symbol.for("dom.ts@mixinRegistry");
+const mixinRegistry = globalThis[mixinRegistrySymbol] ??= new Map<string, any>();
+export { mixinRegistry };
+const mixinNamespaceSymbol = Symbol.for("dom.ts@mixinNamespace");
+const mixinNamespace = globalThis[mixinNamespaceSymbol] ??= new WeakMap<any, string>();
+export { mixinNamespace };
 
 //
 export const updateMixinAttributes = (element, mixin)=>{

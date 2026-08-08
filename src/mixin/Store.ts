@@ -1,4 +1,6 @@
-export const namedStoreMaps = new Map<string, WeakMap<any, any>>(); // Map<name, WeakMap<element, obj>>
+const namedStoreMapsSymbol = Symbol.for("dom.ts@namedStoreMaps");
+const namedStoreMaps = globalThis[namedStoreMapsSymbol] ??= new Map<string, WeakMap<any, any>>(); // Map<name, WeakMap<element, obj>>
+export { namedStoreMaps };
 
 //
 export const getStoresOfElement = ( map: Map<any, WeakMap<any, any>>, element: any): Map<any, any> => {

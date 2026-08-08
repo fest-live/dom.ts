@@ -159,21 +159,26 @@ const promiseOrDirect = (promise: any|Promise<any>, cb: (...args: any[]) => any)
 
 
 //
-const blobURLMap = new WeakMap<Blob | File, string>();
-const cacheMap = new Map<string, string>();
+const blobURLMapSymbol = Symbol.for("dom.ts@blobURLMapBroken");
+const blobURLMapBroken = globalThis[blobURLMapSymbol] ??= new WeakMap<Blob | File, string>();
+const cacheMapSymbol = Symbol.for("dom.ts@cacheMapBroken");
+const cacheMapBroken = globalThis[cacheMapSymbol] ??= new Map<string, string>();
+export { blobURLMapBroken, cacheMapBroken };
+
+//
 export const fetchAndCache = (url: string | Blob | File) => {
     if (!url) return null;
 
     //
     if (url instanceof Blob || (url as any) instanceof File) {
-        if (blobURLMap.has(url as Blob | File)) { return blobURLMap.get(url as Blob | File); }
+        if (blobURLMapBroken.has(url as Blob | File)) { return blobURLMapBroken.get(url as Blob | File); }
         const blob = URL.createObjectURL(url as Blob | File);
-        blobURLMap.set(url as Blob | File, blob);
+        blobURLMapBroken.set(url as Blob | File, blob);
         return blob;
     }
 
     //
-    if (cacheMap.has(url as string)) { return cacheMap.get(url as string); }
+    if (cacheMapBroken.has(url as string)) { return cacheMapBroken.get(url as string); }
 
     console.log(url);
     if (URL.canParse(url as string)) {
@@ -182,9 +187,9 @@ export const fetchAndCache = (url: string | Blob | File) => {
             blob?.text?.()?.then?.(console.log.bind(console));
 
             const burl = URL.createObjectURL(blob);
-            blobURLMap.set(blob as Blob | File, burl);
-            cacheMap.set(url as string, burl);
-            cacheMap.set(burl as string, burl);
+            blobURLMapBroken.set(blob as Blob | File, burl);
+            cacheMapBroken.set(url as string, burl);
+            cacheMapBroken.set(burl as string, burl);
             return burl;
         });
     }
@@ -193,9 +198,9 @@ export const fetchAndCache = (url: string | Blob | File) => {
     if (typeof url == "string") {
         const blob = new Blob([url], { type: "text/css" });
         const burl = URL.createObjectURL(blob);
-        blobURLMap.set(blob as Blob | File, burl);
-        cacheMap.set(url as string, burl);
-        cacheMap.set(burl as string, burl);
+        blobURLMapBroken.set(blob as Blob | File, burl);
+        cacheMapBroken.set(url as string, burl);
+        cacheMapBroken.set(burl as string, burl);
         return burl;
     }
 
@@ -224,7 +229,7 @@ export const loadStyleSheet = (inline: string | File | Blob, base?: [any, any], 
     //
     promiseOrDirect(load, (res?: any | null) => {
         if (base?.[0] && res) {
-            setStyleURL(base, (res instanceof Blob || (res as any) instanceof File) ? blobURLMap.get(res as Blob | File) ?? URL.createObjectURL(res as Blob | File) : res as string, layer);
+            setStyleURL(base, (res instanceof Blob || (res as any) instanceof File) ? blobURLMapBroken.get(res as Blob | File) ?? URL.createObjectURL(res as Blob | File) : res as string, layer);
                 base?.[0].setAttribute("loaded", "");
             }
         })?.catch?.((error: any) => { console.warn("Failed to load style sheet:", error); });
