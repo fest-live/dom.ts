@@ -8,14 +8,19 @@ export const getStoresOfElement = ( map: Map<any, WeakMap<any, any>>, element: a
     return new Map<any, any>((E?.map?.(([n,m])=>[n,m?.get?.(element)])?.filter?.(([n,e])=>!!e)||[]) as any);;
 }
 
+const isWeakCompatible = (element: any) => {
+    return (typeof element == "object" || typeof element == "function") && element != null;
+}
+
 //
-export const bindStore = (element, name, obj) => {
+export const bindStore = (element: any, name: string, obj: any) => {
+    if (!isWeakCompatible(element) && element != null) return element;
     let weakMap = namedStoreMaps.get(name);
     if (!weakMap) {
         weakMap = new WeakMap();
         namedStoreMaps.set(name, weakMap);
     }
-    if (!weakMap.has(element)) {
+    if (!weakMap.has(element) && element != null) {
         weakMap.set(element, obj);
         //if (obj?.behavior) bindBeh(new WeakRef(element), [name, obj], obj?.behavior);
     }
