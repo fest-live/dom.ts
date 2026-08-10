@@ -153,8 +153,9 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     }
 
     //
+    let obRef: WeakRef<MutationObserver> | null = null;
     const handleMutation = (mutation)=>{
-        const observer      = obRef?.deref?.();
+        const observer     = obRef?.deref?.();
         const addedNodes   = unwrapNodesBySelector(mutation.addedNodes);
         const removedNodes = unwrapNodesBySelector(mutation.removedNodes);
 
@@ -270,7 +271,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     });
 
     //
-    const obRef = new WeakRef(observer);
+    obRef = new WeakRef(observer);
     if ((element?.element ?? element) instanceof Node) {
         observer.observe(element = unwrapFromQuery(element), { childList: true, subtree : true });
     }
