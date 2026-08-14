@@ -19,38 +19,30 @@
                 "./assets/fonts/*"
             ],
             "@fest-lib/*": [
-                "../../subsystem/fest/*",
-                "./node_modules/@fest-lib/*"
+                "../../subsystem/fest/*"
             ],
             "@fest-lib/cdnImport": [
-                "../../cdnImport.mjs",
-                "./node_modules/@fest-lib/cdnImport"
+                "../../cdnImport.mjs"
             ],
             "@fest-lib/dom": [
-                "./src/index.ts",
-                "./node_modules/@fest-lib/dom/src/index.ts"
+                "./src/index.ts"
             ],
             "@fest-lib/core": [
-                "../core.ts/src/index.ts",
-                "./node_modules/@fest-lib/core/src/index.ts"
+                "../core.ts/src/index.ts"
             ],
             "@fest-lib/veela": [
                 "../veela.css/src/index.ts",
-                "../../subsystem/fest/veela/index.ts",
-                "./node_modules/@fest-lib/veela/src/index.ts"
+                "../../subsystem/fest/veela/index.ts"
             ],
             "@fest-lib/veela-runtime": [
                 "../veela.css/src/index.ts",
-                "../../subsystem/fest/veela/index.ts",
-                "./node_modules/@fest-lib/veela-runtime/src/index.ts"
+                "../../subsystem/fest/veela/index.ts"
             ],
             "veela-lib": [
-                "../veela.css/src/scss/lib/index.scss",
-                "./node_modules/@fest-lib/veela-lib/src/index.ts"
+                "../veela.css/src/scss/lib/index.scss"
             ],
             "veela-lib/*": [
-                "../veela.css/src/scss/lib/*",
-                "./node_modules/@fest-lib/veela-lib/*/src/index.ts"
+                "../veela.css/src/scss/lib/*"
             ]
         },
         "target": "ESNext",
@@ -70,11 +62,11 @@
         "allowUnreachableCode": true,
         "allowUnusedLabels": true,
         "noImplicitAny": false,
-        "declaration": false,
         "noImplicitThis": false,
+        "declaration": true,
+        "declarationMap": true,
         "inlineSources": true,
         "inlineSourceMap": true,
-        "sourceMap": false,
         "typeRoots": [
             "plugins/global.d.ts"
         ],
