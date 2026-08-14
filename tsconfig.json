@@ -10,6 +10,7 @@
         "./src/**/*.jsx"
     ],
     "compilerOptions": {
+        "rootDir": "../",
         "outDir": "./dist/",
         "paths": {
             "assets/*": [
