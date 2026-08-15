@@ -1,18 +1,20 @@
 import { camelToKebab, hasValue, isValidNumber, tryStringAsNumber } from "@fest-lib/core";
 
 //
-/** Constructable stylesheets are unavailable in some runtimes (e.g. extension service workers). */
+const OWNER = "DOM";
+const styleElement = typeof document != "undefined" ? document.createElement("style") : null;
+
+if (styleElement) {
+    typeof document != "undefined" ? document.querySelector("head")?.appendChild?.(styleElement) : null;
+    styleElement.dataset.owner = OWNER;
+}
+
 const supportsConstructableStylesheet = (): boolean =>
     typeof globalThis !== "undefined" &&
     typeof (globalThis as unknown as { CSSStyleSheet?: unknown }).CSSStyleSheet === "function";
 
-/** `CSSStyleSheet.replaceSync()` rejects CSS containing `@import` (constructable sheet limitation). */
 const cssTextRequiresInlineStyleElement = (css: string): boolean =>
     typeof css === "string" && /@import\b/i.test(css);
-
-//
-const OWNER = "DOM",
-    styleElement = typeof document != "undefined" ? document.createElement("style") : null;
 
 //
 if (styleElement) {
@@ -257,174 +259,6 @@ export const getStyleRule = (
 function styleElementGlobal(): HTMLStyleElement | null {
     return styleElement ?? null;
 }
-
-//
-const hasTypedOM =
-    typeof CSSStyleValue !== "undefined" &&
-    typeof CSSUnitValue !== "undefined";
-
-const isStyleValue = (val: any): val is CSSStyleValue =>
-    hasTypedOM && val instanceof CSSStyleValue;
-
-const isUnitValue = (val: any): val is CSSUnitValue =>
-    hasTypedOM && val instanceof CSSUnitValue;
-
-const setPropertyIfNotEqual = (
-    styleRef: CSSStyleDeclaration,
-    kebab: string,
-    value: string | null,
-    importance = ""
-) => {
-    if (!styleRef || !kebab) return;
-
-    if (value == null) {
-        if (styleRef.getPropertyValue(kebab) !== "") {
-        styleRef.removeProperty(kebab);
-        }
-        return;
-    }
-
-    const old = styleRef.getPropertyValue(kebab);
-    if (old !== value) {
-        styleRef.setProperty(kebab, value, importance);
-    }
-};
-
-//
-export const setStylePropertyTyped = (
-    element?: HTMLElement | null,
-    name?: string,
-    value?: any,
-    importance = ""
-) => {
-    if (!element || !name) return element;
-
-    const kebab = camelToKebab(name);
-    const styleRef = element.style;
-    const styleMapRef: StylePropertyMap | undefined =
-        (element as any).attributeStyleMap ?? (element as any).styleMap;
-
-    // если нет Typed OM или styleMap — уходим в обычный путь
-    if (!hasTypedOM || !styleMapRef) {
-        return setStylePropertyFallback(element, name, value, importance);
-    }
-
-    // распаковываем ref
-    let val: any = hasValue(value) && !(isStyleValue(value) || isUnitValue(value)) ? value?.value : value;
-
-    // null/undefined -> удалить свойство
-    if (val == null) {
-        styleMapRef.delete?.(kebab);
-        // для синхронизации лучше тоже подчистить обычный style
-        if (styleRef) {
-            setPropertyIfNotEqual(styleRef, kebab, null, importance);
-        }
-        return element;
-    }
-
-    // уже CSSStyleValue
-    if (isStyleValue(val)) {
-        const old = styleMapRef.get(kebab);
-        // сравниваем по value/unit, но НЕ мутируем старый
-        if (isUnitValue(val) && isUnitValue(old)) {
-            if (old.value === val.value && old.unit === val.unit) {
-                return element; // без изменений
-            }
-        } else if (old === val) {
-            return element; // тот же объект, ничего не делаем
-        }
-        styleMapRef.set(kebab, val); // просто ставим новое значение
-        return element;
-    }
-
-    // число -> CSSUnitValue('number') или обычная строка
-    if (typeof val === "number") {
-        // здесь два варианта:
-        // 1) использовать CSS.px / CSS.number, если хочешь Typed OM полноценно
-        // 2) оставить как string, чтобы не плодить CSSUnitValue без нужды
-        //
-        // Пример с CSS.number (если поддерживается):
-        if ((CSS as any)?.number && !kebab.startsWith("--")) {
-            const newVal: CSSUnitValue = (CSS as any).number(val);
-            const old = styleMapRef.get(kebab);
-            if (isUnitValue(old) && old.value === newVal.value && old.unit === newVal.unit) {
-                return element;
-            }
-            styleMapRef.set(kebab, newVal);
-            return element;
-        } else {
-            // fallback в обычный стиль
-            setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
-            return element;
-        }
-    }
-
-    // строки и всё остальное: попытка Typed OM -> fallback в строку
-    if (typeof val === "string" && !isStyleValue(val)) {
-        const maybeNum = tryStringAsNumber(val);
-        if (typeof maybeNum === "number" && (CSS as any)?.number && !kebab.startsWith("--")) {
-            const newVal: CSSUnitValue = (CSS as any).number(maybeNum);
-            const old = styleMapRef.get(kebab);
-            if (isUnitValue(old) && old.value === newVal.value && old.unit === newVal.unit) {
-                return element;
-            }
-            styleMapRef.set(kebab, newVal);
-            return element;
-        } else {
-            // обычное строковое значение
-            setPropertyIfNotEqual(styleRef, kebab, val, importance);
-            return element;
-        }
-    }
-
-    // любой другой тип -> строка
-    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
-    return element;
-};
-
-//
-export const setStylePropertyFallback = (
-    element?: HTMLElement | null,
-    name?: string,
-    value?: any,
-    importance = ""
-) => {
-    if (!element || !name) return element;
-
-    const kebab = camelToKebab(name);
-    const styleRef = element.style;
-    if (!styleRef) return element;
-
-    // распаковываем ref, если нужно
-    let val: any = (hasValue(value) && !(isStyleValue(value) || isUnitValue(value))) ? value?.value : value;
-
-    // пробуем число из строки
-    if (typeof val === "string" && !isStyleValue(val)) {
-        val = tryStringAsNumber(val) ?? val;
-    }
-
-    // null/undefined — убрать
-    if (val == null) {
-        setPropertyIfNotEqual(styleRef, kebab, null, importance);
-        return element;
-    }
-
-    // CSSStyleValue -> строка
-    if (isStyleValue(val)) {
-        setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
-        return element;
-    }
-
-    // число -> строка (на твой вкус можно добавить 'px' для некоторых свойств)
-    if (typeof val === "number") {
-        setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
-        return element;
-    }
-
-    // всё остальное -> строка
-    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
-    return element;
-};
 
 //
 const promiseOrDirect = (promise: any|Promise<any>, cb: (...args: any[]) => any) => {
@@ -675,19 +509,566 @@ export const getAdoptedStyleRule = (selector: string, layerName: string | null =
 };
 
 //
-export const setStyleProperty = (element?: HTMLElement | null, name?: string, value?: any, importance = "") => {
-    return hasTypedOM ? setStylePropertyTyped(element, name, value, importance) : setStylePropertyFallback(element, name, value, importance);
-}
+
+// ===== Типы и константы из style.ts =====
+
+type ReactiveStyleSlot = {
+    marker: string;
+    value: any;
+    multipliedByUnit?: string;
+};
+
+type TypedStyleSlot = {
+    marker: string;
+    value: any;
+    multipliedByUnit?: string;
+};
+
+type TypedOMLeaf = {
+    slot: ReactiveStyleSlot;
+    value: any;
+};
+
+type NumericTreeResult = {
+    root: any;
+    leaves: TypedOMLeaf[];
+};
+
+type NumericToken =
+    | { kind: "number"; value: number; unit: string | null }
+    | { kind: "variable"; marker: string }
+    | { kind: "identifier"; value: string }
+    | { kind: "symbol"; value: "+" | "-" | "*" | "/" | "(" | ")" | "," };
 
 //
-export const setStyleInRule = (selector: string, name: string, value: any) => {
-    return setStyleProperty(getStyleRule(selector), name, value);
+const CSS_DIMENSION_UNITS = new Set([
+    "%", "px", "cm", "mm", "q", "in", "pc", "pt",
+    "em", "ex", "ch", "cap", "ic", "lh",
+    "rem", "rex", "rch", "rcap", "ric", "rlh",
+    "vw", "vh", "vi", "vb", "vmin", "vmax",
+    "svw", "svh", "svi", "svb", "svmin", "svmax",
+    "lvw", "lvh", "lvi", "lvb", "lvmin", "lvmax",
+    "dvw", "dvh", "dvi", "dvb", "dvmin", "dvmax",
+    "cqw", "cqh", "cqi", "cqb", "cqmin", "cqmax",
+    "deg", "grad", "rad", "turn",
+    "s", "ms",
+    "hz", "khz",
+    "dpi", "dpcm", "dppx", "x",
+    "fr",
+]);
+
+// ===== Детекторы =====
+
+/**
+ * Определяет нативные CSS Typed OM значения (CSSUnitValue, CSSMathValue, etc.)
+ */
+export const isNativeCSSStyleValue = (value: any): boolean => {
+    if (value == null || typeof value !== "object") return false;
+
+    try {
+        const CSSStyleValueCtor = (globalThis as any).CSSStyleValue;
+        if (typeof CSSStyleValueCtor === "function" && value instanceof CSSStyleValueCtor) {
+            return true;
+        }
+
+        for (let prototype = value; prototype; prototype = Object.getPrototypeOf(prototype)) {
+            if (prototype?.constructor?.name === "CSSStyleValue") {
+                return true;
+            }
+        }
+    } catch {}
+
+    return false;
+};
+
+/**
+ * Определяет реактивные значения { value: ... }
+ */
+export const isReactiveStyleValue = (value: any): boolean => {
+    if (value == null || typeof value !== "object" || isNativeCSSStyleValue(value)) {
+        return false;
+    }
+
+    try {
+        return "value" in value;
+    } catch {
+        return false;
+    }
+};
+
+// ===== Вспомогательные функции для Typed OM =====
+
+const getWindowConstructor = (win: any, name: string): any => {
+    return win?.[name] ?? (globalThis as any)?.[name];
+};
+
+const getCSSUnitFactoryName = (unit: string): string => {
+    switch (unit.toLowerCase()) {
+        case "%": return "percent";
+        case "q": return "Q";
+        case "hz": return "Hz";
+        case "khz": return "kHz";
+        case "fr": return "flex";
+        default: return unit.toLowerCase();
+    }
 };
 
 //
+const getCSSUnitConstructorName = (unit: string): string => {
+    return unit.toLowerCase() === "%" ? "percent" : unit.toLowerCase();
+};
+
+/**
+ * Создает CSS.px(value), CSS.deg(value), CSS.number(value), etc.
+ */
+export const createTypedUnitValue = (win: any, unit: string, value: number): any => {
+    const CSSNamespace = win?.CSS;
+    const factoryName = getCSSUnitFactoryName(unit);
+    const factory = CSSNamespace?.[factoryName];
+
+    if (typeof factory === "function") {
+        return factory.call(CSSNamespace, value);
+    }
+
+    const CSSUnitValueCtor = getWindowConstructor(win, "CSSUnitValue");
+    if (typeof CSSUnitValueCtor !== "function") {
+        throw new TypeError(`Typed OM does not support CSS unit "${unit}"`);
+    }
+
+    return new CSSUnitValueCtor(value, getCSSUnitConstructorName(unit));
+};
+
+/**
+ * Токенизация CSS-выражений для парсинга calc(), min(), max(), clamp()
+ */
+const tokenizeNumericCSS = (source: string): NumericToken[] => {
+    const tokens: NumericToken[] = [];
+    let cursor = 0;
+
+    while (cursor < source.length) {
+        const rest = source.slice(cursor);
+        const whitespace = /^\s+/.exec(rest);
+
+        if (whitespace) {
+            cursor += whitespace[0].length;
+            continue;
+        }
+
+        const number = /^(?:\d*\.\d+|\d+\.?\d*)(?:[eE][+-]?\d+)?/.exec(rest);
+        if (number) {
+            cursor += number[0].length;
+            const unitMatch = /^(%|[a-zA-Z]+)/.exec(source.slice(cursor));
+            const unit = unitMatch?.[0] ?? null;
+
+            if (unitMatch) cursor += unitMatch[0].length;
+
+            tokens.push({
+                kind: "number",
+                value: Number(number[0]),
+                unit: unit == null ? null : unit.toLowerCase(),
+            });
+            continue;
+        }
+
+        const identifier = /^[a-zA-Z_][a-zA-Z0-9_-]*/.exec(rest);
+        if (identifier) {
+            tokens.push({ kind: "identifier", value: identifier[0].toLowerCase() });
+            cursor += identifier[0].length;
+            continue;
+        }
+
+        const symbol = rest[0] as "+" | "-" | "*" | "/" | "(" | ")" | ",";
+        if (["+", "-", "*", "/", "(", ")", ","].includes(symbol)) {
+            tokens.push({ kind: "symbol", value: symbol });
+            cursor++;
+            continue;
+        }
+
+        throw new SyntaxError(`Unsupported token near "${rest}"`);
+    }
+
+    return tokens;
+};
+
+/**
+ * Парсер Typed OM математических выражений
+ */
+class NumericTypedOMParser {
+    private index = 0;
+
+    constructor(
+        private readonly tokens: NumericToken[],
+        private readonly win: any,
+    ) {}
+
+    parse(): any {
+        const root = this.parseSum();
+        if (this.index !== this.tokens.length) {
+            throw new SyntaxError("Unexpected trailing expression");
+        }
+        return root;
+    }
+
+    private current(): NumericToken | undefined {
+        return this.tokens[this.index];
+    }
+
+    private consume(): NumericToken {
+        const token = this.tokens[this.index];
+        if (!token) throw new SyntaxError("Unexpected end of expression");
+        this.index++;
+        return token;
+    }
+
+    private consumeSymbol(symbol: "+" | "-" | "*" | "/" | "(" | ")" | ","): void {
+        const token = this.consume();
+        if (token.kind !== "symbol" || token.value !== symbol) {
+            throw new SyntaxError(`Expected "${symbol}"`);
+        }
+    }
+
+    private matchesSymbol(symbol: "+" | "-" | "*" | "/" | "(" | ")" | ","): boolean {
+        const token = this.current();
+        return token?.kind === "symbol" && token.value === symbol;
+    }
+
+    private createMath(name: string, ...values: any[]): any {
+        const Constructor = getWindowConstructor(this.win, name);
+        if (typeof Constructor !== "function") {
+            throw new TypeError(`${name} is not supported`);
+        }
+        return new Constructor(...values);
+    }
+
+    private parseSum(): any {
+        let value = this.parseProduct();
+
+        while (this.matchesSymbol("+") || this.matchesSymbol("-")) {
+            const operator = this.consume();
+            const right = this.parseProduct();
+
+            if (operator.kind !== "symbol") {
+                throw new SyntaxError("Expected sum operator");
+            }
+
+            if (operator.value === "+") {
+                value = this.createMath("CSSMathSum", value, right);
+            } else {
+                value = this.createMath("CSSMathSum", value, this.createMath("CSSMathNegate", right));
+            }
+        }
+
+        return value;
+    }
+
+    private parseProduct(): any {
+        let value = this.parseUnary();
+
+        while (this.matchesSymbol("*") || this.matchesSymbol("/")) {
+            const operator = this.consume();
+            const right = this.parseUnary();
+
+            if (operator.kind !== "symbol") {
+                throw new SyntaxError("Expected product operator");
+            }
+
+            if (operator.value === "*") {
+                value = this.createMath("CSSMathProduct", value, right);
+            } else {
+                value = this.createMath("CSSMathProduct", value, this.createMath("CSSMathInvert", right));
+            }
+        }
+
+        return value;
+    }
+
+    private parseUnary(): any {
+        if (this.matchesSymbol("+")) {
+            this.consume();
+            return this.parseUnary();
+        }
+
+        if (this.matchesSymbol("-")) {
+            this.consume();
+            return this.createMath("CSSMathNegate", this.parseUnary());
+        }
+
+        return this.parsePrimary();
+    }
+
+    private parsePrimary(): any {
+        const token = this.consume();
+
+        if (token.kind === "number") {
+            return createTypedUnitValue(this.win, token.unit ?? "number", token.value);
+        }
+
+        if (token.kind === "symbol" && token.value === "(") {
+            const value = this.parseSum();
+            this.consumeSymbol(")");
+            return value;
+        }
+
+        if (token.kind === "identifier") {
+            return this.parseFunction(token.value);
+        }
+
+        throw new SyntaxError("Expected a numeric value");
+    }
+
+    private parseFunction(name: string): any {
+        this.consumeSymbol("(");
+
+        if (name === "calc") {
+            const value = this.parseSum();
+            this.consumeSymbol(")");
+            return value;
+        }
+
+        const values: any[] = [];
+        if (!this.matchesSymbol(")")) {
+            values.push(this.parseSum());
+            while (this.matchesSymbol(",")) {
+                this.consume();
+                values.push(this.parseSum());
+            }
+        }
+
+        this.consumeSymbol(")");
+
+        if (name === "min") {
+            if (values.length === 0) throw new SyntaxError("min() requires a value");
+            return this.createMath("CSSMathMin", ...values);
+        }
+
+        if (name === "max") {
+            if (values.length === 0) throw new SyntaxError("max() requires a value");
+            return this.createMath("CSSMathMax", ...values);
+        }
+
+        if (name === "clamp") {
+            if (values.length !== 3) throw new SyntaxError("clamp() requires three values");
+            return this.createMath("CSSMathClamp", values[0], values[1], values[2]);
+        }
+
+        throw new SyntaxError(`Unsupported function "${name}"`);
+    }
+}
+
+/**
+ * Парсит строку CSS-выражения в Typed OM дерево
+ */
+const parseToTypedOM = (cssValue: string, win: any): any => {
+    try {
+        const tokens = tokenizeNumericCSS(cssValue);
+        const parser = new NumericTypedOMParser(tokens, win);
+        return parser.parse();
+    } catch {
+        return null;
+    }
+};
+
+// ... (весь остальной код из dom.ts остается без изменений до setStyleProperty)
+const hasTypedOM =
+    typeof CSSStyleValue !== "undefined" &&
+    typeof CSSUnitValue !== "undefined";
+
+//
+const isStyleValue = (val: any): val is CSSStyleValue =>
+    hasTypedOM && val instanceof CSSStyleValue;
+
+//
+const isUnitValue = (val: any): val is CSSUnitValue =>
+    hasTypedOM && val instanceof CSSUnitValue;
+
+//
+const setPropertyIfNotEqual = (
+    styleRef: CSSStyleDeclaration,
+    kebab: string,
+    value: string | null,
+    importance = ""
+) => {
+    if (!styleRef || !kebab) return;
+
+    if (value == null) {
+        if (styleRef.getPropertyValue(kebab) !== "") {
+            styleRef.removeProperty(kebab);
+        }
+        return;
+    }
+
+    const old = styleRef.getPropertyValue(kebab);
+    if (old !== value) {
+        styleRef.setProperty(kebab, value, importance);
+    }
+};
+
+/**
+ * Улучшенная версия с парсингом Typed OM выражений
+ */
+export const setStylePropertyTyped = (
+    element?: HTMLElement | null,
+    name?: string,
+    value?: any,
+    importance = ""
+) => {
+    if (!element || !name) return element;
+
+    const kebab = camelToKebab(name);
+    const styleRef = element.style;
+    const styleMapRef: StylePropertyMap | undefined =
+        (element as any).attributeStyleMap ?? (element as any).styleMap;
+
+    if (!hasTypedOM || !styleMapRef) {
+        return setStylePropertyFallback(element, name, value, importance);
+    }
+
+    const win: any = element.ownerDocument?.defaultView ?? globalThis;
+
+    // Распаковываем реактивное значение
+    let val: any = hasValue(value) && isReactiveStyleValue(value) 
+        ? value.value 
+        : value;
+
+    // null/undefined -> удалить
+    if (val == null) {
+        styleMapRef.delete?.(kebab);
+        if (styleRef) {
+            setPropertyIfNotEqual(styleRef, kebab, null, importance);
+        }
+        return element;
+    }
+
+    // Уже CSSStyleValue -> установить напрямую
+    if (isNativeCSSStyleValue(val)) {
+        const old = styleMapRef.get(kebab);
+        if (isUnitValue(val) && isUnitValue(old)) {
+            if (old.value === val.value && old.unit === val.unit) {
+                return element;
+            }
+        } else if (old === val) {
+            return element;
+        }
+        styleMapRef.set(kebab, val);
+        return element;
+    }
+
+    // Число -> CSS.number() или строка
+    if (typeof val === "number") {
+        if ((CSS as any)?.number && !kebab.startsWith("--")) {
+            const newVal: CSSUnitValue = (CSS as any).number(val);
+            const old = styleMapRef.get(kebab);
+            if (isUnitValue(old) && old.value === newVal.value && old.unit === newVal.unit) {
+                return element;
+            }
+            styleMapRef.set(kebab, newVal);
+            return element;
+        } else {
+            setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+            return element;
+        }
+    }
+
+    // Строка -> попытка парсинга или обычная установка
+    if (typeof val === "string") {
+        // Попытка распарсить calc()/min()/max()/clamp()
+        if (/\b(calc|min|max|clamp)\s*\(/.test(val)) {
+            const parsed = parseToTypedOM(val, win);
+            if (parsed) {
+                try {
+                    styleMapRef.set(kebab, parsed);
+                    return element;
+                } catch {
+                    // Fallback на строку
+                }
+            }
+        }
+
+        // Попытка конвертировать в число
+        const maybeNum = tryStringAsNumber(val);
+        if (typeof maybeNum === "number" && (CSS as any)?.number && !kebab.startsWith("--")) {
+            const newVal: CSSUnitValue = (CSS as any).number(maybeNum);
+            const old = styleMapRef.get(kebab);
+            if (isUnitValue(old) && old.value === newVal.value && old.unit === newVal.unit) {
+                return element;
+            }
+            styleMapRef.set(kebab, newVal);
+            return element;
+        }
+
+        // Обычное строковое значение
+        setPropertyIfNotEqual(styleRef, kebab, val, importance);
+        return element;
+    }
+
+    // Любой другой тип -> строка
+    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+    return element;
+};
+
+//
+export const setStylePropertyFallback = (
+    element?: HTMLElement | null,
+    name?: string,
+    value?: any,
+    importance = ""
+) => {
+    if (!element || !name) return element;
+
+    const kebab = camelToKebab(name);
+    const styleRef = element.style;
+    if (!styleRef) return element;
+
+    let val: any = (hasValue(value) && isReactiveStyleValue(value)) 
+        ? value.value 
+        : value;
+
+    if (typeof val === "string" && !isNativeCSSStyleValue(val)) {
+        val = tryStringAsNumber(val) ?? val;
+    }
+
+    if (val == null) {
+        setPropertyIfNotEqual(styleRef, kebab, null, importance);
+        return element;
+    }
+
+    if (isNativeCSSStyleValue(val)) {
+        setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+        return element;
+    }
+
+    if (typeof val === "number") {
+        setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+        return element;
+    }
+
+    setPropertyIfNotEqual(styleRef, kebab, String(val), importance);
+    return element;
+};
+
+//
+export const setStyleProperty = (
+    element?: HTMLElement | null,
+    name?: string,
+    value?: any,
+    importance = ""
+) => {
+    return hasTypedOM 
+        ? setStylePropertyTyped(element, name, value, importance) 
+        : setStylePropertyFallback(element, name, value, importance);
+};
+
+// Остальной код dom.ts без изменений...
+
+export const setStyleInRule = (selector: string, name: string, value: any) => {
+    return setStyleProperty(getStyleRule(selector) as any, name, value);
+};
+
 export const setStyleRule = (selector: string, sheet: object) => {
     const rule = getStyleRule(selector);
-    Object.entries(sheet).forEach(([propName, propValue]) => setStyleProperty(rule, propName, propValue));
+    Object.entries(sheet).forEach(([propName, propValue]) => 
+        setStyleProperty(rule as any, propName, propValue)
+    );
     return rule;
 };
 
@@ -783,6 +1164,7 @@ const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean =
     }
 };
 
+//
 export const loadAsAdopted = (styles: string | Blob | File, layerName: string | null = null) => {
     if (!supportsConstructableStylesheet()) {
         if (typeof styles === "string") {
