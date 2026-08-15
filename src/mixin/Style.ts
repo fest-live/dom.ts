@@ -433,9 +433,11 @@ const promiseOrDirect = (promise: any|Promise<any>, cb: (...args: any[]) => any)
 }
 
 //
-const blobURLMap = new WeakMap<Blob | File, string | Promise<string>>();
-const cacheMap = new Map<string, string | Promise<string>>();
-
+const blobURLMapSymbol = Symbol.for("dom.ts@blobURLMap");
+const blobURLMap = globalThis[blobURLMapSymbol] ??= new WeakMap<Blob | File, string | Promise<string>>();
+const cacheMapSymbol = Symbol.for("dom.ts@cacheMap");
+const cacheMap = globalThis[cacheMapSymbol] ??= new Map<string, string | Promise<string>>();
+export { blobURLMap, cacheMap };
 //
 export const fetchAndCache = (url: string | Blob | File): any => {
     if (!url) return null;
@@ -536,10 +538,15 @@ export const fetchAsInline = (url: string | Blob | File): Promise<string>|string
 }
 
 //
-const adoptedSelectorMap = new Map<string, CSSStyleSheet>();
-const adoptedShadowSelectorMap = new WeakMap<ShadowRoot, Map<string, CSSStyleSheet>>();
-const adoptedLayerMap = new Map<string, CSSLayerBlockRule>();
-const adoptedShadowLayerMap = new WeakMap<ShadowRoot, Map<string, CSSLayerBlockRule>>();
+const adoptedSelectorMapSymbol = Symbol.for("dom.ts@adoptedSelectorMap");
+const adoptedSelectorMap = globalThis[adoptedSelectorMapSymbol] ??= new Map<string, CSSStyleSheet>();
+const adoptedShadowSelectorMapSymbol = Symbol.for("dom.ts@adoptedShadowSelectorMap");
+const adoptedShadowSelectorMap = globalThis[adoptedShadowSelectorMapSymbol] ??= new WeakMap<ShadowRoot, Map<string, CSSStyleSheet>>();
+const adoptedLayerMapSymbol = Symbol.for("dom.ts@adoptedLayerMap");
+const adoptedLayerMap = globalThis[adoptedLayerMapSymbol] ??= new Map<string, CSSLayerBlockRule>();
+const adoptedShadowLayerMapSymbol = Symbol.for("dom.ts@adoptedShadowLayerMap");
+const adoptedShadowLayerMap = globalThis[adoptedShadowLayerMapSymbol] ??= new WeakMap<ShadowRoot, Map<string, CSSLayerBlockRule>>();
+export { adoptedSelectorMap, adoptedShadowSelectorMap, adoptedLayerMap, adoptedShadowLayerMap };
 
 //
 export const getAdoptedStyleRule = (selector: string, layerName: string | null = "ux-query", basis: any = null) => {
@@ -746,11 +753,18 @@ export const preloadStyle = (styles: string)=>{
 }
 
 //
-export const adoptedMap = new Map<string, CSSStyleSheet>();
-export const adoptedBlobMap = new WeakMap<Blob | File, CSSStyleSheet>();
+const adoptedMapSymbol = Symbol.for("dom.ts@adoptedMap");
+const adoptedMap = globalThis[adoptedMapSymbol] ??= new Map<string, CSSStyleSheet>();
+const adoptedBlobMapSymbol = Symbol.for("dom.ts@adoptedBlobMap");
+const adoptedBlobMap = globalThis[adoptedBlobMapSymbol] ??= new WeakMap<Blob | File, CSSStyleSheet>();
+export { adoptedMap, adoptedBlobMap };
 
 //
-let layerCounter = 0;
+const layerCounterSymbol = Symbol.for("dom.ts@layerCounter");
+const layerCounter = globalThis[layerCounterSymbol] ??= 0;
+export { layerCounter };
+
+//
 const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean => {
     if (!sheet || !cssText) return false;
     try {
