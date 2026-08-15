@@ -1,3 +1,10 @@
+/*
+ * Filename: Observer.ts
+ * FullPath: modules/projects/dom.ts/src/mixin/Observer.ts
+ * Change date and time: 20.41.00_15.08.2026
+ * Reason for changes: Guard empty CSS selectors — querySelectorAll("") throws
+ * "The provided selector is empty" during MutationObserver unwrap.
+ */
 const onBorderObserveSymbol = Symbol.for("dom.ts@onBorderObserve");
 const onBorderObserve = globalThis[onBorderObserveSymbol] ??= new WeakMap<HTMLElement, Function[]>();
 const onContentObserveSymbol = Symbol.for("dom.ts@onContentObserve");
@@ -5,6 +12,35 @@ const onContentObserve = globalThis[onContentObserveSymbol] ??= new WeakMap<HTML
 
 //
 const unwrapFromQuery = (element: any) => { if (typeof element?.current == "object") { element = element?.element ?? element?.current ?? (typeof element?.self == "object" ? element?.self : null) ?? element; }; return element; }
+
+/** INVARIANT: `querySelectorAll` / `matches` reject "" — normalize before DOM APIs. */
+const normalizeSelector = (selector: any, fallback = "*"): string => {
+    if (typeof selector !== "string") return fallback;
+    const trimmed = selector.trim();
+    return trimmed || fallback;
+};
+
+const safeQuerySelectorAll = (el: any, selector: string): Element[] => {
+    if (!el || typeof el.querySelectorAll !== "function") return [];
+    const sel = normalizeSelector(selector, "");
+    if (!sel) return [];
+    try {
+        return Array.from(el.querySelectorAll(sel) || []) as Element[];
+    } catch {
+        return [];
+    }
+};
+
+const safeMatches = (el: any, selector: string): boolean => {
+    if (!el || typeof el.matches !== "function") return false;
+    const sel = normalizeSelector(selector, "");
+    if (!sel) return false;
+    try {
+        return !!el.matches(sel);
+    } catch {
+        return false;
+    }
+};
 
 //
 export const observeContentBox = (element, cb) => {
@@ -105,6 +141,7 @@ export const observeAttribute = (element, attribute, cb) => {
 
 //
 export const observeAttributeBySelector = (element, selector, attribute, cb) => {
+    const sel = normalizeSelector(selector);
     const attributeList = new Set<string>([...(attribute.split(",") || [attribute])].map((s) => s.trim()));
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
@@ -113,17 +150,17 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
                 const removedNodes = Array.from(mutation.removedNodes) || [];
 
                 //
-                addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=>Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
-                removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=>Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
+                addedNodes.push(...Array.from(mutation.addedNodes || []).flatMap((el)=> safeQuerySelectorAll(el, sel)));
+                removedNodes.push(...Array.from(mutation.removedNodes || []).flatMap((el)=> safeQuerySelectorAll(el, sel)));
 
                 //
-                [...new Set(addedNodes)]?.filter((el: any)=>el?.matches?.(selector))?.map?.((target)=>{
+                [...new Set(addedNodes)]?.filter((el: any)=> safeMatches(el, sel))?.map?.((target)=>{
                     attributeList.forEach((attribute)=>{
                         cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer);
                     });
                 });
             } else
-            if ((mutation.target as HTMLElement)?.matches?.(selector) && (mutation.attributeName && attributeList.has(mutation.attributeName))) {
+            if (safeMatches(mutation.target, sel) && (mutation.attributeName && attributeList.has(mutation.attributeName))) {
                 cb(mutation, observer);
             }
         }
@@ -140,16 +177,19 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
     });
 
     //
-    [...element.querySelectorAll(selector)].map((target)=>attributeList.forEach((attribute)=>cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer)));
+    safeQuerySelectorAll(element, sel).map((target)=>attributeList.forEach((attribute)=>cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer)));
     return observer;
 };
 
 //
 export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) => {
+    // WHY: `""` is a string so it bypasses the default `"*"` and throws in querySelectorAll.
+    const sel = normalizeSelector(selector);
+
     const unwrapNodesBySelector = (nodes: NodeListOf<Element>): Element[]=>{
         const $nodes = Array.from(nodes || []) || [];
-        $nodes.push(...Array.from(nodes || []).flatMap((el)=> Array.from((el as HTMLElement)?.querySelectorAll?.(selector) || []) as Element[]));
-        return [...Array.from((new Set($nodes)).values())].filter((el) => (<HTMLElement>el)?.matches?.(selector));
+        $nodes.push(...Array.from(nodes || []).flatMap((el)=> safeQuerySelectorAll(el, sel)));
+        return [...Array.from((new Set($nodes)).values())].filter((el) => safeMatches(el, sel));
     }
 
     //
@@ -212,7 +252,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     };
 
     //
-    if (selector?.includes?.(":hover") && selector?.includes?.(":active")) {
+    if (sel?.includes?.(":hover") && sel?.includes?.(":active")) {
         element.addEventListener("pointerover", handleCome, factors);
         element.addEventListener("pointerout", handleOutCome, factors);
         element.addEventListener("pointerdown", handleCome, factors);
@@ -228,7 +268,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     }
 
     //
-    if (selector?.includes?.(":hover")) {
+    if (sel?.includes?.(":hover")) {
         element.addEventListener("pointerover", handleCome, factors);
         element.addEventListener("pointerout", handleOutCome, factors);
         return { disconnect: ()=>{
@@ -238,7 +278,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     }
 
     //
-    if (selector?.includes?.(":active")) {
+    if (sel?.includes?.(":active")) {
         element.addEventListener("pointerdown", handleCome, factors);
         element.addEventListener("pointerup", handleOutCome, factors);
         element.addEventListener("pointercancel", handleOutCome, factors);
@@ -250,7 +290,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     }
 
     //
-    if (selector?.includes?.(":focus") && selector?.includes?.(":focus-within") && selector?.includes?.(":focus-visible")) {
+    if (sel?.includes?.(":focus") && sel?.includes?.(":focus-within") && sel?.includes?.(":focus-visible")) {
         element.addEventListener("focusin", handleCome, factors);
         element.addEventListener("focusout", handleOutCome, factors);
         element.addEventListener("click", handleFocusClick, factors);
@@ -275,7 +315,7 @@ export const observeBySelector = (element, selector = "*", cb = (mut, obs)=>{}) 
     if ((element?.element ?? element) instanceof Node) {
         observer.observe(element = unwrapFromQuery(element), { childList: true, subtree : true });
     }
-    const selected = selector ? Array.from(element?.querySelectorAll?.(selector) || []) : [];
+    const selected = safeQuerySelectorAll(element, sel);
     if (selected.length > 0) { cb?.({ addedNodes: selected, removedNodes: [] }, observer); };
     return observer;
 };
