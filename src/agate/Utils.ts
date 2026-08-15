@@ -110,7 +110,7 @@ export const setIdleInterval = (cb, timeout = 1000, ...args)=>{
             ]);
         }
         status.cancel = ()=>{};
-    }, {timeout});
+    }, timeout);
     return status?.cancel;
 }
 
