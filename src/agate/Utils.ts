@@ -331,23 +331,34 @@ export const containsOrSelf = (a: any, b: any, ev?: Event)=>{
 
 // get by selector self or parent, matches by selector, include shadow DOM host
 export const MOCElement = (element: HTMLElement | null, selector: string, ev?: Event): HTMLElement | null => {
+    // WHY: matches("") / closest("") throw "The provided selector is empty".
+    const sel = typeof selector === "string" ? selector.trim() : "";
+    if (!sel) return element ?? null;
+
     // Use composedPath() for shadow DOM compatibility if event is provided
     if (ev?.composedPath && typeof ev.composedPath === 'function') {
         const path = ev.composedPath();
         // Search through the composed path for matching elements
         for (const node of path) {
             if (node instanceof HTMLElement || node instanceof Element) {
-                if ((node as HTMLElement).matches?.(selector)) {
-                    return node as HTMLElement;
-                }
+                try {
+                    if ((node as HTMLElement).matches?.(sel)) {
+                        return node as HTMLElement;
+                    }
+                } catch { /* invalid selector */ }
             }
         }
     }
 
-    const self = (element?.matches?.(selector) ? element : null);
-    const host = (element?.getRootNode({ composed: true }) as any ?? element?.parentElement?.getRootNode({ composed: true}) as any)?.host;
-    const hostMatched = host?.matches?.(selector) ? host : null;
-    const closest = (element as any)?.closest?.(selector) ?? (self as any)?.closest?.(selector) ?? (hostMatched as any)?.closest?.(selector) ?? null;
+    let self: HTMLElement | null = null;
+    let hostMatched: HTMLElement | null = null;
+    let closest: HTMLElement | null = null;
+    try {
+        self = (element?.matches?.(sel) ? element : null);
+        const host = (element?.getRootNode({ composed: true }) as any ?? element?.parentElement?.getRootNode({ composed: true}) as any)?.host;
+        hostMatched = host?.matches?.(sel) ? host : null;
+        closest = (element as any)?.closest?.(sel) ?? (self as any)?.closest?.(sel) ?? (hostMatched as any)?.closest?.(sel) ?? null;
+    } catch { /* invalid selector */ }
     return (self ?? closest ?? hostMatched);
 };
 
