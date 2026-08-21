@@ -5,7 +5,7 @@ const OWNER = "DOM";
 const styleElement = typeof document != "undefined" ? document.createElement("style") : null;
 
 if (styleElement) {
-    typeof document != "undefined" ? document.querySelector("head")?.appendChild?.(styleElement) : null;
+    document.querySelector("head")?.appendChild?.(styleElement);
     styleElement.dataset.owner = OWNER;
 }
 
@@ -16,30 +16,33 @@ const supportsConstructableStylesheet = (): boolean =>
 const cssTextRequiresInlineStyleElement = (css: string): boolean =>
     typeof css === "string" && /@import\b/i.test(css);
 
-//
-if (styleElement) {
-    typeof document != "undefined" ? document.querySelector("head")?.appendChild?.(styleElement) : null; styleElement.dataset.owner = OWNER;
-}
+const isLayerBlockRule = (rule: CSSRule | undefined): rule is CSSLayerBlockRule =>
+    typeof CSSLayerBlockRule !== "undefined" && rule instanceof CSSLayerBlockRule;
+
+const getOrCreateLayerRule = (sheet: any, layerName: string): CSSLayerBlockRule | undefined => {
+    if (!sheet || !layerName) return undefined;
+
+    const rules = Array.from(sheet.cssRules || []) as CSSRule[];
+    const existing = rules.find((rule) => isLayerBlockRule(rule) && rule.name === layerName);
+    if (existing) return existing;
+
+    try {
+        const ruleIndex = sheet.insertRule(`@layer ${layerName} {}`, rules.length);
+        const created = sheet.cssRules?.[ruleIndex];
+        return isLayerBlockRule(created) ? created : undefined;
+    } catch {
+        return undefined;
+    }
+};
 
 //
 export type  StyleTuple    = [selector: string, sheet: object];
 export const setStyleURL   = (base: [any, any], url: string, layer: string = "")=>{ base[0][base[1]] = (base[1] == "innerHTML") ? `@import url("${url}") ${layer && (typeof layer == "string") ? `layer(${layer})` : ""};` : url; };
 export const setStyleRules = (classes: StyleTuple[]) => { return classes?.map?.((args) => setStyleRule(...args)); };
-export const getStyleLayer = (layerName, sheet?)=>{
+export const getStyleLayer = (layerName: string, sheet?: any)=>{
     sheet ||= styleElement?.sheet;
-
-    // Ищем или создаём @layer
-    let layerRuleIndex = Array.from(sheet?.cssRules || []).findIndex((rule) => (rule instanceof CSSLayerBlockRule) && rule?.name === layerName);
-    let layerRule;
-
-    // Создаём пустой слой
-    if (layerRuleIndex === -1 && sheet)
-        { layerRule = sheet?.cssRules?.[layerRuleIndex = sheet.insertRule(`@layer ${layerName} {}`)]; } else
-        { layerRule = sheet?.cssRules?.[layerRuleIndex]; }
-
-    //
-    return layerRule;
-}
+    return getOrCreateLayerRule(sheet, layerName);
+};
 
 
 
@@ -440,23 +443,7 @@ export const getAdoptedStyleRule = (selector: string, layerName: string | null =
         }
 
         if (!layerRule) {
-            const rules = Array.from(sheet.cssRules || []);
-            const layerIndex = rules.findIndex((rule) =>
-                rule instanceof CSSLayerBlockRule && rule.name === layerName
-            );
-            if (layerIndex === -1) {
-                try {
-                    sheet.insertRule(`@layer ${layerName} {}`, sheet.cssRules.length);
-                    const newRule = sheet.cssRules[sheet.cssRules.length - 1];
-                    if (newRule instanceof CSSLayerBlockRule) {
-                        layerRule = newRule;
-                    }
-                } catch (e) {
-                    layerRule = undefined;
-                }
-            } else {
-                layerRule = rules[layerIndex] as CSSLayerBlockRule;
-            }
+            layerRule = getOrCreateLayerRule(sheet, layerName);
             if (layerRule) {
                 if (isShadowRoot) {
                     let shadowLayerMap = adoptedShadowLayerMap.get(root);
