@@ -48,6 +48,50 @@ let layoutLockOrient = "";
 let layoutLockW = 0;
 let layoutLockH = 0;
 
+export type FixedOverlayViewport = {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+    height: number;
+};
+
+/** Build client-coordinate bounds for a fixed overlay root. */
+export const createFixedOverlayViewport = (
+    width: number,
+    height: number,
+    left = 0,
+    top = 0,
+): FixedOverlayViewport => {
+    const safeWidth = Math.max(0, Number(width) || 0);
+    const safeHeight = Math.max(0, Number(height) || 0);
+    const safeLeft = Number(left) || 0;
+    const safeTop = Number(top) || 0;
+    return {
+        left: safeLeft,
+        top: safeTop,
+        right: safeLeft + safeWidth,
+        bottom: safeTop + safeHeight,
+        width: safeWidth,
+        height: safeHeight,
+    };
+};
+
+/**
+ * Read bounds for `position: fixed` overlays.
+ * INVARIANT: use the same client-coordinate origin as PointerEvent and DOMRect;
+ * layout-lock variables remain reserved for desktop/workspace sizing.
+ */
+export const readFixedOverlayViewport = (): FixedOverlayViewport => {
+    if (typeof window === "undefined") return createFixedOverlayViewport(0, 0);
+    const root = typeof document !== "undefined" ? document.documentElement : null;
+    return createFixedOverlayViewport(
+        Number(root?.clientWidth) || Number(window.innerWidth) || 0,
+        Number(root?.clientHeight) || Number(window.innerHeight) || 0,
+    );
+};
+
 const readLayoutViewport = (): { width: number; height: number; keyboard: number } => {
     if (typeof window === "undefined") return { width: 0, height: 0, keyboard: 0 };
     const vv = window.visualViewport;
