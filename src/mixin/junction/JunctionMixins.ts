@@ -63,9 +63,9 @@ export class JunctionSelectMixin extends DOMMixin {
         overlay.className = "ui-junction-select-overlay";
         overlay.setAttribute("data-junction-overlay", "");
         overlay.style.cssText =
-            "position:absolute;pointer-events:none;z-index:9999;box-sizing:border-box;" +
-            "border:1px dashed color-mix(in oklab, #3794ff 70%, transparent);" +
-            "background:color-mix(in oklab, #3794ff 14%, transparent);display:none;" +
+            "position:absolute;pointer-events:none;z-index:var(--z-max, 9999);box-sizing:border-box;" +
+            "border:1px dashed color-mix(in oklab, var(--color-primary, #5a7fff) 70%, transparent);" +
+            "background:color-mix(in oklab, var(--color-primary, #5a7fff) 14%, transparent);display:none;" +
             "inset:auto;min-width:0;min-height:0;";
 
         const ensurePositioned = (): void => {
