@@ -1,57 +1,28 @@
-<h1 align="center">🏠 DOM.ts 🏠</h1>
+# DOM.ts
 
-<p align="center">
-  <b>Powerful DOM management & manipulation library pack</b>
-</p>
-<p align="center">
-  <a href="https://github.com/fest-live/dom.ts"><img src="https://img.shields.io/github/stars/fest-live/dom.ts?style=flat-square" alt="GitHub stars"></a>
-  <a href="https://github.com/fest-live/dom.ts/actions"><img src="https://img.shields.io/github/workflow/status/fest-live/dom.ts/CI?style=flat-square" alt="Build Status"></a>
-  <a href="https://www.npmjs.com/package/@fest-lib/dom"><img src="https://img.shields.io/npm/v/dom.ts?style=flat-square" alt="NPM version"></a>
-  <a href="https://github.com/fest-live/dom.ts/blob/main/LICENSE"><img src="https://img.shields.io/github/license/fest-live/dom.ts?style=flat-square" alt="License"></a>
-</p>
+`@fest-lib/dom` — browser DOM helpers for fest-lib. Depends on `@fest-lib/core`.
 
----
+Agate measurement (viewport, zoom, launcher grid), appear/shape/animation decor, style/behavior mixins, observers, and inline stylesheet loaders used by LUR.E and FL.UI.
 
-## 🚀 Features
-
-- ⚡️ **Ultra-fast** DOM manipulation
-- 🧩 **Modular** architecture
-- 🧰 **Generic API** for flexible usage
-
----
-
-## 📦 Installation
+## Install
 
 ```bash
 npm install @fest-lib/dom
-# or
-yarn add @fest-lib/dom
 ```
 
----
+```ts
+import { loadInlineStyle } from "@fest-lib/dom";
 
-## 🔌 Generic API
+await loadInlineStyle(cssText);
+```
 
-> _API documentation coming soon!_
+## Layout
 
-- [ ] **Comprehensive API Reference**
-- [ ] **Usage Examples**
-- [ ] **TypeScript Support**
+| Path | Role |
+| --- | --- |
+| `src/agate/*` | viewport, zoom, measure, launcher grid |
+| `src/decor/*` | animation, appear, shape |
+| `src/mixin/*` | observer, style, behavior, store, handler |
+| `src/mixin/junction/*` | pointer/junction mixins (moving toward LUR.E) |
 
----
-
-## 🤝 Contributing
-
-Pull requests, issues, and suggestions are welcome!
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
----
-
-<p align="center">
-  <a href="https://github.com/fest-live/dom.ts">
-    <img src="https://img.shields.io/badge/Star%20on-GitHub-24292f?logo=github&style=for-the-badge" alt="Star on GitHub"/>
-  </a>
-  <a href="https://www.npmjs.com/package/dom.ts">
-    <img src="https://img.shields.io/badge/View%20on-npm-cc3534?logo=npm&style=for-the-badge" alt="View on npm"/>
-  </a>
-</p>
+Peer: `@fest-lib/core`. Build: `npm run build`. Publish: `npm run publish`.
