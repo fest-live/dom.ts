@@ -1,7 +1,7 @@
 {
     "name": "@fest-lib/dom",
     "description": "fest-lib DOM: Agate viewport/zoom/measure, decor, style mixins, inline CSS loaders",
-    "version": "0.1.23",
+    "version": "0.1.24",
     "license": "MIT",
     "type": "module",
     "sideEffects": true,
