@@ -1,5 +1,5 @@
 import { observeAttributeBySelector, observeBySelector } from "./Observer";
-import { observeStyleTree } from "./Style";
+import { observeStyleTree } from "@fest-lib/style-lib";
 import { getStoresOfElement, namedStoreMaps } from "./Store";
 import { boundBehaviors } from "./Behavior";
 

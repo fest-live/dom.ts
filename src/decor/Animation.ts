@@ -1,4 +1,4 @@
-import { setProperty } from "../mixin/Style";
+import { setProperty } from "@fest-lib/style-lib";
 import { isMobile } from "../agate/Detect";
 import { addEvents } from "../agate/Utils";
 

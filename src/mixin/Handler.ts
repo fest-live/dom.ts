@@ -1,4 +1,4 @@
-import { setStyleProperty } from "./Style";
+import { setStyleProperty } from "@fest-lib/style-lib";
 import type { DatasetValue } from "@fest-lib/core";
 import { camelToKebab, hasValue, isVal, isValueUnit, kebabToCamel, normalizePrimitive, $avoidTrigger } from "@fest-lib/core";
 

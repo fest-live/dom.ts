@@ -1,4 +1,4 @@
-import type { StyleTuple } from "../mixin/Style";
+import type { StyleTuple } from "@fest-lib/style-lib";
 import { addEvent } from "./Utils";
 
 const runWhenIdle = (cb: IdleRequestCallback, timeout = 100) => {

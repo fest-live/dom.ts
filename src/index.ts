@@ -13,7 +13,7 @@ export * from "./decor/Shape";
 
 //
 export * from "./mixin/Observer";
-export * from "./mixin/Style";
+export * from "@fest-lib/style-lib";
 export * from "./mixin/Behavior";
 export * from "./mixin/Mixins";
 export * from "./mixin/Store";
