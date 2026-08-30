@@ -1230,6 +1230,27 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
 }
 
 //
+/** WHY: Android WebView pause can empty constructable `cssRules`; restore from the source map. */
+export const rehydrateConstructableSheets = (): void => {
+    if (typeof document === "undefined") return;
+    const canParse = typeof URL !== "undefined" && typeof URL.canParse === "function";
+    for (const [key, sheet] of adoptedMap) {
+        if (!sheet || typeof key !== "string") continue;
+        if (canParse && URL.canParse(key)) continue;
+        let empty = false;
+        try {
+            empty = sheet.cssRules.length === 0;
+        } catch {
+            /* COMPAT: some WebViews throw on cssRules — do not replaceSync a live sheet. */
+            continue;
+        }
+        if (empty) applyAdoptedStyleText(sheet, key);
+        if (document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(sheet)) {
+            document.adoptedStyleSheets.push(sheet);
+        }
+    }
+};
+
 export const removeAdopted = (sheet: CSSStyleSheet | string | null | undefined): boolean => {
     if (!sheet) return false;
     const target = typeof sheet === "string" ? adoptedMap.get(sheet) : sheet;
