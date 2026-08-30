@@ -1,4 +1,4 @@
-import { camelToKebab, hasValue, isValidNumber, tryStringAsNumber } from "@fest-lib/core";
+import { camelToKebab, getOrInsertComputed, hasValue, isValidNumber, tryStringAsNumber } from "@fest-lib/core";
 
 //
 const OWNER = "DOM";
@@ -1125,7 +1125,68 @@ const adoptedMapSymbol = Symbol.for("dom.ts@adoptedMap");
 const adoptedMap = globalThis[adoptedMapSymbol] ??= new Map<string, CSSStyleSheet>();
 const adoptedBlobMapSymbol = Symbol.for("dom.ts@adoptedBlobMap");
 const adoptedBlobMap = globalThis[adoptedBlobMapSymbol] ??= new WeakMap<Blob | File, CSSStyleSheet>();
+const adoptedAppliedTextSymbol = Symbol.for("dom.ts@adoptedAppliedText");
+const adoptedAppliedText = globalThis[adoptedAppliedTextSymbol] ??= new WeakMap<CSSStyleSheet, string>();
+const adoptedFilledSymbol = Symbol.for("dom.ts@adoptedFilled");
+const adoptedFilled = globalThis[adoptedFilledSymbol] ??= new WeakSet<CSSStyleSheet>();
 export { adoptedMap, adoptedBlobMap };
+
+const wrapAdoptedLayer = (cssText: string, layerName: string | null): string =>
+    layerName ? `@layer ${layerName} { ${cssText} }` : cssText;
+
+const readSheetRuleCount = (sheet: CSSStyleSheet): number | null => {
+    try {
+        return sheet.cssRules.length;
+    } catch {
+        return null;
+    }
+};
+
+const rememberAdoptedText = (sheet: CSSStyleSheet, cssText: string): void => {
+    adoptedAppliedText.set(sheet, cssText);
+    adoptedFilled.add(sheet);
+};
+
+/** INVARIANT: cache hits must refill emptied constructable sheets from the source CSS.
+ * FIND:adopted-sheets */
+export const cssTextForAdoptedSheet = (sheet: CSSStyleSheet | null | undefined): string | null => {
+    if (!sheet) return null;
+    const stored = adoptedAppliedText.get(sheet);
+    if (stored) return stored;
+    for (const [key, mapped] of adoptedMap) {
+        if (mapped === sheet && typeof key === "string") return key;
+    }
+    return null;
+};
+
+export const isAdoptedSheetEmpty = (sheet: CSSStyleSheet | null | undefined): boolean => {
+    if (!sheet) return true;
+    const count = readSheetRuleCount(sheet);
+    // COMPAT: some WebViews throw on live constructable cssRules — treat as present, do not refill.
+    if (count === null) return false;
+    return count === 0;
+};
+
+export const ensureAdoptedSheetContent = (
+    sheet: CSSStyleSheet | null | undefined,
+    cssText?: string | null,
+): boolean => {
+    if (!sheet) return false;
+    const text = cssText || cssTextForAdoptedSheet(sheet);
+    const count = readSheetRuleCount(sheet);
+    if (count === null) return false;
+    if (count > 0) {
+        adoptedFilled.add(sheet);
+        if (text && !adoptedAppliedText.has(sheet)) adoptedAppliedText.set(sheet, text);
+        return true;
+    }
+    if (!text) return false;
+    if (applyAdoptedStyleText(sheet, text)) {
+        rememberAdoptedText(sheet, text);
+        return true;
+    }
+    return false;
+};
 
 //
 const layerCounterSymbol = Symbol.for("dom.ts@layerCounter");
@@ -1152,7 +1213,34 @@ const applyAdoptedStyleText = (sheet: CSSStyleSheet, cssText: string): boolean =
 };
 
 //
+const urlCanParse = (value: string): boolean => {
+    try {
+        return typeof URL !== "undefined" && typeof URL.canParse === "function" && URL.canParse(value);
+    } catch {
+        return false;
+    }
+};
+
+const sheetForBlob = (blob: Blob | File): CSSStyleSheet => {
+    let sheet = adoptedBlobMap.get(blob);
+    if (!sheet) {
+        sheet = new CSSStyleSheet();
+        adoptedBlobMap.set(blob, sheet);
+    }
+    return sheet;
+};
+
 export const loadAsAdopted = (styles: string | Blob | File, layerName: string | null = null) => {
+    try {
+        return loadAsAdoptedUnsafe(styles, layerName);
+    } catch (error) {
+        console.warn("[DOM] loadAsAdopted failed", error);
+        if (typeof styles === "string") loadInlineStyle(styles, undefined, layerName || "");
+        return null;
+    }
+};
+
+const loadAsAdoptedUnsafe = (styles: string | Blob | File, layerName: string | null = null) => {
     if (!supportsConstructableStylesheet()) {
         if (typeof styles === "string") {
             loadInlineStyle(styles, undefined, layerName || "");
@@ -1167,6 +1255,8 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
 
     if (typeof styles == "string" && adoptedMap?.has?.(styles)) {
         const cached = adoptedMap.get(styles)!;
+        const applied = adoptedAppliedText.get(cached) || wrapAdoptedLayer(styles, layerName);
+        ensureAdoptedSheetContent(cached, applied);
         if (typeof document !== "undefined" && document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(cached)) {
             document.adoptedStyleSheets.push(cached);
         }
@@ -1174,17 +1264,17 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
     }
     if ((styles instanceof Blob || (styles as any) instanceof File) && adoptedBlobMap?.has?.(styles as Blob | File)) {
         const cached = adoptedBlobMap.get(styles as Blob | File)!;
+        ensureAdoptedSheetContent(cached);
         if (typeof document !== "undefined" && document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(cached)) {
             document.adoptedStyleSheets.push(cached);
         }
         return cached;
     }
 
-    //
-    if (!styles) return null; //@ts-ignore
-    const sheet = (typeof styles == "string" ?  //@ts-ignore
-        adoptedMap.getOrInsertComputed(styles, (styles) => new CSSStyleSheet() as CSSStyleSheet) :  //@ts-ignore
-        adoptedBlobMap.getOrInsertComputed(styles as Blob | File, (styles) => new CSSStyleSheet() as CSSStyleSheet));
+    if (!styles) return null;
+    const sheet = typeof styles == "string"
+        ? getOrInsertComputed(adoptedMap, styles, () => new CSSStyleSheet() as CSSStyleSheet)
+        : sheetForBlob(styles as Blob | File);
 
     //
     //if (!layerName) { layerName = `ux-layer-${layerCounter++}`; }
@@ -1193,13 +1283,15 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
     }
 
     //
-    if (typeof styles == "string" && !URL.canParse(styles)) {
-        const layerWrapped = layerName ? `@layer ${layerName} { ${styles} }` : styles;
+    if (typeof styles == "string" && !urlCanParse(styles)) {
+        const layerWrapped = wrapAdoptedLayer(styles, layerName);
         adoptedMap.set(styles, sheet);
         if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
             removeAdopted(sheet);
             adoptedMap.delete(styles);
             loadInlineStyle(styles);
+        } else {
+            rememberAdoptedText(sheet as CSSStyleSheet, layerWrapped);
         }
         return sheet;
     } else {
@@ -1213,12 +1305,14 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
                     loadInlineStyle(cached, undefined, layerName || "");
                     return sheet;
                 }
-                const layerWrapped = layerName ? `@layer ${layerName} { ${cached} }` : cached;
+                const layerWrapped = wrapAdoptedLayer(cached, layerName);
                 if (!applyAdoptedStyleText(sheet as CSSStyleSheet, layerWrapped)) {
                     removeAdopted(sheet);
                     adoptedMap.delete(cached);
                     adoptedBlobMap.delete(styles as Blob | File);
                     loadInlineStyle(cached, undefined, layerName || "");
+                } else {
+                    rememberAdoptedText(sheet as CSSStyleSheet, layerWrapped);
                 }
                 return sheet;
             };
@@ -1230,21 +1324,111 @@ export const loadAsAdopted = (styles: string | Blob | File, layerName: string | 
 }
 
 //
-/** WHY: Android WebView pause can empty constructable `cssRules`; restore from the source map. */
+const styleTreeHookSymbol = Symbol.for("dom.ts@styleTreeHooks");
+const styleTreeHooks: Set<(el: Element, reason: string) => void> =
+    globalThis[styleTreeHookSymbol] ??= new Set();
+const styleTreeObserved = new WeakSet<object>();
+const styleTreeRoots = new Set<any>();
+
+const STYLE_TREE_ATTRS = [
+    "data-theme",
+    "data-explorer-color-scheme",
+    "data-color-scheme",
+    "theme",
+    "color-scheme",
+] as const;
+
+/** INVARIANT: hyphenated / shadowed hosts are the only nodes that own adopted CSS. */
+export const isStyleHost = (node: any): node is HTMLElement => {
+    if (!node || node.nodeType !== 1) return false;
+    const name = String(node.localName || "");
+    if (name.includes("-")) return true;
+    if (node.shadowRoot) return true;
+    if (node.styles != null) return true;
+    return false;
+};
+
+const collectStyleHosts = (node: any, into: Set<Element>): void => {
+    if (!node || node.nodeType === 3) return;
+    if (node.nodeType === 11) {
+        for (const child of node.childNodes || []) collectStyleHosts(child, into);
+        return;
+    }
+    if (isStyleHost(node)) into.add(node);
+    if (typeof node.querySelectorAll !== "function") return;
+    try {
+        for (const el of node.querySelectorAll("*")) {
+            if (isStyleHost(el)) into.add(el);
+        }
+    } catch {
+        /* ignore */
+    }
+};
+
+export const notifyStyleTreeHosts = (hosts: Iterable<any>, reason = "tree"): void => {
+    for (const el of hosts) {
+        if (!isStyleHost(el)) continue;
+        for (const fn of styleTreeHooks) fn(el, reason);
+    }
+};
+
+export const registerStyleTreeHook = (fn: (el: Element, reason: string) => void): void => {
+    if (typeof fn !== "function") return;
+    styleTreeHooks.add(fn);
+};
+
+/**
+ * WHY: hosts often enter via innerHTML / H`` / upgrade after first connectedCallback;
+ * childList + theme attrs must re-apply CSS without waiting for resume.
+ * FIND:style-tree
+ */
+export const observeStyleTree = (root: any): any => {
+    if (!root || typeof MutationObserver === "undefined") return root;
+    if (styleTreeObserved.has(root)) return root;
+    styleTreeObserved.add(root);
+    styleTreeRoots.add(root);
+
+    const observer = new MutationObserver((records) => {
+        const hosts = new Set<Element>();
+        for (const rec of records) {
+            if (rec.type === "childList") {
+                for (const node of rec.addedNodes) collectStyleHosts(node, hosts);
+                const scope = (rec.target as any)?.getRootNode?.();
+                if (scope instanceof ShadowRoot && isStyleHost(scope.host)) {
+                    const sheets = scope.adoptedStyleSheets;
+                    if (!sheets || sheets.length === 0) hosts.add(scope.host);
+                }
+            } else if (rec.type === "attributes" && rec.target) {
+                // WHY: `html[data-theme]` at boot must not walk the whole tree (replaceSync wipe).
+                if (isStyleHost(rec.target)) hosts.add(rec.target as Element);
+            }
+        }
+        notifyStyleTreeHosts(hosts, "mutation");
+    });
+
+    try {
+        observer.observe(root, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: [...STYLE_TREE_ATTRS],
+        });
+    } catch {
+        styleTreeObserved.delete(root);
+        return root;
+    }
+    return root;
+};
+
+/** WHY: Android WebView pause can empty constructable `cssRules`; restore the last applied text. */
 export const rehydrateConstructableSheets = (): void => {
     if (typeof document === "undefined") return;
     const canParse = typeof URL !== "undefined" && typeof URL.canParse === "function";
     for (const [key, sheet] of adoptedMap) {
         if (!sheet || typeof key !== "string") continue;
         if (canParse && URL.canParse(key)) continue;
-        let empty = false;
-        try {
-            empty = sheet.cssRules.length === 0;
-        } catch {
-            /* COMPAT: some WebViews throw on cssRules — do not replaceSync a live sheet. */
-            continue;
-        }
-        if (empty) applyAdoptedStyleText(sheet, key);
+        const text = adoptedAppliedText.get(sheet) || key;
+        ensureAdoptedSheetContent(sheet, text);
         if (document.adoptedStyleSheets && !document.adoptedStyleSheets.includes(sheet)) {
             document.adoptedStyleSheets.push(sheet);
         }

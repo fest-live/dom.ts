@@ -1,4 +1,5 @@
 import { observeAttributeBySelector, observeBySelector } from "./Observer";
+import { observeStyleTree } from "./Style";
 import { getStoresOfElement, namedStoreMaps } from "./Store";
 import { boundBehaviors } from "./Behavior";
 
@@ -92,6 +93,9 @@ export const addRoot = (root: any = typeof document != "undefined" ? document : 
                 }
             }
         });
+
+        // WHY: same root set as mixins — hosts entering this tree need CSS, not only data-mixin.
+        observeStyleTree(root);
     }
     return root;
 };
