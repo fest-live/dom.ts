@@ -8,7 +8,6 @@ export * from "./agate/LauncherGrid";
 
 //
 export * from "./decor/Animation";
-export * from "./decor/Appear";
 export * from "./decor/Shape";
 
 //
