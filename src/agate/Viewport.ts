@@ -1,3 +1,9 @@
+/*
+ * FIND:virtual-keyboard
+ * WHY: Work Center composer reads `--virtual-keyboard-height`. Capacitor Android
+ * has no Virtual Keyboard API; IME height comes from visualViewport overlap,
+ * layout shrink, or Capacitor Keyboard.
+ */
 import type { StyleTuple } from "@fest-lib/style-lib";
 import { addEvent } from "./Utils";
 
@@ -14,6 +20,16 @@ type VirtualKeyboardLike = {
     overlaysContent?: boolean;
     boundingBox?: { height?: number };
 };
+
+type CapacitorKeyboardLike = {
+    addListener?: (name: string, cb: (info?: { keyboardHeight?: number }) => void) => void;
+    setScroll?: (opts: { isDisabled: boolean }) => Promise<void> | void;
+    setResizeMode?: (opts: { mode: string }) => Promise<void> | void;
+};
+
+let capacitorKeyboardHeight = 0;
+let capacitorKeyboardBound = false;
+let viewportTrackingStarted = false;
 
 const virtualKeyboard = (): VirtualKeyboardLike | null => {
     try {
@@ -102,7 +118,15 @@ const readLayoutViewport = (): { width: number; height: number; keyboard: number
     const vvTop = Number(vv?.offsetTop) || 0;
     const vkH = Number(virtualKeyboard()?.boundingBox?.height) || 0;
     const vvOverlap = innerH > 0 && vvH > 0 ? innerH - vvH - vvTop : 0;
-    const keyboard = vkH >= KEYBOARD_OVERLAY_PX ? vkH : (vvOverlap >= KEYBOARD_OVERLAY_PX ? vvOverlap : 0);
+    const capH = capacitorKeyboardHeight;
+    let keyboard =
+        capH >= KEYBOARD_OVERLAY_PX
+            ? capH
+            : vkH >= KEYBOARD_OVERLAY_PX
+              ? vkH
+              : vvOverlap >= KEYBOARD_OVERLAY_PX
+                ? vvOverlap
+                : 0;
     const candidateW = Math.max(innerW, vvW);
     const candidateH = Math.max(innerH, vvH + vvTop, keyboard > 0 ? vvH + keyboard : 0);
     const orient = typeof matchMedia !== "undefined" && matchMedia("(orientation: landscape)")?.matches ? "l" : "p";
@@ -114,6 +138,10 @@ const readLayoutViewport = (): { width: number; height: number; keyboard: number
     /* WHY: Android often resizes the WebView before `focusin`; a sudden height drop
      * is the IME even when `innerHeight` and `visualViewport` shrink together. */
     const suddenShrink = layoutLockH > 0 && layoutLockH - candidateH >= KEYBOARD_OVERLAY_PX;
+    if (keyboard < KEYBOARD_OVERLAY_PX && suddenShrink) {
+        const shrink = Math.max(0, layoutLockH - candidateH, layoutLockH - (vvH + vvTop));
+        if (shrink >= KEYBOARD_OVERLAY_PX) keyboard = shrink;
+    }
     const imeOpen = keyboard > 0 || isImeTarget(document.activeElement) || suddenShrink;
     if (!imeOpen) {
         layoutLockW = candidateW;
@@ -152,7 +180,9 @@ export const getAvailSize = () => {
         /* INVARIANT: desktop / wallpaper / Speed Dial size to layout, not the IME visual viewport. */
         "--lv-width": `${layout.width}px`,
         "--lv-height": `${layout.height}px`,
-        "--keyboard-overlay-height": `${layout.keyboard}px`
+        "--keyboard-overlay-height": `${layout.keyboard}px`,
+        /* INVARIANT: `.workcenter-composer` and Capacitor chat padding read this token. */
+        "--virtual-keyboard-height": `${layout.keyboard}px`
     };
     if (typeof document !== "undefined") {
         document.documentElement.toggleAttribute("data-vk-open", layout.keyboard > 0);
@@ -220,6 +250,53 @@ export const getCorrectOrientation = () => {
 const passiveOpts = { passive: true };
 
 //
+const bindCapacitorKeyboard = (): void => {
+    if (capacitorKeyboardBound || typeof globalThis === "undefined") return;
+    const cap = (
+        globalThis as {
+            Capacitor?: {
+                isNativePlatform?: () => boolean;
+                Plugins?: { Keyboard?: CapacitorKeyboardLike };
+            };
+        }
+    ).Capacitor;
+    const Keyboard = cap?.Plugins?.Keyboard;
+    if (!Keyboard?.addListener) return;
+    if (typeof cap.isNativePlatform === "function" && !cap.isNativePlatform()) return;
+    capacitorKeyboardBound = true;
+    try {
+        void Keyboard.setScroll?.({ isDisabled: true });
+    } catch {
+        /* optional */
+    }
+    try {
+        void Keyboard.setResizeMode?.({ mode: "none" });
+    } catch {
+        /* optional */
+    }
+    const onShow = (info?: { keyboardHeight?: number }): void => {
+        const next = Number(info?.keyboardHeight) || 0;
+        if (next > 0) capacitorKeyboardHeight = next;
+        updateVP();
+    };
+    const onHide = (): void => {
+        capacitorKeyboardHeight = 0;
+        updateVP();
+    };
+    Keyboard.addListener("keyboardWillShow", onShow);
+    Keyboard.addListener("keyboardDidShow", onShow);
+    Keyboard.addListener("keyboardWillHide", onHide);
+    Keyboard.addListener("keyboardDidHide", onHide);
+};
+
+/** Start IME / visualViewport listeners once (Process Capacitor has no SpeedDial). */
+export const ensureViewportTracking = (): void => {
+    if (viewportTrackingStarted || typeof window === "undefined") return;
+    viewportTrackingStarted = true;
+    bindCapacitorKeyboard();
+    whenAnyScreenChanges(() => {});
+};
+
 export const whenAnyScreenChanges = (cb: () => void) => {
     let ticking = false;
     const update = () => {
@@ -235,6 +312,7 @@ export const whenAnyScreenChanges = (cb: () => void) => {
 
     const unsubscribers: Array<() => void> = [];
 
+    bindCapacitorKeyboard();
     // @ts-ignore
     unsubscribers.push(addEvent(navigator?.virtualKeyboard, "geometrychange", update, passiveOpts));
     unsubscribers.push(addEvent(window?.visualViewport, "scroll", () => {
@@ -249,6 +327,7 @@ export const whenAnyScreenChanges = (cb: () => void) => {
     unsubscribers.push(addEvent(matchMedia("(orientation: portrait)"), "change", update));
     unsubscribers.push(addEvent(matchMedia("(orientation: landscape)"), "change", update));
     unsubscribers.push(addEvent(document, "focusin", () => {
+        bindCapacitorKeyboard();
         ensureVirtualKeyboardOverlay();
         if (isImeTarget(document.activeElement)) {
             layoutLockW = Math.max(layoutLockW, Number(window.innerWidth) || 0, Number(window.visualViewport?.width) || 0);
