@@ -377,9 +377,26 @@ const readLayoutViewport = (): { width: number; height: number; keyboard: number
         layoutLockW = 0;
         layoutLockH = 0;
     }
-    /* WHY: Android often resizes the WebView before `focusin`; a sudden height drop
-     * is the IME even when `innerHeight` and `visualViewport` shrink together. */
-    const suddenShrink = !nativeCap && layoutLockH > 0 && layoutLockH - candidateH >= KEYBOARD_OVERLAY_PX;
+    /* WHY: Android Chrome resizes the viewport before `focusin`. A desktop pane
+     * resize (Cursor debug) also drops height — only treat it as IME when width
+     * stays put and an editor or coarse pointer is involved. Otherwise the lock
+     * never shrinks and the rail / pager sit outside the squeezed window. */
+    const widthStable =
+        layoutLockW <= 0 || Math.abs(layoutLockW - candidateW) < 32;
+    const editableFocused =
+        isImeTarget(deepActiveElement()) || isImeTarget(document.activeElement);
+    let coarsePointer = false;
+    try {
+        coarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+    } catch {
+        coarsePointer = false;
+    }
+    const suddenShrink =
+        !nativeCap &&
+        widthStable &&
+        (editableFocused || coarsePointer) &&
+        layoutLockH > 0 &&
+        layoutLockH - candidateH >= KEYBOARD_OVERLAY_PX;
     if (keyboard < KEYBOARD_OVERLAY_PX && suddenShrink) {
         const shrink = Math.max(0, layoutLockH - candidateH, layoutLockH - (vvH + vvTop));
         if (shrink >= KEYBOARD_OVERLAY_PX) keyboard = shrink;
@@ -645,8 +662,14 @@ export const getAvailSize = () => {
         const phys = readPhysicalScreen();
         const innerW = typeof window !== "undefined" ? Number(window.innerWidth) || 0 : 0;
         const innerH = typeof window !== "undefined" ? Number(window.innerHeight) || 0 : 0;
-        const capW = Math.max(phys.width, innerW, layout.width);
-        const capH = Math.max(phys.height, innerH, layout.height);
+        const paneW = Math.max(innerW, layout.width);
+        const paneH = Math.max(innerH, layout.height);
+        /* WHY: a restored / Cursor-debug pane is smaller than the monitor.
+         * `max(screen, window)` stretched html to the panel and clipped the rail. */
+        const windowedW = !nativeDisplay && paneW > 0 && phys.width > paneW + 64;
+        const windowedH = !nativeDisplay && paneH > 0 && phys.height > paneH + 64;
+        const capW = windowedW ? paneW : Math.max(phys.width, paneW);
+        const capH = windowedH ? paneH : Math.max(phys.height, paneH);
         const screenW = capW > 0 ? `${capW}px` : "100lvi";
         const screenH = capH > 0 ? `${capH}px` : "100lvb";
         const density = nativeDisplay?.density || Number(devicePixelRatio) || 1;
