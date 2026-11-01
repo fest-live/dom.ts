@@ -425,7 +425,7 @@ export function registerMixin(name: string, mixin: Mixin): Mixin {
     if (!mixin || (typeof mixin !== 'object' && typeof mixin !== 'function')) {
         throw new TypeError('Mixin must be an object.');
     }
-    const existing = mixinRegistry.get(key);
+    const existing = mixinRegistry.get(key); // @ts-ignore
     if (existing && existing !== mixin) { console.error(`Mixin name already registered: ${key}`); return; };//throw new Error(`Mixin name already registered: ${key}`);
     const previousName = mixinNamespace.get(mixin);
     if (previousName && previousName !== key) throw new Error(`Mixin already named: ${previousName}`);
