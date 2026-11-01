@@ -465,8 +465,8 @@ function handleRootRecords(records: MutationRecord[]): void {
     for (const record of records) {
         if (record.type === 'attributes' && isElement(record.target)) enqueue(record.target);
         if (record.type === 'childList') {
-            for (const node of record.addedNodes) reconcileTreeSoon(node);
             for (const node of record.removedNodes) reconcileTreeSoon(node);
+            for (const node of record.addedNodes) reconcileTreeSoon(node);
         }
     }
 }
@@ -487,8 +487,8 @@ export function addRoot(root: Root | null = typeof document !== 'undefined' ? do
         }), disposers);
     captureDisposer(observeBySelector(root, '[data-mixin]',
         (mutation: MutationRecord) => {
-            for (const node of mutation.addedNodes) reconcileTreeSoon(node);
             for (const node of mutation.removedNodes) reconcileTreeSoon(node);
+            for (const node of mutation.addedNodes) reconcileTreeSoon(node);
         }), disposers);
     captureDisposer(observeStyleTree(root), disposers);
     polyfillState.runtime?.observeRoot(root);
@@ -843,8 +843,8 @@ function installAttributePolyfill(): PolyfillRuntime {
             records.forEach((record, index) => {
                 this.position = index;
                 if (record.type === 'childList') {
-                    for (const node of record.addedNodes) this.tree(node);
                     for (const node of record.removedNodes) this.tree(node);
+                    for (const node of record.addedNodes) this.tree(node);
                 } else if (record.type === 'attributes' && record.attributeNamespace === null &&
                     record.attributeName && isElement(record.target)) {
                     this.attribute(record.target, record.attributeName, record.oldValue);

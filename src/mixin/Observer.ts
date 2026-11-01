@@ -156,7 +156,8 @@ export const observeAttributeBySelector = (element, selector, attribute, cb) => 
                 //
                 [...new Set(addedNodes)]?.filter((el: any)=> safeMatches(el, sel))?.map?.((target)=>{
                     attributeList.forEach((attribute)=>{
-                        cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer);
+                        if (target?.parentNode ?? (target as ShadowRoot)?.host ?? target?.getRootNode?.())
+                            cb({ target, type: "attributes", attributeName: attribute, oldValue: (target as HTMLElement)?.getAttribute?.(attribute) }, observer);
                     });
                 });
             } else
