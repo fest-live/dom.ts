@@ -490,7 +490,9 @@ export function addRoot(root: Root | null = typeof document !== 'undefined' ? do
             for (const node of mutation.removedNodes) reconcileTreeSoon(node);
             for (const node of mutation.addedNodes) reconcileTreeSoon(node);
         }), disposers);
+    try {
     captureDisposer(observeStyleTree(root), disposers);
+    } catch(e) { console.warn(e) ;};
     polyfillState.runtime?.observeRoot(root);
     reconcileTreeSoon(root);
     return root;
