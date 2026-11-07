@@ -1,7 +1,7 @@
 {
     "name": "@fest-lib/dom",
     "description": "fest-lib DOM: Agate viewport/zoom/measure, decor, style mixins, inline CSS loaders",
-    "version": "0.1.62",
+    "version": "0.1.63",
     "license": "MIT",
     "type": "module",
     "sideEffects": true,
@@ -61,11 +61,12 @@
     },
     "devDependencies": {
         "@types/node": ">=26.4.1",
-        "css-typed-om": "^1.0.0",
-        "typedoc": "^0.28.20",
-        "typedoc-plugin-markdown": "^4.13.0",
-        "typescript": "^6.0.3",
-        "vite": "^8.2.2",
+        "@typescript/lib-dom": "npm:modern-web-types@^0.8.0",
+        "css-typed-om": ">=1.0.0",
+        "typedoc": ">=0.23.25",
+        "typedoc-plugin-markdown": ">=3.17.1",
+        "typescript": ">=7.0.2",
+        "vite": ">=8.2.4",
         "vite-plugin-dynamic-import": ">=1.6.0",
         "vite-plugin-external": ">=8.0.3"
     },

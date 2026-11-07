@@ -51,11 +51,15 @@
         },
         "target": "ESNext",
         "module": "ESNext",
+        "types": [
+            "modern-web-types/dom",
+            "modern-web-types/webworker"
+        ],
         "lib": [
             "ESNext",
-            "DOM",
-            "WebWorker"
+            "DOM"
         ],
+        "libReplacement": true,
         "esModuleInterop": true,
         "strict": true,
         "forceConsistentCasingInFileNames": true,
