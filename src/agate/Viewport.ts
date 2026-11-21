@@ -182,7 +182,12 @@ export const ensureViewportInteractiveWidgetOverlay = (): void => {
         meta = document.createElement("meta");
         meta.setAttribute("name", "viewport");
         meta.content = `width=device-width, initial-scale=1.0, ${VIEWPORT_FIT}, ${INTERACTIVE_WIDGET}`;
-        head.moveBefore(meta, head.firstChild);
+        // COMPAT: jsdom and older WebViews lack moveBefore (same fallback as lur.e Mapped).
+        try {
+            head.moveBefore(meta, head.firstChild);
+        } catch {
+            head.insertBefore(meta, head.firstChild);
+        }
         return;
     }
     let content = String(meta.content || "").trim();
