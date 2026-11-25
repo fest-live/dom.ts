@@ -1,7 +1,7 @@
 {
     "name": "@fest-lib/dom",
     "description": "fest-lib DOM: Agate viewport/zoom/measure, decor, style mixins, inline CSS loaders",
-    "version": "0.1.64",
+    "version": "0.1.65",
     "license": "MIT",
     "type": "module",
     "sideEffects": true,
@@ -48,7 +48,7 @@
         "test": "vite --host 0.0.0.0",
         "dev": "vite --host 0.0.0.0",
         "watch": "vite build --watch",
-        "build": "vite build --config vite.config.js && npm run docs && npm run docs:md",
+        "build": "vite build --config vite.config.js",
         "build:publish": "FEST_NPM_IMPORTS=1 vite build --config vite.config.js",
         "prepack": "npm run build:publish",
         "preview": "vite preview",
